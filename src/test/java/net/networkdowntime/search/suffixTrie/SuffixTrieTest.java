@@ -8,48 +8,48 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class SuffixTrieTest {
-	SuffixTrieNode prefixTrie;
+	SuffixTrieNode suffixTrie;
 
 	@Before
 	public void setUp() throws Exception {
-		prefixTrie = new SuffixTrieNode();
+		suffixTrie = new SuffixTrieNode(true);
 		
-		prefixTrie.add("cacao");
-		prefixTrie.add("ban");
-		prefixTrie.add("bad");
-		prefixTrie.add("band");
-		prefixTrie.add("banana");
-		prefixTrie.add("bandy");
+		suffixTrie.add("cacao");
+		suffixTrie.add("ban");
+		suffixTrie.add("bad");
+		suffixTrie.add("band");
+		suffixTrie.add("banana");
+		suffixTrie.add("bandy");
 		
 	}
 
 	@Test
 	public void testGetCompletionsNotNull() {
-		List<String> completions = prefixTrie.getCompletions("not_there");
+		List<String> completions = suffixTrie.getCompletions("not_there");
 		assertTrue(completions != null);
 	}
 
 	@Test
 	public void testGetCompletions1() {
-		List<String> completions = prefixTrie.getCompletions("not_there");
+		List<String> completions = suffixTrie.getCompletions("not_there");
 		assertEquals(5, completions.size());
 	}
 
 	@Test
 	public void testGetCompletions2() {
-		List<String> completions = prefixTrie.getCompletions("o");
+		List<String> completions = suffixTrie.getCompletions("o");
 		assertEquals("o", completions.get(0));
 	}
 
 	@Test
 	public void testGetCompletions3() {
-		List<String> completions = prefixTrie.getCompletions("a");
+		List<String> completions = suffixTrie.getCompletions("a");
 		assertEquals(9, completions.size());
 	}
 
 	@Test
 	public void testGetCompletions4() {
-		List<String> completions = prefixTrie.getCompletions("bananas");
+		List<String> completions = suffixTrie.getCompletions("bananas");
 		assertEquals(1, completions.size());
 	}
 

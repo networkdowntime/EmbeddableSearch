@@ -1,10 +1,14 @@
 package net.networkdowntime.search.histogram;
 
-import gnu.trove.map.hash.TIntLongHashMap;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.TreeSet;
+
+// Provides an implementation of a fixed size generic TreeSet that keeps the largest values up to the max size specified
 
 public class FixedSizeSortedSet<E> extends TreeSet<E> {
 	private static final long serialVersionUID = 1L;
@@ -22,6 +26,7 @@ public class FixedSizeSortedSet<E> extends TreeSet<E> {
 		_maxSize = maxSize;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean add(E e) {
 		if (size() >= _maxSize) {
@@ -41,25 +46,20 @@ public class FixedSizeSortedSet<E> extends TreeSet<E> {
 		}
 	}
 	
-	public static void main(String... args) {
-		FixedSizeSortedSet<Tuple<Long>> orderedResults = new FixedSizeSortedSet<Tuple<Long>>((new Tuple<Long>()).new TupleComparator<Long>(), 5);
+	public Set<E> getResultSet(int limit) {
+		Set<E> retval = new LinkedHashSet<E>();
+		int count = 0;
 		
-		for (int i = 0; i < 7; i++) {
-			Tuple t = new Tuple();
-			t.word = "a";
-			t.count = i;
-			orderedResults.add(t);
-		}
-		
-		Iterator<Tuple<Long>> iter = orderedResults.iterator();
+		Iterator<E> iter = (Iterator<E>) this.iterator();
 		while (iter.hasNext()) {
-			Tuple<Long> tuple = iter.next();
-			System.out.println(tuple.word + "; " + tuple.count);
+			E val = iter.next();
+			retval.add(val);
+
+			count++;
+			if (count == limit) {
+				break;
+			}
 		}
-		
-		TIntLongHashMap map = new TIntLongHashMap();
-		map.put(1, 2l);
-		Long val = map.get(1);
-		System.out.println(val);
+		return retval;
 	}
 }

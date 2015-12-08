@@ -3,6 +3,7 @@ package net.networkdowntime.search.engine;
 import static org.junit.Assert.*;
 
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +47,7 @@ public class InMemorySearchEngineTest {
 	@Test
 	public void testUnigramHistogramOrderedCommpletions() {
 		List<String> orderedList = se.getCompletions("a", false);
+
 		assertEquals("band", orderedList.get(0));
 		assertEquals("banana", orderedList.get(1));
 		assertEquals("cacao", orderedList.get(2));
@@ -81,15 +83,13 @@ public class InMemorySearchEngineTest {
 
 	@Test
 	public void testDigramHistogramCompletionFirstWordFuzzyMatch2() {
-		List<String> orderedList = se.getCompletions("uic brown", true);
-//		for (String s : orderedList) 
-//			System.out.println(s);
+		List<String> orderedList = se.getCompletions("uic browns", true);
 		assertEquals("quick brown", orderedList.get(0));
 	}
 
 	@Test
 	public void testDigramHistogramCompletionFirstWordFuzzyMatch3() {
-		List<String> orderedList = se.getCompletions("uic browns", true);
+		List<String> orderedList = se.getCompletions("uic bro", true);
 		assertEquals(1, orderedList.size());
 		assertEquals("quick brown", orderedList.get(0));
 	}
@@ -101,12 +101,76 @@ public class InMemorySearchEngineTest {
 	}
 
 	@Test
-	public void testCapacity() {
-		long baseNumber = 100000000;
-		for (long i=0; i <      5000000; i++) { // max limit where it runs out of memory 7168000
-			se.add(null, i, (baseNumber + i) + "");
-			if (i % 1000 == 0) 
-				System.out.println(i);
+	public void testSearchSingleElementMatch() {
+		se.add(null, 1l, "singleElement");
+		Set<Long> results = se.search("singleElement", 1);
+		assertEquals(1, results.size());
+		for (long result : results) {
+			assertEquals(1, result);
 		}
+	}
+
+	@Test
+	public void testSearchMultiResultMatch1() {
+		se.add(null, 1l, "multiResult1");
+		se.add(null, 1l, "multiResult1");
+		Set<Long> results = se.search("multiResult1", 1);
+		assertEquals(1, results.size());
+		for (long result : results) {
+			assertEquals(1, result);
+		}
+	}
+
+	@Test
+	public void testSearchMultiResultMatchOrdering() {
+		se.add(null, 1l, "multiResultMatchOrdering1");
+		se.add(null, 1l, "multiResultMatchOrdering1");
+		se.add(null, 2l, "multiResultMatchOrdering1");
+		se.add(null, 2l, "multiResultMatchOrdering1");
+		se.add(null, 2l, "multiResultMatchOrdering1");
+		se.add(null, 3l, "multiResultMatchOrdering1");
+		Set<Long> results = se.search("multiResultMatchOrdering1", 3);
+		assertEquals(3, results.size());
+		
+		Long[] arr = results.toArray(new Long[0]);
+		assertEquals(2, (long) arr[0]);
+		assertEquals(1, (long) arr[1]);
+		assertEquals(3, (long) arr[2]);
+	}
+
+	// Leaving this commented out right now because it takes a while to run
+	// Using largish numbers as strings to simulate a deterministic dataset for capacity testing
+	@Test
+	public void testCapacity() {
+		long numOfElementsToTest = 5000000; // max limit where it runs out of memory is 7,168,000 on my 16GB MacBook Pro
+		long baseNumber = 100000000; // yields a 9 digit string
+		long tenPercent = Math.round(numOfElementsToTest / 10.0d);
+		System.out.print("Test InMemorySearchEngine Capacity, Filling: ");
+		for (long i=0; i < numOfElementsToTest; i++) { 
+			se.add(null, i, (baseNumber + i) + "");
+			if (i % tenPercent == 0) {
+				int percentage = (int) (100 * ((double) i / numOfElementsToTest));
+				if (percentage != 0)
+					System.out.print(",");
+				System.out.print(" " + percentage + "%");
+			}
+		}
+		
+		System.out.print("\rSearching for test strings: ");
+		for (long i= 0; i < numOfElementsToTest; i++) { 
+			boolean foundResult = false;
+			for (Long result : se.search((baseNumber + i) + "", 10)) {
+//				System.out.println(result);
+				foundResult |= result == i;
+			}
+			assertTrue(foundResult);
+			if (i % tenPercent == 0) {
+				int percentage = (int) (100 * ((double) i / numOfElementsToTest));
+				if (percentage != 0)
+					System.out.print(",");
+				System.out.print(" " + percentage + "%");
+			}
+		}
+		
 	}
 }

@@ -9,7 +9,7 @@ import java.util.Set;
 
 import net.networkdowntime.search.Logger;
 import net.networkdowntime.search.histogram.DigramHistogram;
-import net.networkdowntime.search.histogram.UnigramSearchHistogram;
+import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
 import net.networkdowntime.search.prefixTrie.PrefixTrieNode;
 import net.networkdowntime.search.suffixTrie.SuffixTrieNode;
 import net.networkdowntime.search.textProcessing.ContentSplitter;
@@ -21,7 +21,7 @@ public class InMemorySearchEngine implements SearchEngine {
 	Logger logger = new Logger(false);
 	PrefixTrieNode prefixTrie = new PrefixTrieNode();
 	SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-	UnigramSearchHistogram unigramHistogram = new UnigramSearchHistogram();
+	UnigramLongSearchHistogram unigramHistogram = new UnigramLongSearchHistogram();
 	DigramHistogram digramHistogram = new DigramHistogram();
 	TextScrubber textScrubber = new TextScrubber();
 	ContentSplitter splitter = new ContentSplitter();
@@ -33,7 +33,6 @@ public class InMemorySearchEngine implements SearchEngine {
 	long timeForSearchResults = 0;
 	public static long timeToBuildSearchResultsMap = 0;
 	public static long timeToBuildSearchResultsOrdered = 0;
-	public static long timeToBuildSearchResultsReturn = 0;
 	
 	
 	public void resetTimes() {
@@ -43,7 +42,6 @@ public class InMemorySearchEngine implements SearchEngine {
 		timeForSearchResults = 0;
 		timeToBuildSearchResultsMap = 0;
 		timeToBuildSearchResultsOrdered = 0;
-		timeToBuildSearchResultsReturn = 0;
 	}
 	
 	
@@ -55,7 +53,6 @@ public class InMemorySearchEngine implements SearchEngine {
 		System.out.println("\ttimeForSearchResults: " + (timeForSearchResults / 1000d) + " secs");
 		System.out.println("\t\tgetSearchResults(): Time to build results hashmap: " + (timeToBuildSearchResultsMap / 1000d) + " secs");
 		System.out.println("\t\tgetSearchResults(): Time to build results orderedResults: " + (timeToBuildSearchResultsOrdered / 1000d) + " secs");
-		System.out.println("\t\tgetSearchResults(): Time to build results retval: " + (timeToBuildSearchResultsReturn / 1000d) + " secs");
 
 		System.out.println("\ttotal time: " + ((timeForScrubbing + timeForCompletions + timeForUniqCompletions + timeForSearchResults) / 1000d) + "secs");
 	}
@@ -71,7 +68,7 @@ public class InMemorySearchEngine implements SearchEngine {
 	private List<String> getCompletions(String word, int resultLimit) {
 		Set<String> completions = new TLinkedHashSet<String>();
 
-		if (word.length() > 1) {
+		if (word.length() > 0) {
 			for (String wordPlusPrefix : prefixTrie.getCompletions(word)) {
 				for (String completeWord : suffixTrie.getCompletions(wordPlusPrefix)) {
 					completions.add(completeWord);
@@ -80,10 +77,10 @@ public class InMemorySearchEngine implements SearchEngine {
 		}
 		logger.log(1, "Unordered Completions for " + word + ":", completions);
 
-		boolean wordExactMatch = UnigramSearchHistogram.contains(unigramHistogram, word);
+		boolean wordExactMatch = UnigramLongSearchHistogram.contains(unigramHistogram, word);
 		List<String> orderedCompletions = new ArrayList<String>();
 		
-		orderedCompletions = UnigramSearchHistogram.getOrderedResults(unigramHistogram, completions, resultLimit);
+		orderedCompletions = UnigramLongSearchHistogram.getOrderedResults(unigramHistogram, completions, resultLimit);
 
 		if (wordExactMatch) {
 			if (!orderedCompletions.contains(word)) {
@@ -106,7 +103,8 @@ public class InMemorySearchEngine implements SearchEngine {
 	@Override
 	public List<String> getCompletions(String wordStub, boolean fuzzyMatch) {
 		List<String> completions = new ArrayList<String>();
-		
+
+		wordStub = textScrubber.scrubText(wordStub);
 		String[] words = splitter.splitContent(wordStub);
 		
 		if (words.length == 0) {
@@ -123,18 +121,11 @@ public class InMemorySearchEngine implements SearchEngine {
 			Set<String> wordOneCompletions = new HashSet<String>(getCompletions(wordOne, 50));
 			Set<String> wordTwoCompletions = new HashSet<String>(getCompletions(wordTwo, 50));
 			
-//			if (wordTwoCompletions.isEmpty()) {
-//				
-//				for (String completeWord : suffixTrie.getCompletions(wordTwo)) {
-//					wordTwoCompletions.add(completeWord);
-//				}
-//				
-//				wordTwos = new HashSet<String>(UnigramSearchHistogram.getOrderedResults(unigramHistogram, wordTwoCompletions, 50));
-//				
-//				System.out.println("time to get word one completions retry " + wordTwoCompletions.size() + ": " + ((System.currentTimeMillis() - t1) / 1000d));
-//				t1 = System.currentTimeMillis();
-//
-//			}
+			if (wordTwoCompletions.isEmpty()) {
+				for (String completeWord : suffixTrie.getCompletions(wordTwo)) {
+					wordTwoCompletions.add(completeWord);
+				}
+			}
 
 			completions = DigramHistogram.getOrderedResults(digramHistogram, wordOneCompletions, wordTwoCompletions, 10);
 			
@@ -187,7 +178,7 @@ public class InMemorySearchEngine implements SearchEngine {
 
 //		System.out.println("\tgot uniq completions; size = " + uniqCompletions.size());
 		
-		Set<Long> results = UnigramSearchHistogram.getSearchResults(unigramHistogram, uniqCompletions, limit, logger);
+		Set<Long> results = UnigramLongSearchHistogram.getSearchResults(unigramHistogram, uniqCompletions, limit, logger);
 
 		timeForSearchResults += System.currentTimeMillis() - t1;
 		return results;
@@ -203,7 +194,7 @@ public class InMemorySearchEngine implements SearchEngine {
 			String word = keywords.get(i);
 			prefixTrie.add(word);
 			suffixTrie.add(word);
-			UnigramSearchHistogram.add(unigramHistogram, word, id);
+			UnigramLongSearchHistogram.add(unigramHistogram, word, id);
 			if (i > 0) {
 				String prevWord = keywords.get(i - 1);
 				DigramHistogram.add(digramHistogram, prevWord, word);
@@ -221,7 +212,7 @@ public class InMemorySearchEngine implements SearchEngine {
 			String word = keywords.get(i);
 			// no good way to remove from prefixTrie right now
 			// no good way to remove from suffixTrie right now
-			UnigramSearchHistogram.remove(unigramHistogram, word, id);
+			UnigramLongSearchHistogram.remove(unigramHistogram, word, id);
 			if (i > 0) {
 				String prevWord = keywords.get(i - 1);
 				DigramHistogram.remove(digramHistogram, prevWord, word);

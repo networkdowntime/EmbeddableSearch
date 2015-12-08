@@ -11,25 +11,25 @@ import java.util.TreeSet;
 public class DigramHistogram {
 
 	Map<Integer, UnigramHistogram> histogram = new HashMap<Integer, UnigramHistogram>();
-	
+
 	public static void add(DigramHistogram digram, String firstWord, String secondWord) {
 		firstWord = firstWord.toLowerCase();
 		secondWord = secondWord.toLowerCase();
-		
+
 		UnigramHistogram unigram = digram.histogram.get(firstWord.hashCode());
 		if (unigram == null) {
 			unigram = new UnigramHistogram();
 			digram.histogram.put(firstWord.hashCode(), unigram);
 		}
-		
+
 		UnigramHistogram.add(unigram, secondWord);
 
 	}
-	
+
 	public static void remove(DigramHistogram digram, String firstWord, String secondWord) {
 		firstWord = firstWord.toLowerCase();
 		secondWord = secondWord.toLowerCase();
-		
+
 		UnigramHistogram unigram = digram.histogram.get(firstWord.hashCode());
 		if (unigram != null) {
 			int count = UnigramHistogram.remove(unigram, secondWord);
@@ -37,21 +37,21 @@ public class DigramHistogram {
 				digram.histogram.remove(firstWord.hashCode());
 		}
 	}
-	
+
 	public static int getOccuranceCount(DigramHistogram digram, String firstWord, String secondWord) {
 		firstWord = firstWord.toLowerCase();
 		secondWord = secondWord.toLowerCase();
-		
+
 		int count = 0;
-		
+
 		UnigramHistogram unigram = digram.histogram.get(firstWord.hashCode());
 		if (unigram != null) {
 			count = UnigramHistogram.getOccuranceCount(unigram, secondWord);
 		}
-		
+
 		return count;
 	}
-	
+
 	private static void getResults(DigramHistogram digram, String firstWord, Set<String> secondWords, TreeSet<Tuple<String>> orderedResults) {
 		for (String secondWord : secondWords) {
 			Tuple<String> t = new Tuple<String>();
@@ -60,20 +60,20 @@ public class DigramHistogram {
 
 				t.word = firstWord + " " + secondWord;
 				orderedResults.add(t);
-				
+
 			}
-			
+
 			t = new Tuple<String>();
 			t.count = getOccuranceCount(digram, secondWord, firstWord);
 			if (t.count > 0) {
 
 				t.word = secondWord + " " + firstWord;
 				orderedResults.add(t);
-				
+
 			}
 
 		}
-		
+
 		if (secondWords.isEmpty()) {
 			System.out.println("secondWords is empty");
 			UnigramHistogram unigram = digram.histogram.get(firstWord.hashCode());
@@ -83,47 +83,49 @@ public class DigramHistogram {
 				}
 			}
 		}
-		
+
 	}
 
 	private static List<String> orderResults(TreeSet<Tuple<String>> orderedResults, int limit) {
 		List<String> retval = new ArrayList<String>();
-		
+
 		int count = 0;
-		Iterator<Tuple<String>> iter = orderedResults.iterator();
-		while (iter.hasNext()) {
-			Tuple<String> tuple = iter.next();
-			count++;
-			retval.add(tuple.word);
-			
-			if (count == limit) {
-				break;
+
+		for (Tuple<String> tuple : orderedResults) {
+			if (tuple != null) {
+				count++;
+				retval.add(tuple.word);
+
+				if (count == limit) {
+					break;
+				}
 			}
 		}
+
 		return retval;
 	}
-	
+
 	public static List<String> getOrderedResults(DigramHistogram digram, String firstWord, Set<String> secondWords, int limit) {
-		
+
 		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
-		
+
 		DigramHistogram.getResults(digram, firstWord, secondWords, orderedResults);
 		List<String> retval = orderResults(orderedResults, limit);
-		
+
 		return retval;
 	}
-	
+
 	public static List<String> getOrderedResults(DigramHistogram digram, Set<String> firstWords, Set<String> secondWords, int limit) {
-		
+
 		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
-		
+
 		for (String firstWord : firstWords) {
 			DigramHistogram.getResults(digram, firstWord, secondWords, orderedResults);
 		}
-		
+
 		List<String> retval = orderResults(orderedResults, limit);
-		
+
 		return retval;
 	}
-	
+
 }
