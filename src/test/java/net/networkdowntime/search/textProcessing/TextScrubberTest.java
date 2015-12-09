@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public class TextScrubberTest {
 
-	TextScrubber textScrubber = new TextScrubber();
+	TextScrubber textScrubber = new HtmlTagTextScrubber();
 
 	@Before
 	public void setUp() throws Exception {

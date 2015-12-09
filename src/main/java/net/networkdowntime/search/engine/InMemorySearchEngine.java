@@ -14,6 +14,7 @@ import net.networkdowntime.search.histogram.DigramHistogram;
 import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
 import net.networkdowntime.search.textProcessing.ContentSplitter;
 import net.networkdowntime.search.textProcessing.KeywordScrubber;
+import net.networkdowntime.search.textProcessing.HtmlTagTextScrubber;
 import net.networkdowntime.search.textProcessing.TextScrubber;
 import net.networkdowntime.search.trie.PrefixTrieNode;
 import net.networkdowntime.search.trie.SuffixTrieNode;
@@ -26,7 +27,7 @@ public class InMemorySearchEngine implements SearchEngine {
 	SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
 	UnigramLongSearchHistogram unigramHistogram = new UnigramLongSearchHistogram();
 	DigramHistogram digramHistogram = new DigramHistogram();
-	TextScrubber textScrubber = new TextScrubber();
+	TextScrubber textScrubber = new HtmlTagTextScrubber();
 	ContentSplitter splitter = new ContentSplitter();
 	KeywordScrubber keywordScrubber = new KeywordScrubber();
 	
