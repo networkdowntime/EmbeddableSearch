@@ -2,12 +2,17 @@ package net.networkdowntime.search.histogram;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * Implements a digram histogram.  For any two word pairs it tracks the frequency that those words were added.
+ * 
+ * @author rwiles
+ *
+ */
 public class DigramHistogram {
 
 	Map<Integer, UnigramHistogram> histogram = new HashMap<Integer, UnigramHistogram>();

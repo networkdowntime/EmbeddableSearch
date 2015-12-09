@@ -30,15 +30,19 @@ public class InMemorySearchEngine implements SearchEngine {
 	TextScrubber textScrubber = new HtmlTagTextScrubber();
 	ContentSplitter splitter = new ContentSplitter();
 	KeywordScrubber keywordScrubber = new KeywordScrubber();
-	
+
+	// The following variables are used for tracking the times of various parts of the search operations
 	long timeForScrubbing = 0;
 	long timeForCompletions = 0;
 	long timeForUniqCompletions = 0;
 	long timeForSearchResults = 0;
 	public static long timeToBuildSearchResultsMap = 0;
 	public static long timeToBuildSearchResultsOrdered = 0;
+	// end timing variables
 	
-	
+	/**
+	 * Resets the timing variables
+	 */
 	public void resetTimes() {
 		timeForScrubbing = 0;
 		timeForCompletions = 0;
@@ -48,8 +52,9 @@ public class InMemorySearchEngine implements SearchEngine {
 		timeToBuildSearchResultsOrdered = 0;
 	}
 	
-	
-	@Override
+	/**
+	 * Print the timing variables out to logger.info()
+	 */
 	public void printTimes() {
 		logger.info("\ttimeForScrubbing: " + (timeForScrubbing / 1000d) + " secs");
 		logger.info("\ttimeForCompletions: " + (timeForCompletions / 1000d) + " secs");
@@ -62,60 +67,66 @@ public class InMemorySearchEngine implements SearchEngine {
 	}
 	
 
-	@Override
+	/**
+	 * Print out the search result times and reset them.
+	 */
 	public void printTimesAndReset() {
 		printTimes();
 		resetTimes();
 	}
 	
 
-	private List<String> getCompletions(String word, int resultLimit) {
+	/**
+	 * Internal get completions implementation.
+	 * 
+	 * @param singleWord Not-null single word to search for
+	 * @param resultLimit Max number of results to return
+	 * @return A list of the completions for the word ordered by their search ranking
+	 */
+	private List<String> getCompletions(String singleWord, int resultLimit) {
 		Set<String> completions = new TLinkedHashSet<String>();
 
-		if (word.length() > 0) {
-			for (String wordPlusPrefix : prefixTrie.getCompletions(word)) {
+		if (singleWord.length() > 0) {
+			for (String wordPlusPrefix : prefixTrie.getCompletions(singleWord)) {
 				for (String completeWord : suffixTrie.getCompletions(wordPlusPrefix)) {
 					completions.add(completeWord);
 				}
 			}
 		}
-		logger.debug("Unordered Completions for " + word + ":", completions);
+		logger.debug("Unordered Completions for " + singleWord + ":", completions);
 
-		boolean wordExactMatch = UnigramLongSearchHistogram.contains(unigramHistogram, word);
+		boolean wordExactMatch = UnigramLongSearchHistogram.contains(unigramHistogram, singleWord);
 		List<String> orderedCompletions = new ArrayList<String>();
 		
 		orderedCompletions = UnigramLongSearchHistogram.getOrderedResults(unigramHistogram, completions, resultLimit);
 
 		if (wordExactMatch) {
-			if (!orderedCompletions.contains(word)) {
+			if (!orderedCompletions.contains(singleWord)) {
 				orderedCompletions.remove(orderedCompletions.size() - 1);
-				orderedCompletions.add(word);
+				orderedCompletions.add(singleWord);
 			}
 		}
 
-		logger.debug("Ordered Completions for " + word + ":", orderedCompletions);
+		logger.debug("Ordered Completions for " + singleWord + ":", orderedCompletions);
 		return orderedCompletions;
 	}
 	
-	
-	/**
-	 * google's autocomplete does the following:
-	 * 1st word - suffix only completion
-	 * space after 1st word - prefix completion of 1st word, 2-gram recommendation
-	 * 
+
+	/* (non-Javadoc)
+	 * @see net.networkdowntime.search.engine.SearchEngine#getCompletions(java.lang.String, boolean)
 	 */
 	@Override
-	public List<String> getCompletions(String wordStub, boolean fuzzyMatch) {
+	public List<String> getCompletions(String searchTerm, boolean fuzzyMatch) {
 		List<String> completions = new ArrayList<String>();
 
-		wordStub = textScrubber.scrubText(wordStub);
-		String[] words = splitter.splitContent(wordStub);
+		searchTerm = textScrubber.scrubText(searchTerm);
+		String[] words = splitter.splitContent(searchTerm);
 		
 		if (words.length == 0) {
 			return completions; // no-op - nothing to do
 		} else if (words.length == 1) {
 			
-			completions = getCompletions(wordStub, 10);
+			completions = getCompletions(searchTerm, 10);
 
 		} else {
 			
@@ -138,15 +149,18 @@ public class InMemorySearchEngine implements SearchEngine {
 	}
 
 
+	/* (non-Javadoc)
+	 * @see net.networkdowntime.search.engine.SearchEngine#search(java.lang.String, int)
+	 */
 	@Override
-	public Set<Long> search(String text, int limit) {
+	public Set<Long> search(String searchTerm, int limit) {
 		long t1 = System.currentTimeMillis();
-		logger.debug("Searching for text \"" + text + "\"");
+		logger.debug("Searching for text \"" + searchTerm + "\"");
 		
-		text = textScrubber.scrubText(text);
-		logger.debug("Scrubbed Test \"" + text + "\"");
+		searchTerm = textScrubber.scrubText(searchTerm);
+		logger.debug("Scrubbed Test \"" + searchTerm + "\"");
 
-		String[] words = splitter.splitContent(text);
+		String[] words = splitter.splitContent(searchTerm);
 		logger.debug("Split content:", words);
 
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
@@ -188,6 +202,9 @@ public class InMemorySearchEngine implements SearchEngine {
 		return results;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.networkdowntime.search.engine.SearchEngine#add(java.lang.String, long, java.lang.String)
+	 */
 	@Override
 	public void add(String type, Long id, String text) {
 		text = textScrubber.scrubText(text);
@@ -206,6 +223,9 @@ public class InMemorySearchEngine implements SearchEngine {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see net.networkdowntime.search.engine.SearchEngine#remove(java.lang.String, long, java.lang.String)
+	 */
 	@Override
 	public void remove(String type, Long id, String text) {
 		text = textScrubber.scrubText(text);

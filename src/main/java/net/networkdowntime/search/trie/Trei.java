@@ -2,6 +2,12 @@ package net.networkdowntime.search.trie;
 
 import java.util.List;
 
+/**
+ * Common interface implemented by the Prefix and Suffix Tries.
+ * 
+ * @author rwiles
+ *
+ */
 public interface Trei {
 
 	/**

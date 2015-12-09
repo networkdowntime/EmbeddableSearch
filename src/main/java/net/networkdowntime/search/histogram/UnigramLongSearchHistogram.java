@@ -3,11 +3,9 @@ package net.networkdowntime.search.histogram;
 import gnu.trove.map.hash.TIntLongHashMap;
 import gnu.trove.map.hash.TLongByteHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
-import gnu.trove.set.hash.TLinkedHashSet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
