@@ -1,8 +1,8 @@
 package net.networkdowntime.search.textProcessing;
 
 /**
- * The TextScrubber is a preprocessor that does scrubbing of multi-word input text prior to splitting the content and scrubbing the keywords.
- * Removing HTML tags from the input.  HTML tags can contain additional fields that would lose context after splitting:
+ * The HtmlTagTextScrubber is a preprocessor that does scrubbing of multi-word input text removing HTML tags prior to splitting the content and scrubbing the keywords.
+ * HTML tags can contain additional fields that would lose context after splitting:
  * 	i.e. <input type="text"><input/>
  *  
  * @author rwiles
