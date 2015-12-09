@@ -120,7 +120,7 @@ public class SuffixTrieNode implements Trei {
 		if (children != null) {
 			for (Object obj : children.values()) {
 				SuffixTrieNode child = (SuffixTrieNode) obj;
-				completions.addAll(child.getCompletions(prefix + child.suffix));
+				completions.addAll(child.getCompletionsInternal(prefix + child.suffix));
 			}
 		}
 
@@ -178,10 +178,10 @@ public class SuffixTrieNode implements Trei {
 	
 	// Uncomment the following if you want to play around or do debugging.
 //	public static void main(String[] args) {
-//		SuffixTrieNode t = new SuffixTrieNode();
+//		SuffixTrieNode t = new SuffixTrieNode(true);
 //		t.add("foo");
-//		t.print();
 //		
+//		t.print();
 //	}
 //
 //	public void print() {
