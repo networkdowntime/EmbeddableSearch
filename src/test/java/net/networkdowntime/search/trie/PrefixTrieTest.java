@@ -1,4 +1,4 @@
-package net.networkdowntime.search.prefixTrie;
+package net.networkdowntime.search.trie;
 
 import static org.junit.Assert.*;
 
