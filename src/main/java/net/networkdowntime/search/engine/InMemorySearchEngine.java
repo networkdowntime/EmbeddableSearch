@@ -7,7 +7,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.networkdowntime.search.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import net.networkdowntime.search.histogram.DigramHistogram;
 import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
 import net.networkdowntime.search.prefixTrie.PrefixTrieNode;
@@ -17,8 +19,8 @@ import net.networkdowntime.search.textProcessing.KeywordScrubber;
 import net.networkdowntime.search.textProcessing.TextScrubber;
 
 public class InMemorySearchEngine implements SearchEngine {
+	static final Logger logger = LogManager.getLogger(InMemorySearchEngine.class.getName());
 
-	Logger logger = new Logger(false);
 	PrefixTrieNode prefixTrie = new PrefixTrieNode();
 	SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
 	UnigramLongSearchHistogram unigramHistogram = new UnigramLongSearchHistogram();
@@ -75,7 +77,7 @@ public class InMemorySearchEngine implements SearchEngine {
 				}
 			}
 		}
-		logger.log(1, "Unordered Completions for " + word + ":", completions);
+		logger.debug("Unordered Completions for " + word + ":", completions);
 
 		boolean wordExactMatch = UnigramLongSearchHistogram.contains(unigramHistogram, word);
 		List<String> orderedCompletions = new ArrayList<String>();
@@ -89,7 +91,7 @@ public class InMemorySearchEngine implements SearchEngine {
 			}
 		}
 
-		logger.log(1, "Ordered Completions for " + word + ":", orderedCompletions);
+		logger.debug("Ordered Completions for " + word + ":", orderedCompletions);
 		return orderedCompletions;
 	}
 	
@@ -137,16 +139,16 @@ public class InMemorySearchEngine implements SearchEngine {
 	@Override
 	public Set<Long> search(String text, int limit) {
 		long t1 = System.currentTimeMillis();
-		logger.log(0, "Searching for text \"" + text + "\"");
+		logger.debug("Searching for text \"" + text + "\"");
 		
 		text = textScrubber.scrubText(text);
-		logger.log(0, "Scrubbed Test \"" + text + "\"");
+		logger.debug("Scrubbed Test \"" + text + "\"");
 
 		String[] words = splitter.splitContent(text);
-		logger.log(1, "Split content:", words);
+		logger.debug("Split content:", words);
 
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
-		logger.log(1, "Keywords:", keywords);
+		logger.debug("Keywords:", keywords);
 
 		timeForScrubbing += System.currentTimeMillis() - t1;
 		t1 = System.currentTimeMillis();
@@ -163,7 +165,7 @@ public class InMemorySearchEngine implements SearchEngine {
 		
 		
 		for (String completion : completions) {
-			logger.log(0, "Completion: " + completion);
+			logger.debug("Completion: " + completion);
 			
 			words = splitter.splitContent(completion);
 			
@@ -173,12 +175,12 @@ public class InMemorySearchEngine implements SearchEngine {
 		}
 		
 		timeForUniqCompletions += System.currentTimeMillis() - t1;
-		logger.log(1, "Uniq Completions:", uniqCompletions);
+		logger.debug("Uniq Completions:", uniqCompletions);
 		t1 = System.currentTimeMillis();
 
 //		System.out.println("\tgot uniq completions; size = " + uniqCompletions.size());
 		
-		Set<Long> results = UnigramLongSearchHistogram.getSearchResults(unigramHistogram, uniqCompletions, limit, logger);
+		Set<Long> results = UnigramLongSearchHistogram.getSearchResults(unigramHistogram, uniqCompletions, limit);
 
 		timeForSearchResults += System.currentTimeMillis() - t1;
 		return results;

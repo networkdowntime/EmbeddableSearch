@@ -15,7 +15,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.networkdowntime.search.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import net.networkdowntime.search.engine.InMemorySearchEngine;
 
 /**
@@ -36,6 +38,7 @@ import net.networkdowntime.search.engine.InMemorySearchEngine;
  *
  */
 public class UnigramLongSearchHistogram {
+	static final Logger logger = LogManager.getLogger(UnigramLongSearchHistogram.class.getName());
 
 	@SuppressWarnings("unchecked")
 	private Tuple<String>[] mostCommonWords = new Tuple[15];
@@ -193,13 +196,13 @@ public class UnigramLongSearchHistogram {
 	}
 
 	// search results should be by words submitted, aggregating each words resulting ids and ordering those resulting ids
-	public static Set<Long> getSearchResults(UnigramLongSearchHistogram unigram, Set<String> words, int limit, Logger logger) {
+	public static Set<Long> getSearchResults(UnigramLongSearchHistogram unigram, Set<String> words, int limit) {
 		long t1 = System.currentTimeMillis();
 
 		TLongIntHashMap results = new TLongIntHashMap();
 
 		for (String word : words) {
-			logger.log(1, "Looking for word: " + word);
+			logger.debug("Looking for word: " + word);
 
 			int count = 0;
 			
@@ -246,7 +249,7 @@ public class UnigramLongSearchHistogram {
 			t.word = result;
 			t.count = results.get(result);
 
-			logger.log(1, "result: " + t.word + "; count: " + t.count);
+			logger.debug("result: " + t.word + "; count: " + t.count);
 			orderedResults.add(t);
 		}
 
