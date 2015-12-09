@@ -5,22 +5,63 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * Attempts to sanitize input text.  Strips out common words, provides for min and max length of keywords, removes special characters from the beginning/end of words,
+ * ignores numbers less than 5 characters.  See scrubKeywords() for exact details.
+ * 
+ * @author rwiles
+ *
+ */
 public class KeywordScrubber {
-
-	static TreeSet<String>					doNotIndexWords		= new TreeSet<String>();
-
-	static { // only common three letter words. we are ignoring two letter words elsewhere
-		doNotIndexWords.add("and");
-		doNotIndexWords.add("the");
-	}
-
+	// by default ignore the most common three letter words in English
+	private static String[] defaultIgnoreWords = new String[] {"and", "the"};
+	
+	private Set<String>					doNotIndexWords		= new TreeSet<String>();
+	
 	int minKeywordLength = 2;
 	int maxKeywordLength = 40;
+
 	
+	/**
+	 * Default constructor, 2-40 min/max length, ignores ["and", "the"]
+	 */
 	public KeywordScrubber() {
-		
+		addDefaultIgnoreWords(defaultIgnoreWords);
 	}
 	
+	
+	/**
+	 * Allows min/max keyword length to be specified.  Ignores ["and", "the"]
+	 * @param minKeywordLength
+	 * @param maxKeywordLength
+	 */
+	public KeywordScrubber(int minKeywordLength, int maxKeywordLength) {
+		this.minKeywordLength = minKeywordLength;
+		this.maxKeywordLength = maxKeywordLength;
+		addDefaultIgnoreWords(defaultIgnoreWords);
+	}
+	
+	
+	/**
+ 	 * Allows min/max keyword length to be specified, supports custom ignore array.
+ 	 * 
+	 * @param minKeywordLength
+	 * @param maxKeywordLength
+	 * @param ignoreWords
+	 */
+	public KeywordScrubber(int minKeywordLength, int maxKeywordLength, String[] ignoreWords) {
+		this.minKeywordLength = minKeywordLength;
+		this.maxKeywordLength = maxKeywordLength;
+		addDefaultIgnoreWords(ignoreWords);
+	}
+	
+	
+	/**
+	 * Scrubs an array of words and returns the sanitized results.
+	 * 
+	 * @param words String array of words to be sanitized
+	 * @return Not-null list of sanitized keywords
+	 */
 	public List<String> scrubKeywords(String[] words) {
 		List<String> newKeywords = new ArrayList<String>();
 
@@ -34,6 +75,12 @@ public class KeywordScrubber {
 		return newKeywords;
 	}
 	
+	
+	/**
+	 * Scrubs a single word
+	 * @param keyword String to be sanitized 
+	 * @return Sanitized string or null
+	 */
 	public String scrubKeyword(String keyword) {
 		boolean changed = false;
 		
@@ -139,5 +186,16 @@ public class KeywordScrubber {
 			keyword = scrubKeyword(keyword);
 
 		return keyword;
+	}
+
+
+	/**
+	 * Internal method to add words to the ignore words list
+	 * @param ignoreWords String array of the words to ignore
+	 */
+	private void addDefaultIgnoreWords(String[] ignoreWords) {
+		for (String wordToIgnore : ignoreWords) {
+			doNotIndexWords.add(wordToIgnore);
+		}
 	}
 }
