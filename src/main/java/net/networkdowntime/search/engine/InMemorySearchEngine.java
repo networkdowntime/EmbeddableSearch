@@ -12,16 +12,17 @@ import org.apache.logging.log4j.Logger;
 
 import net.networkdowntime.search.histogram.DigramHistogram;
 import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
-import net.networkdowntime.search.prefixTrie.PrefixTrieNode;
-import net.networkdowntime.search.suffixTrie.SuffixTrieNode;
 import net.networkdowntime.search.textProcessing.ContentSplitter;
 import net.networkdowntime.search.textProcessing.KeywordScrubber;
 import net.networkdowntime.search.textProcessing.TextScrubber;
+import net.networkdowntime.search.trie.PrefixTrieNode;
+import net.networkdowntime.search.trie.SuffixTrieNode;
+import net.networkdowntime.search.trie.Trei;
 
 public class InMemorySearchEngine implements SearchEngine {
 	static final Logger logger = LogManager.getLogger(InMemorySearchEngine.class.getName());
 
-	PrefixTrieNode prefixTrie = new PrefixTrieNode();
+	Trei prefixTrie = new PrefixTrieNode();
 	SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
 	UnigramLongSearchHistogram unigramHistogram = new UnigramLongSearchHistogram();
 	DigramHistogram digramHistogram = new DigramHistogram();
@@ -49,14 +50,14 @@ public class InMemorySearchEngine implements SearchEngine {
 	
 	@Override
 	public void printTimes() {
-		System.out.println("\ttimeForScrubbing: " + (timeForScrubbing / 1000d) + " secs");
-		System.out.println("\ttimeForCompletions: " + (timeForCompletions / 1000d) + " secs");
-		System.out.println("\ttimeForUniqCompletions: " + (timeForUniqCompletions / 1000d) + " secs");
-		System.out.println("\ttimeForSearchResults: " + (timeForSearchResults / 1000d) + " secs");
-		System.out.println("\t\tgetSearchResults(): Time to build results hashmap: " + (timeToBuildSearchResultsMap / 1000d) + " secs");
-		System.out.println("\t\tgetSearchResults(): Time to build results orderedResults: " + (timeToBuildSearchResultsOrdered / 1000d) + " secs");
+		logger.info("\ttimeForScrubbing: " + (timeForScrubbing / 1000d) + " secs");
+		logger.info("\ttimeForCompletions: " + (timeForCompletions / 1000d) + " secs");
+		logger.info("\ttimeForUniqCompletions: " + (timeForUniqCompletions / 1000d) + " secs");
+		logger.info("\ttimeForSearchResults: " + (timeForSearchResults / 1000d) + " secs");
+		logger.info("\t\tgetSearchResults(): Time to build results hashmap: " + (timeToBuildSearchResultsMap / 1000d) + " secs");
+		logger.info("\t\tgetSearchResults(): Time to build results orderedResults: " + (timeToBuildSearchResultsOrdered / 1000d) + " secs");
 
-		System.out.println("\ttotal time: " + ((timeForScrubbing + timeForCompletions + timeForUniqCompletions + timeForSearchResults) / 1000d) + "secs");
+		logger.info("\ttotal time: " + ((timeForScrubbing + timeForCompletions + timeForUniqCompletions + timeForSearchResults) / 1000d) + "secs");
 	}
 	
 
@@ -176,9 +177,9 @@ public class InMemorySearchEngine implements SearchEngine {
 		
 		timeForUniqCompletions += System.currentTimeMillis() - t1;
 		logger.debug("Uniq Completions:", uniqCompletions);
+		logger.debug("\tgot uniq completions; size = " + uniqCompletions.size());
 		t1 = System.currentTimeMillis();
 
-//		System.out.println("\tgot uniq completions; size = " + uniqCompletions.size());
 		
 		Set<Long> results = UnigramLongSearchHistogram.getSearchResults(unigramHistogram, uniqCompletions, limit);
 

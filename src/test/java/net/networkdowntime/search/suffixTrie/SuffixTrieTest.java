@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+import net.networkdowntime.search.trie.SuffixTrieNode;
+
 import org.junit.Before;
 import org.junit.Test;
 

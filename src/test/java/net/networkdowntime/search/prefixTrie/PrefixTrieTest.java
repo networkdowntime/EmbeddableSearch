@@ -4,11 +4,14 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+import net.networkdowntime.search.trie.PrefixTrieNode;
+import net.networkdowntime.search.trie.Trei;
+
 import org.junit.Before;
 import org.junit.Test;
 
 public class PrefixTrieTest {
-	PrefixTrieNode prefixTrie;
+	Trei prefixTrie;
 
 	@Before
 	public void setUp() throws Exception {

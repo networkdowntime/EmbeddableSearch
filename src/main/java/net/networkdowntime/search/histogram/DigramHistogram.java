@@ -75,7 +75,6 @@ public class DigramHistogram {
 		}
 
 		if (secondWords.isEmpty()) {
-			System.out.println("secondWords is empty");
 			UnigramHistogram unigram = digram.histogram.get(firstWord.hashCode());
 			if (unigram != null) {
 				for (Tuple<String> t : UnigramHistogram.getMostCommonWords(unigram)) {
