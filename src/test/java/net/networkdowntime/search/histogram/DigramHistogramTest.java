@@ -2,7 +2,6 @@ package net.networkdowntime.search.histogram;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,29 +17,29 @@ public class DigramHistogramTest {
 
 	@Test
 	public void test() {
-		DigramHistogram histogram = new DigramHistogram();
+		DigramHistogram digramHistogram = new DigramHistogram();
 		
-		assertEquals(0, DigramHistogram.getOccuranceCount(histogram, "apple", "zoo"));
+		assertEquals(0, digramHistogram.getOccuranceCount("apple", "zoo"));
 		
-		DigramHistogram.add(histogram, "apple", "zoo");
-		assertEquals(1, DigramHistogram.getOccuranceCount(histogram, "apple", "zoo"));
+		digramHistogram.add("apple", "zoo");
+		assertEquals(1, digramHistogram.getOccuranceCount("apple", "zoo"));
 		
-		DigramHistogram.add(histogram, "apple", "zoo");
-		assertEquals(2, DigramHistogram.getOccuranceCount(histogram, "apple", "zoo"));
+		digramHistogram.add("apple", "zoo");
+		assertEquals(2, digramHistogram.getOccuranceCount("apple", "zoo"));
 		
-		DigramHistogram.add(histogram, "zoo", "apple");
-		assertEquals(2, DigramHistogram.getOccuranceCount(histogram, "apple", "zoo"));
-		assertEquals(1, DigramHistogram.getOccuranceCount(histogram, "zoo", "apple"));
+		digramHistogram.add("zoo", "apple");
+		assertEquals(2, digramHistogram.getOccuranceCount("apple", "zoo"));
+		assertEquals(1, digramHistogram.getOccuranceCount("zoo", "apple"));
 		
-		DigramHistogram.add(histogram, "zoo", "animals");
-		DigramHistogram.add(histogram, "apple", "jacks");
+		digramHistogram.add("zoo", "animals");
+		digramHistogram.add("apple", "jacks");
 
 		Set<String> secondWords = new HashSet<String>();
 		List<String> results;
 		
 		secondWords.add("jacks");
 		secondWords.add("zoo");
-		results = DigramHistogram.getOrderedResults(histogram, "apple", secondWords, 20);
+		results = digramHistogram.getOrderedResults("apple", secondWords, 20);
 		assertEquals("apple zoo", results.get(0));
 		assertEquals("apple jacks", results.get(1));
 		assertEquals("zoo apple", results.get(2));
@@ -48,14 +47,14 @@ public class DigramHistogramTest {
 
 		secondWords.add("apple");
 		secondWords.add("jacks");
-		results = DigramHistogram.getOrderedResults(histogram, "zoo", secondWords, 20);
+		results = digramHistogram.getOrderedResults("zoo", secondWords, 20);
 		assertEquals("apple zoo", results.get(0));
 		assertEquals("zoo apple", results.get(1));
 		secondWords.clear();
 
 		secondWords.add("zoo");
 		secondWords.add("jacks");
-		results = DigramHistogram.getOrderedResults(histogram, "animals", secondWords, 20);
+		results = digramHistogram.getOrderedResults("animals", secondWords, 20);
 		assertEquals("zoo animals", results.get(0));
 		secondWords.clear();
 	}

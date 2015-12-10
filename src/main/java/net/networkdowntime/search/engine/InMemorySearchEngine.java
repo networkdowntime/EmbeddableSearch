@@ -142,7 +142,7 @@ public class InMemorySearchEngine implements SearchEngine {
 				}
 			}
 
-			completions = DigramHistogram.getOrderedResults(digramHistogram, wordOneCompletions, wordTwoCompletions, 10);
+			completions = digramHistogram.getOrderedResults(wordOneCompletions, wordTwoCompletions, 10);
 			
 		}
 		return completions;
@@ -218,7 +218,7 @@ public class InMemorySearchEngine implements SearchEngine {
 			UnigramLongSearchHistogram.add(unigramHistogram, word, id);
 			if (i > 0) {
 				String prevWord = keywords.get(i - 1);
-				DigramHistogram.add(digramHistogram, prevWord, word);
+				digramHistogram.add(prevWord, word);
 			}
 		}
 	}
@@ -239,7 +239,7 @@ public class InMemorySearchEngine implements SearchEngine {
 			UnigramLongSearchHistogram.remove(unigramHistogram, word, id);
 			if (i > 0) {
 				String prevWord = keywords.get(i - 1);
-				DigramHistogram.remove(digramHistogram, prevWord, word);
+				digramHistogram.remove(prevWord, word);
 			}
 		}
 	}
