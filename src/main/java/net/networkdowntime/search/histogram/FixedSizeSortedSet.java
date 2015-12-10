@@ -2,19 +2,23 @@ package net.networkdowntime.search.histogram;
 
 
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-// Provides an implementation of a fixed size generic TreeSet that keeps the largest values up to the max size specified
-
+/**
+ * Provides a generics implementation of a fixed size generic TreeSet that keeps the largest values up to the max size specified
+ * 
+ * @author rwiles
+ *
+ * @param <E>
+ */
 public class FixedSizeSortedSet<E> extends TreeSet<E> {
 	private static final long serialVersionUID = 1L;
 
 	private final Comparator<? super E> _comparator;
-	private final int _maxSize;
+	private final int maxSize;
 
 	public FixedSizeSortedSet(int maxSize) {
 		this(null, maxSize);
@@ -23,13 +27,13 @@ public class FixedSizeSortedSet<E> extends TreeSet<E> {
 	public FixedSizeSortedSet(Comparator<? super E> comparator, int maxSize) {
 		super(comparator);
 		_comparator = comparator;
-		_maxSize = maxSize;
+		this.maxSize = maxSize;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean add(E e) {
-		if (size() >= _maxSize) {
+		if (size() >= maxSize) {
 			E smallest = last();
 			int comparison;
 			if (_comparator == null)
@@ -46,6 +50,13 @@ public class FixedSizeSortedSet<E> extends TreeSet<E> {
 		}
 	}
 	
+	
+	/**
+	 * Returns the contents of up to a maximum specified size
+	 * 
+	 * @param limit Max number of results to return
+	 * @return
+	 */
 	public Set<E> getResultSet(int limit) {
 		Set<E> retval = new LinkedHashSet<E>();
 		int count = 0;

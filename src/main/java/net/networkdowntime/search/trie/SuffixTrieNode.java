@@ -1,12 +1,9 @@
 package net.networkdowntime.search.trie;
 
 import gnu.trove.map.hash.TCharObjectHashMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A suffix trei is a data structure that starting with the last letter of a word and iterates forward through all of the characters building a tree structure.

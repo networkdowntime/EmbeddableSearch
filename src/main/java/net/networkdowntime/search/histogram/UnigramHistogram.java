@@ -24,10 +24,24 @@ public class UnigramHistogram {
 
 	private Map<Integer, Integer> histogram = new HashMap<Integer, Integer>();
 	
+	
+	/**
+	 * Returns the most common words stored in the histogram.
+	 * 
+	 * @param unigram Instance of the histogram
+	 * @return A Tuple array containing the most common words
+	 */
 	public static Tuple<String>[] getMostCommonWords(UnigramHistogram unigram) {
 		return unigram.mostCommonWords;
 	}
 	
+	
+	/**
+	 * Adds an occurrence of the word to the histogram
+	 * 
+	 * @param unigram Instance of the histogram
+	 * @param word The word to be added
+	 */
 	public static void add(UnigramHistogram unigram, String word) {
 		word = word.toLowerCase();
 		
@@ -42,6 +56,14 @@ public class UnigramHistogram {
 		unigram.mostCommonWords = Tuple.updateSortTupleArray(unigram.mostCommonWords, word, count, 15);
 	}
 	
+	
+	/**
+	 * Removes an occurrence of the word from the histogram decrementing it's count.  If the count is 0, the word is deleted.
+	 * 
+	 * @param unigram Instance of the histogram
+	 * @param word The word to be removed
+	 * @return The number of elements left in the histogram
+	 */
 	public static int remove(UnigramHistogram unigram, String word) {
 		word = word.toLowerCase();
 
@@ -59,7 +81,15 @@ public class UnigramHistogram {
 		return unigram.histogram.size();
 	}
 	
-	public static int getOccuranceCount(UnigramHistogram unigram, String word) {
+	
+	/**
+	 * Gets the histogram occurrence count of the word.
+	 * 
+	 * @param unigram Instance of the histogram
+	 * @param word The word to get the occurrence count for
+	 * @return The number of occurrences of the word or 0 if it is not in the histogram
+	 */
+	public static int getOccurrenceCount(UnigramHistogram unigram, String word) {
 		word = word.toLowerCase();
 
 		Integer count = unigram.histogram.get(word.hashCode());
@@ -71,6 +101,15 @@ public class UnigramHistogram {
 		return count;
 	}
 	
+	
+	/**
+	 * For a given set of words adds returns an order list based on each words occurrence count.
+	 * 
+	 * @param unigram Instance of the histogram
+	 * @param words A List of words
+	 * @param limit Max number of results to return 
+	 * @return
+	 */
 	public static List<String> getOrderedResults(UnigramHistogram unigram, List<String> words, int limit) {
 		
 		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
@@ -78,7 +117,7 @@ public class UnigramHistogram {
 		for (String word : words) {
 			Tuple<String> t = new Tuple<String>();
 			t.word = word;
-			t.count = getOccuranceCount(unigram, word);
+			t.count = getOccurrenceCount(unigram, word);
 			if (t.count > 0) {
 				orderedResults.add(t);
 			}

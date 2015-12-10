@@ -19,18 +19,22 @@ import org.apache.logging.log4j.Logger;
 import net.networkdowntime.search.engine.InMemorySearchEngine;
 
 /**
- * Single word/string histogram.
+ * The search histogram tracks the association between a key word, it's search results,
+ * and the occurrence count/weight of the result.
  * 
  * This implementation stores the hashcode of the word and a count based on how
  * many times it has been added/removed. Methods are static to reduce the memory
  * footprint of the class.
  * 
- * So there are two different datastructures in the Search Histogram. 1. Single
- * Result Map - This is an optimization to reduce overhead for sparsely used
- * words that are indexed. Basically, if a word only matches one result then it
- * only incurs the penalty of an extra int and long value being stored. Words
- * that show up in this have an implied count of 1 2.
- * 
+ * So there are two different key data structures in the Search Histogram. 
+ * 	1. Single Result Map - This is an optimization to reduce overhead for sparsely used
+ * 		words that are indexed. Basically, if a word only matches one result then it
+ * 		only incurs the penalty of an extra int and long value being stored. Words
+ * 		that show up in this data structure have an implied count of 1.
+ * 	2. Multi-Result Map - Words that have multiple search results get stored here.
+ * 		This applies to counts of 2 for the same word or matches more than one search
+ * 		result.  The key is the word's hashcode and the value is a histogram hashmap
+ * 		containing the search result and it's histogram count.
  * 
  * @author rwiles
  *
@@ -38,139 +42,152 @@ import net.networkdowntime.search.engine.InMemorySearchEngine;
 public class UnigramLongSearchHistogram {
 	static final Logger logger = LogManager.getLogger(UnigramLongSearchHistogram.class.getName());
 
-	@SuppressWarnings("unchecked")
-	private Tuple<String>[] mostCommonWords = new Tuple[15];
 	private Map<Integer, TLongByteHashMap> multiResultMap = new HashMap<Integer, TLongByteHashMap>();
 	private TIntLongHashMap singleResultMap = new TIntLongHashMap();
 
-	// public static Tuple<String>[] getMostCommonWords(UnigramHistogram
-	// unigram) {
-	// return UnigramHistogram.getMostCommonWords(unigram);
-	// }
-
-	public static void add(UnigramLongSearchHistogram unigram, String word, Long result) {
+	/**
+	 * Adds a word along with it's result to the search histogram
+	 * 
+	 * @param word Word to be added
+	 * @param result The search result to associate with the word
+	 */
+	public void add(String word, Long result) {
 		word = word.toLowerCase();
 		int wordKey = word.hashCode();
-		int count = 0;
 
-		TLongByteHashMap hashMap = unigram.multiResultMap.get(wordKey);
+		TLongByteHashMap hashMap = multiResultMap.get(wordKey);
 
 		if (hashMap == null) { // not more than 1 result already
 
-			if (!unigram.singleResultMap.contains((wordKey))) { // no matches,
-																// put result
-																// into the
-																// single result
-																// map
-				unigram.singleResultMap.put((wordKey), result);
-				count = 1;
+			if (!singleResultMap.contains((wordKey))) { // no matches, put result into the single result map
+				singleResultMap.put((wordKey), result);
 			} else { // one result already
 				hashMap = new TLongByteHashMap();
-				unigram.multiResultMap.put(wordKey, hashMap);
+				multiResultMap.put(wordKey, hashMap);
 
 				// move match from the single result map to the multi result map
-				long originalResult = unigram.singleResultMap.remove(wordKey);
+				long originalResult = singleResultMap.remove(wordKey);
 
-				if (originalResult == result) { // we now have a count of two
-												// for the original result
+				if (originalResult == result) { // we now have a count of two for the original result
 					hashMap.put(originalResult, (byte) 2);
 				} else {
 					hashMap.put(originalResult, (byte) 1);
 					hashMap.put(result, (byte) 1);
 				}
-				count = 2;
 			}
 
 		} else { // more than 1 result already
-			hashMap = unigram.multiResultMap.get(wordKey);
+			hashMap = multiResultMap.get(wordKey);
 			if (hashMap.contains(result)) {
 				hashMap.put(result, (byte) (hashMap.get(result) + 1));
 			} else {
 				hashMap.put(result, (byte) 1);
 			}
-			count = unigram.getMultiResultCount(hashMap);
 		}
-
-		unigram.mostCommonWords = Tuple.updateSortTupleArray(unigram.mostCommonWords, word, count, 15);
 	}
 
-	private int getMultiResultCount(TLongByteHashMap hashMap) {
+	/**
+	 * Get the total search weight from the multi-result hashmap.
+	 * 
+	 * @param word The word to search for.
+	 * @return The total weight of the word in the multi-result map
+	 */
+	private int getMultiResultCount(String word) {
+		TLongByteHashMap hashMap = multiResultMap.get(word.hashCode());
 		int count = 0;
-		for (byte resultCount : hashMap.values()) {
-			count += resultCount;
+
+		if (hashMap != null) {
+			for (byte resultCount : hashMap.values()) {
+				count += resultCount;
+			}
 		}
 		return count;
 	}
 
-	public static void remove(UnigramLongSearchHistogram unigram, String word, Long result) {
+	/**
+	 * Removes a word/result from the search histogram.  If the word is associated with multiple results, they will be left alone.
+	 * 
+	 * @param word The word to remove the result for.
+	 * @param result The result to be removed.
+	 */
+	public void remove(String word, Long result) {
 		word = word.toLowerCase();
 		int wordKey = word.hashCode();
 		int count = 0;
 
-		TLongByteHashMap hashMap = unigram.multiResultMap.get(wordKey);
+		TLongByteHashMap hashMap = multiResultMap.get(wordKey);
 
 		if (hashMap == null) { // not more than 1 result already
-			if (unigram.singleResultMap.contains(wordKey)) { // one result
-				unigram.singleResultMap.remove(wordKey); // now no results
+			if (singleResultMap.contains(wordKey)) { // one result
+				singleResultMap.remove(wordKey); // now no results
 			}
 		} else { // more than 1 result already
 			if (hashMap.contains(result)) {
 				hashMap.remove(result);
 			}
 
-			count = unigram.getMultiResultCount(hashMap);
+			count = getMultiResultCount(word);
 
 			if (count == 1) {
-				unigram.singleResultMap.put((wordKey), result);
+				singleResultMap.put((wordKey), result);
 				count = 1;
 			}
 		}
 
-		count = getOccuranceCount(unigram, word);
+		count = getOccuranceCount(word);
 
 		if (count == 1) {
-			unigram.singleResultMap.put(wordKey, result); // now one result
-			unigram.multiResultMap.remove(wordKey);
+			singleResultMap.put(wordKey, result); // now one result
+			multiResultMap.remove(wordKey);
 		}
-
-		unigram.mostCommonWords = Tuple.updateSortTupleArray(unigram.mostCommonWords, word, count, 15);
 	}
 
-	public static boolean contains(UnigramLongSearchHistogram unigram, String word) {
+	/**
+	 * Checks whether the search histogram contains the word.
+	 * 
+	 * @param word Word to look for
+	 * @return true/false based on whether the word was found
+	 */
+	public boolean contains(String word) {
 		word = word.toLowerCase();
 		int wordKey = word.hashCode();
-		return (unigram.singleResultMap.contains((wordKey))) || (unigram.multiResultMap.get(wordKey) != null);
+		return (singleResultMap.contains((wordKey))) || (multiResultMap.get(wordKey) != null);
 	}
 
-	public static int getOccuranceCount(UnigramLongSearchHistogram unigram, String word) {
+	/**
+	 * Gets the total occurrence count of the word in the search histogram
+	 * 
+	 * @param word Word to get the count for
+	 * @return The total occurrence count of the word or 0 if not found
+	 */
+	public int getOccuranceCount(String word) {
 		word = word.toLowerCase();
 		int wordKey = word.hashCode();
 
-		int count = 0;
-
-		TLongByteHashMap hashMap = unigram.multiResultMap.get(wordKey);
-
-		if (hashMap == null) {
-			if (unigram.singleResultMap.contains((wordKey))) { // one result
-																// already
+		int count = getMultiResultCount(word);
+		
+		if (count == 0 && singleResultMap.contains((wordKey))) { // not in the multi-result map and one result
 				count = 1;
-			}
-		} else {
-			for (byte b : hashMap.values())
-				count += b;
 		}
 
 		return count;
 	}
 
-	public static List<String> getOrderedResults(UnigramLongSearchHistogram unigram, Set<String> words, int limit) {
+	/**
+	 * Gets the ordered set of search words based on their weight
+	 * 
+	 * @param words The set of words to get the search results for
+	 * @param limit Max number of results to return
+	 * @return
+	 */
+	public List<String> getOrderedResults(Set<String> words, int limit) {
 
 		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
 
 		for (String word : words) {
 			Tuple<String> t = new Tuple<String>();
 			t.word = word;
-			t.count = getOccuranceCount(unigram, word);
+			t.count = getOccuranceCount(word);
 			if (t.count > 0) {
 				orderedResults.add(t);
 			}
@@ -193,8 +210,15 @@ public class UnigramLongSearchHistogram {
 		return retval;
 	}
 
-	// search results should be by words submitted, aggregating each words resulting ids and ordering those resulting ids
-	public static Set<Long> getSearchResults(UnigramLongSearchHistogram unigram, Set<String> words, int limit) {
+	/**
+	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.
+	 * 
+	 * @param words The set of words to get the search results for.
+	 * @param limit Max number of results to return
+	 *  
+	 * @return
+	 */
+	public Set<Long> getSearchResults(Set<String> words, int limit) {
 		long t1 = System.currentTimeMillis();
 
 		TLongIntHashMap results = new TLongIntHashMap();
@@ -203,16 +227,16 @@ public class UnigramLongSearchHistogram {
 			logger.debug("Looking for word: " + word);
 
 			int count = 0;
-			
+
 			if (word != null) {
 				int wordKey = word.hashCode();
-				TLongByteHashMap hashMap = unigram.multiResultMap.get(wordKey);
+				TLongByteHashMap hashMap = multiResultMap.get(wordKey);
 
 				if (hashMap == null) { // 0 or 1 result
 
-					if (unigram.singleResultMap.contains(wordKey)) { // 1 result
-						long result = unigram.singleResultMap.get(wordKey);
-						
+					if (singleResultMap.contains(wordKey)) { // 1 result
+						long result = singleResultMap.get(wordKey);
+
 						if (results.contains(result)) {
 							count = results.get(result);
 						}
@@ -226,7 +250,7 @@ public class UnigramLongSearchHistogram {
 					for (int i = 0; i < hashMapResults.length; i++) {
 						count = 0;
 						long result = hashMapResults[i];
-						
+
 						if (results.contains(result)) {
 							count = results.get(result);
 						}

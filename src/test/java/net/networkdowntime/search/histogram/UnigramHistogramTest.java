@@ -28,7 +28,7 @@ public class UnigramHistogramTest {
 	public void testGetOccuranceCount1() {
 		UnigramHistogram histogram = new UnigramHistogram();
 		UnigramHistogram.add(histogram, "foo");
-		assertTrue(UnigramHistogram.getOccuranceCount(histogram, "foo") == 1);
+		assertTrue(UnigramHistogram.getOccurrenceCount(histogram, "foo") == 1);
 	}
 
 	@Test
@@ -36,7 +36,7 @@ public class UnigramHistogramTest {
 		UnigramHistogram histogram = new UnigramHistogram();
 		UnigramHistogram.add(histogram, "foo");
 		UnigramHistogram.add(histogram, "foo");
-		assertTrue(UnigramHistogram.getOccuranceCount(histogram, "foo") == 2);
+		assertTrue(UnigramHistogram.getOccurrenceCount(histogram, "foo") == 2);
 	}
 
 	@Test
@@ -45,7 +45,7 @@ public class UnigramHistogramTest {
 		UnigramHistogram.add(histogram, "foo");
 		UnigramHistogram.add(histogram, "foo");
 		UnigramHistogram.remove(histogram, "foo");
-		assertTrue(UnigramHistogram.getOccuranceCount(histogram, "foo") == 1);
+		assertTrue(UnigramHistogram.getOccurrenceCount(histogram, "foo") == 1);
 	}
 
 }

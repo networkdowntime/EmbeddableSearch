@@ -38,6 +38,13 @@ public class DigramHistogram {
 
 	}
 
+	
+	/**
+	 * Removes a word pair from the digram histogram.  If the first word no longer has a matching second word, then the first word is also removed.
+	 * 
+	 * @param firstWord The first word to remove
+	 * @param secondWord The second word to remove
+	 */
 	public void remove(String firstWord, String secondWord) {
 		firstWord = firstWord.toLowerCase();
 		secondWord = secondWord.toLowerCase();
@@ -50,6 +57,14 @@ public class DigramHistogram {
 		}
 	}
 
+	
+	/**
+	 * Returns the occurrence count for the word pair.
+	 * 
+	 * @param firstWord The first word
+	 * @param secondWord The second word
+	 * @return The occurrence count of the word pair
+	 */
 	public int getOccuranceCount(String firstWord, String secondWord) {
 		firstWord = firstWord.toLowerCase();
 		secondWord = secondWord.toLowerCase();
@@ -58,36 +73,64 @@ public class DigramHistogram {
 
 		UnigramHistogram unigram = histogram.get(firstWord.hashCode());
 		if (unigram != null) {
-			count = UnigramHistogram.getOccuranceCount(unigram, secondWord);
+			count = UnigramHistogram.getOccurrenceCount(unigram, secondWord);
 		}
 
 		return count;
 	}
 
+	
+	/**
+	 * For a given first word and a set of second words, returns the results in order of most common occurrence. 
+	 * A swapped order of first and second words are also taken into consideration.
+	 * 
+	 * @param firstWord The first word for consideration
+	 * @param secondWords A set of second words for consideration
+	 * @param limit Max number of results to return
+	 * @return
+	 */
 	public List<String> getOrderedResults(String firstWord, Set<String> secondWords, int limit) {
 
-		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
-
-		getResults(firstWord, secondWords, orderedResults);
-		List<String> retval = orderResults(orderedResults, limit);
+		TreeSet<Tuple<String>> orderedResults = getResults(firstWord, secondWords);
+		List<String> retval = toList(orderedResults, limit);
 
 		return retval;
 	}
 
+
+	/**
+	 * For a given set of first words and a set of second words, returns the results in order of most common occurrence. 
+	 * A swapped order of first words and second words are also taken into consideration.
+	 * 
+	 * @param firstWord A set of first words for consideration
+	 * @param secondWords A set of second words for consideration
+	 * @param limit Max number of results to return
+	 * @return
+	 */
 	public List<String> getOrderedResults(Set<String> firstWords, Set<String> secondWords, int limit) {
 
 		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
 
 		for (String firstWord : firstWords) {
-			getResults(firstWord, secondWords, orderedResults);
+			orderedResults = getResults(firstWord, secondWords);
 		}
 
-		List<String> retval = orderResults(orderedResults, limit);
+		List<String> retval = toList(orderedResults, limit);
 
 		return retval;
 	}
 
-	private void getResults(String firstWord, Set<String> secondWords, TreeSet<Tuple<String>> orderedResults) {
+	/**
+	 * An internal method that for a given first word and a set of second words, returns the results in order of most common occurrence.
+	 * A swapped order of first and second words are also taken into consideration.
+	 * 
+	 * @param firstWord The first word for consideration
+	 * @param secondWords A set of second words for consideration
+	 * @param orderedResults Not-null TreeSet of Tuples
+	 */
+	private TreeSet<Tuple<String>> getResults(String firstWord, Set<String> secondWords) {
+		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
+		
 		for (String secondWord : secondWords) {
 			Tuple<String> t = new Tuple<String>();
 			t.count = getOccuranceCount(firstWord, secondWord);
@@ -117,10 +160,19 @@ public class DigramHistogram {
 				}
 			}
 		}
-	
+		
+		return orderedResults;
 	}
 
-	private static List<String> orderResults(TreeSet<Tuple<String>> orderedResults, int limit) {
+	
+	/**
+	 * An internal method that Takes a TreeSet and returns it as a list of strings
+	 * 
+	 * @param orderedResults The ordered tree set to be converted to a list
+	 * @param limit
+	 * @return
+	 */
+	private static List<String> toList(TreeSet<Tuple<String>> orderedResults, int limit) {
 		List<String> retval = new ArrayList<String>();
 	
 		int count = 0;

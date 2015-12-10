@@ -25,7 +25,7 @@ public class InMemorySearchEngine implements SearchEngine {
 
 	Trei prefixTrie = new PrefixTrieNode();
 	SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-	UnigramLongSearchHistogram unigramHistogram = new UnigramLongSearchHistogram();
+	UnigramLongSearchHistogram unigramSearchHistogram = new UnigramLongSearchHistogram();
 	DigramHistogram digramHistogram = new DigramHistogram();
 	TextScrubber textScrubber = new HtmlTagTextScrubber();
 	ContentSplitter splitter = new ContentSplitter();
@@ -95,10 +95,10 @@ public class InMemorySearchEngine implements SearchEngine {
 		}
 		logger.debug("Unordered Completions for " + singleWord + ":", completions);
 
-		boolean wordExactMatch = UnigramLongSearchHistogram.contains(unigramHistogram, singleWord);
+		boolean wordExactMatch = unigramSearchHistogram.contains(singleWord);
 		List<String> orderedCompletions = new ArrayList<String>();
 		
-		orderedCompletions = UnigramLongSearchHistogram.getOrderedResults(unigramHistogram, completions, resultLimit);
+		orderedCompletions = unigramSearchHistogram.getOrderedResults(completions, resultLimit);
 
 		if (wordExactMatch) {
 			if (!orderedCompletions.contains(singleWord)) {
@@ -196,7 +196,7 @@ public class InMemorySearchEngine implements SearchEngine {
 		t1 = System.currentTimeMillis();
 
 		
-		Set<Long> results = UnigramLongSearchHistogram.getSearchResults(unigramHistogram, uniqCompletions, limit);
+		Set<Long> results = unigramSearchHistogram.getSearchResults(uniqCompletions, limit);
 
 		timeForSearchResults += System.currentTimeMillis() - t1;
 		return results;
@@ -215,7 +215,7 @@ public class InMemorySearchEngine implements SearchEngine {
 			String word = keywords.get(i);
 			prefixTrie.add(word);
 			suffixTrie.add(word);
-			UnigramLongSearchHistogram.add(unigramHistogram, word, id);
+			unigramSearchHistogram.add(word, id);
 			if (i > 0) {
 				String prevWord = keywords.get(i - 1);
 				digramHistogram.add(prevWord, word);
@@ -236,7 +236,7 @@ public class InMemorySearchEngine implements SearchEngine {
 			String word = keywords.get(i);
 			// no good way to remove from prefixTrie right now
 			// no good way to remove from suffixTrie right now
-			UnigramLongSearchHistogram.remove(unigramHistogram, word, id);
+			unigramSearchHistogram.remove(word, id);
 			if (i > 0) {
 				String prevWord = keywords.get(i - 1);
 				digramHistogram.remove(prevWord, word);
