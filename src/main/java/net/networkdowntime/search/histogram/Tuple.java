@@ -16,7 +16,36 @@ import java.util.TreeSet;
 public class Tuple<T extends Comparable<T>> {
 	public T word;
 	public int count;
-	
+
+	/**
+	 * Default constructor
+	 */
+	public Tuple() {
+	}
+
+	/**
+	 * Creates a tuple initialized with the specified word and count
+	 * 
+	 * @param word
+	 * @param count
+	 */
+	public Tuple(T word, int count) {
+		this.word = word;
+		this.count = count;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Tuple) {
+			if (word != null) {
+				return word.equals(((Tuple<T>) obj).word);
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
 
 	/**
 	 * Creates and returns a TreeSet with an appropriate comparator for ordering the Tuples.
@@ -28,7 +57,6 @@ public class Tuple<T extends Comparable<T>> {
 		return new TreeSet<Tuple<E>>((new Tuple<E>()).new TupleComparator<E>());
 	}
 
-	
 	/**
 	 * Updates a given Tuple with a new count, adding if it doesn't exist, and returning a sorted array of Tuples constrained by the limit.
 	 * 
@@ -46,26 +74,25 @@ public class Tuple<T extends Comparable<T>> {
 				updated = true;
 			}
 		}
-		
+
 		List<Tuple<E>> list = new ArrayList<Tuple<E>>(Arrays.asList(values));
-		
+
 		if (!updated) {
 			Tuple<E> t = new Tuple<E>();
 			t.word = word;
 			t.count = count;
 			list.add(t);
 		}
-		
+
 		list.sort((new Tuple<E>()).new TupleComparator<E>());
 
 		while (list.size() > limit) {
 			list.remove(list.size() - 1);
 		}
-		
+
 		return list.toArray(values);
 	}
-	
-	
+
 	/**
 	 * The Tuple Comparator compares tuples based first by their counts and secondly by comparing their objects.
 	 * 
