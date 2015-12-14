@@ -9,7 +9,9 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.networkdowntime.search.SupportedSearchResults;
 import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
+import net.networkdowntime.search.histogram.UnigramStringSearchHistogram;
 import net.networkdowntime.search.textProcessing.ContentSplitter;
 import net.networkdowntime.search.textProcessing.KeywordScrubber;
 import net.networkdowntime.search.textProcessing.HtmlTagTextScrubber;
@@ -18,19 +20,20 @@ import net.networkdowntime.search.textProcessing.TextScrubber;
 public class InMemorySearchEngine implements SearchEngine {
 	static final Logger logger = LogManager.getLogger(InMemorySearchEngine.class.getName());
 
+	private UnigramLongSearchHistogram unigramLongSearchHistogram = new UnigramLongSearchHistogram();
+	private UnigramStringSearchHistogram unigramStringSearchHistogram = new UnigramStringSearchHistogram();
+
 	private Autocomplete autocomplete = new Autocomplete();
-	private UnigramLongSearchHistogram unigramSearchHistogram = new UnigramLongSearchHistogram();
+
 	private TextScrubber textScrubber = new HtmlTagTextScrubber();
 	private ContentSplitter splitter = new ContentSplitter();
 	private KeywordScrubber keywordScrubber = new KeywordScrubber();
 
 	// The following variables are used for tracking the times of various parts of the search operations
-	long timeForScrubbing = 0;
-	long timeForCompletions = 0;
-	long timeForUniqCompletions = 0;
-	long timeForSearchResults = 0;
-	public static long timeToBuildSearchResultsMap = 0;
-	public static long timeToBuildSearchResultsOrdered = 0;
+	private long timeForScrubbing = 0;
+	private long timeForCompletions = 0;
+	private long timeForUniqCompletions = 0;
+	private long timeForSearchResults = 0;
 	// end timing variables
 
 	/**
@@ -41,8 +44,6 @@ public class InMemorySearchEngine implements SearchEngine {
 		timeForCompletions = 0;
 		timeForUniqCompletions = 0;
 		timeForSearchResults = 0;
-		timeToBuildSearchResultsMap = 0;
-		timeToBuildSearchResultsOrdered = 0;
 	}
 
 	/**
@@ -53,8 +54,6 @@ public class InMemorySearchEngine implements SearchEngine {
 		logger.info("\ttimeForCompletions: " + (timeForCompletions / 1000d) + " secs");
 		logger.info("\ttimeForUniqCompletions: " + (timeForUniqCompletions / 1000d) + " secs");
 		logger.info("\ttimeForSearchResults: " + (timeForSearchResults / 1000d) + " secs");
-		logger.info("\t\tgetSearchResults(): Time to build results hashmap: " + (timeToBuildSearchResultsMap / 1000d) + " secs");
-		logger.info("\t\tgetSearchResults(): Time to build results orderedResults: " + (timeToBuildSearchResultsOrdered / 1000d) + " secs");
 
 		logger.info("\ttotal time: " + ((timeForScrubbing + timeForCompletions + timeForUniqCompletions + timeForSearchResults) / 1000d) + "secs");
 	}
@@ -73,7 +72,7 @@ public class InMemorySearchEngine implements SearchEngine {
 	}
 
 	@Override
-	public Set<Long> search(String searchTerm, int limit) {
+	public Set<Long> search(SupportedSearchResults type, String searchTerm, int limit) {
 		long t1 = System.currentTimeMillis();
 		logger.debug("Searching for text \"" + searchTerm + "\"");
 
@@ -109,14 +108,14 @@ public class InMemorySearchEngine implements SearchEngine {
 		logger.debug("\tgot uniq completions; size = " + uniqCompletions.size());
 		t1 = System.currentTimeMillis();
 
-		Set<Long> results = unigramSearchHistogram.getSearchResults(uniqCompletions, limit);
+		Set<Long> results = unigramLongSearchHistogram.getSearchResults(uniqCompletions, limit);
 
 		timeForSearchResults += System.currentTimeMillis() - t1;
 		return results;
 	}
 
 	@Override
-	public void add(String type, Long id, String text) {
+	public void add(SupportedSearchResults type, Long id, String text) {
 		text = textScrubber.scrubText(text);
 		String[] words = splitter.splitContent(text);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
@@ -124,12 +123,12 @@ public class InMemorySearchEngine implements SearchEngine {
 		autocomplete.add(keywords);
 
 		for (String word : keywords) {
-			unigramSearchHistogram.add(word, id);
+			unigramLongSearchHistogram.add(word, id);
 		}
 	}
 
 	@Override
-	public void remove(String type, Long id, String text) {
+	public void remove(SupportedSearchResults type, Long id, String text) {
 		text = textScrubber.scrubText(text);
 		String[] words = splitter.splitContent(text);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
@@ -137,8 +136,8 @@ public class InMemorySearchEngine implements SearchEngine {
 		autocomplete.remove(keywords);
 
 		for (String word : keywords) {
-			unigramSearchHistogram.remove(word, id);
+			unigramLongSearchHistogram.remove(word, id);
 		}
 	}
-
+	
 }

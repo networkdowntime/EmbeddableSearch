@@ -3,6 +3,8 @@ package net.networkdowntime.search.engine;
 import java.util.List;
 import java.util.Set;
 
+import net.networkdowntime.search.SupportedSearchResults;
+
 /**
  * Interface for SearchEngine implementations
  * @author rwiles
@@ -29,7 +31,7 @@ public interface SearchEngine {
 	 * @param limit Max number of returned search results
 	 * @return
 	 */
-	public Set<Long> search(String searchTerm, int limit);
+	public Set<Long> search(SupportedSearchResults type, String searchTerm, int limit);
 
 	/**
 	 * Indexes the supplied text and associates it with the id.
@@ -38,7 +40,7 @@ public interface SearchEngine {
 	 * @param id Id to associate to the keywords in the text
 	 * @param text String to scrub, split, and index to the id
 	 */
-	public void add(String type, Long id, String text);
+	public void add(SupportedSearchResults type, Long id, String text);
 
 	/**
 	 * De-indexes the supplied text from the id.
@@ -47,6 +49,6 @@ public interface SearchEngine {
 	 * @param id Id to de-index from the keywords in the text
 	 * @param text String to scrub, split, and de-index to the id
 	 */
-	public void remove(String type, Long id, String text);
+	public void remove(SupportedSearchResults type, Long id, String text);
 
 }
