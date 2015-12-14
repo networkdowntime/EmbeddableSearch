@@ -18,7 +18,8 @@ import net.networkdowntime.search.trie.PrefixTrieNode;
 import net.networkdowntime.search.trie.SuffixTrieNode;
 
 /**
- * Implements auto-complete functionality for words using a full prefix-trie and a partial suffix-trie.
+ * Implements auto-complete functionality for words using a full prefix-trie and a partial suffix-trie.  
+ * Completions are ordered based on histogram ordering.  Support unigram and digram word ordering.
  *  
  * @author rwiles
  *
@@ -95,6 +96,7 @@ public class Autocomplete {
 
 	/**
 	 * Currently decrements the word from the histogram tracking to lower its auto-completion ranking.
+	 * Does not currently remove them from the Treis.
 	 * 
 	 * @param text A string containing the text to remove
 	 */
@@ -146,7 +148,7 @@ public class Autocomplete {
 		Set<String> orderedCompletions = new TLinkedHashSet<String>();
 
 		logger.debug("keywords.size(): " + keywords.size());
-		
+
 		if (keywords.size() == 0) {
 			return orderedCompletions; // no-op - nothing to do
 		} else {
@@ -156,7 +158,7 @@ public class Autocomplete {
 			for (String s : currentWordCompletions) {
 				logger.debug("\tcurrentWord: " + currentWord + "; currentWordCompletion: " + s);
 			}
-			
+
 			if (keywords.size() == 1) { // one word
 				currentWordCompletions = new TLinkedHashSet<String>(UnigramHistogram.getOrderedResults(unigramHistogram, new ArrayList<String>(currentWordCompletions), limit));
 
@@ -168,7 +170,7 @@ public class Autocomplete {
 						currentWordCompletions.add(currentWord);
 					}
 				}
-				
+
 				orderedCompletions = currentWordCompletions;
 			} else { // at least two words
 				String previousWord = keywords.get(keywords.size() - 2);
@@ -183,7 +185,7 @@ public class Autocomplete {
 				for (String s : digramCompletions) {
 					logger.debug("\tdigramCompletions: " + s);
 				}
-				
+
 				if (keywords.size() == 2) {
 					orderedCompletions.addAll(digramCompletions);
 				} else { // add the beginning back to the results
@@ -199,7 +201,15 @@ public class Autocomplete {
 		return orderedCompletions;
 	}
 
-	Set<String> getCompletionsSingleWordUnordered(String word, boolean fuzzyMatch, int limit) {
+	/**
+	 * Internal method to get the unordered completions for a single word.
+	 *  
+	 * @param word Word to get the completions for
+	 * @param fuzzyMatch provides character back-off and re-searching if no completions are found 
+	 * @param limit Max number of results to return
+	 * @return Not-null set of the suggested completions
+	 */
+	private Set<String> getCompletionsSingleWordUnordered(String word, boolean fuzzyMatch, int limit) {
 		Set<String> completions = new TLinkedHashSet<String>();
 
 		if (word != null && word.length() > 0) {
@@ -217,6 +227,13 @@ public class Autocomplete {
 		return completions;
 	}
 
+	/**
+	 * Internal method to convert a string list back to a string.  Skips the last X number of words at the end.
+	 * 
+	 * @param keywords List of words to convert to a string
+	 * @param numOfWordsAtEndToSkip Number of words at the end to skip
+	 * @return
+	 */
 	private String listToString(List<String> keywords, int numOfWordsAtEndToSkip) {
 		String retval = "";
 

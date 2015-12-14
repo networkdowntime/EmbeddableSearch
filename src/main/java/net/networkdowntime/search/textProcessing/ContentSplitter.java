@@ -12,7 +12,6 @@ public class ContentSplitter {
 
 	private String splittingRegex;
 
-	
 	/**
 	 * Default constructor, sets up the initial splitting regular expression 
 	 */
@@ -29,19 +28,18 @@ public class ContentSplitter {
 		splittingRegex += "|\\s{0,}:\\s{0,}"; // : led or followed by a whitespace
 		splittingRegex += "|\\s{0,}\\(\\s{0,}"; // ( led or followed by a whitespace
 		splittingRegex += "|\\s{0,}\\)\\s{0,}"; // ) led or followed by a whitespace
-		
+
 		splittingRegex += "|\\s{0,}\\[\\s{0,}"; // [ led or followed by a whitespace
 		splittingRegex += "|\\s{0,}\\]\\s{0,}"; // ] led or followed by a whitespace
-		
+
 		splittingRegex += "|\\s{0,}\\{\\s{0,}"; // { led or followed by a whitespace
 		splittingRegex += "|\\s{0,}\\}\\s{0,}"; // } led or followed by a whitespace
-		
+
 		splittingRegex += "|\\s{0,}<\\s{0,}"; // < led or followed by a whitespace
 		splittingRegex += "|\\s{0,}>\\s{0,}"; // > led or followed by a whitespace
 
 	}
-	
-	
+
 	/**
 	 * Gets the splitting regular expression.
 	 * 
@@ -50,7 +48,6 @@ public class ContentSplitter {
 	public String getSplittingRegex() {
 		return splittingRegex;
 	}
-
 
 	/**
 	 * Sets the splitting regular expression.
@@ -61,14 +58,14 @@ public class ContentSplitter {
 		this.splittingRegex = splittingRegex;
 	}
 
-
 	/**
 	 * Splits the content using the splitting regular expression
+	 * 
 	 * @param content String containing the string to split into words
 	 * @return String array containing the individual split into words 
 	 */
 	public String[] splitContent(String content) {
 		return content.split(splittingRegex);
 	}
-	
+
 }

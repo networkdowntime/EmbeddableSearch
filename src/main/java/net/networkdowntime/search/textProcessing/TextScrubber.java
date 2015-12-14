@@ -1,8 +1,8 @@
 package net.networkdowntime.search.textProcessing;
 
 /**
- * Interface for implementing various text scrubbers that can clean an input string.  An example is the HtmlTagTextScrubber which will strip the HTML tag elements 
- * from a string.
+ * Interface for implementing various text scrubbers that can clean an input string.  An example is the HtmlTagTextScrubber 
+ * which will strip the HTML tag elements from a string.
  * 
  * @author rwiles
  *

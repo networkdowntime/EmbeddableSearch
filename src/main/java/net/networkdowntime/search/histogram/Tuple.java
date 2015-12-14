@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.TreeSet;
 
 /**
- * A class to store a comparable generics object with an associated count along and be able to sort them based on their counts firstly and their objects secondly.
+ * A class to store a comparable generics object with an associated count along and be able to sort them based 
+ * on their counts firstly and their objects secondly.
  * 
  * @author rwiles
  *

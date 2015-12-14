@@ -165,9 +165,9 @@ public class UnigramLongSearchHistogram {
 		int wordKey = word.hashCode();
 
 		int count = getMultiResultCount(word);
-		
+
 		if (count == 0 && singleResultMap.contains((wordKey))) { // not in the multi-result map and one result
-				count = 1;
+			count = 1;
 		}
 
 		return count;

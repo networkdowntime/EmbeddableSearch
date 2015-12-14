@@ -1,6 +1,5 @@
 package net.networkdowntime.search.histogram;
 
-
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -49,8 +48,7 @@ public class FixedSizeSortedSet<E> extends TreeSet<E> {
 			return super.add(e);
 		}
 	}
-	
-	
+
 	/**
 	 * Returns the contents of up to a maximum specified size
 	 * 
@@ -60,7 +58,7 @@ public class FixedSizeSortedSet<E> extends TreeSet<E> {
 	public Set<E> getResultSet(int limit) {
 		Set<E> retval = new LinkedHashSet<E>();
 		int count = 0;
-		
+
 		Iterator<E> iter = (Iterator<E>) this.iterator();
 		while (iter.hasNext()) {
 			E val = iter.next();

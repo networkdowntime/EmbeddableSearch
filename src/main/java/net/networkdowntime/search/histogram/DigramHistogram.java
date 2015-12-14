@@ -38,7 +38,6 @@ public class DigramHistogram {
 
 	}
 
-	
 	/**
 	 * Removes a word pair from the digram histogram.  If the first word no longer has a matching second word, then the first word is also removed.
 	 * 
@@ -57,7 +56,6 @@ public class DigramHistogram {
 		}
 	}
 
-	
 	/**
 	 * Returns the occurrence count for the word pair.
 	 * 
@@ -79,7 +77,6 @@ public class DigramHistogram {
 		return count;
 	}
 
-	
 	/**
 	 * For a given first word and a set of second words, returns the results in order of most common occurrence. 
 	 * A swapped order of first and second words are also taken into consideration.
@@ -96,7 +93,6 @@ public class DigramHistogram {
 
 		return retval;
 	}
-
 
 	/**
 	 * For a given set of first words and a set of second words, returns the results in order of most common occurrence. 
@@ -130,28 +126,28 @@ public class DigramHistogram {
 	 */
 	private TreeSet<Tuple<String>> getResults(String firstWord, Set<String> secondWords) {
 		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
-		
+
 		for (String secondWord : secondWords) {
 			Tuple<String> t = new Tuple<String>();
 			t.count = getOccuranceCount(firstWord, secondWord);
 			if (t.count > 0) {
-	
+
 				t.word = firstWord + " " + secondWord;
 				orderedResults.add(t);
-	
+
 			}
-	
+
 			t = new Tuple<String>();
 			t.count = getOccuranceCount(secondWord, firstWord);
 			if (t.count > 0) {
-	
+
 				t.word = secondWord + " " + firstWord;
 				orderedResults.add(t);
-	
+
 			}
-	
+
 		}
-	
+
 		if (secondWords.isEmpty()) {
 			UnigramHistogram unigram = histogram.get(firstWord.hashCode());
 			if (unigram != null) {
@@ -160,11 +156,10 @@ public class DigramHistogram {
 				}
 			}
 		}
-		
+
 		return orderedResults;
 	}
 
-	
 	/**
 	 * An internal method that Takes a TreeSet and returns it as a list of strings
 	 * 
@@ -174,20 +169,20 @@ public class DigramHistogram {
 	 */
 	private static List<String> toList(TreeSet<Tuple<String>> orderedResults, int limit) {
 		List<String> retval = new ArrayList<String>();
-	
+
 		int count = 0;
-	
+
 		for (Tuple<String> tuple : orderedResults) {
 			if (tuple != null) {
 				count++;
 				retval.add(tuple.word);
-	
+
 				if (count == limit) {
 					break;
 				}
 			}
 		}
-	
+
 		return retval;
 	}
 
