@@ -12,17 +12,20 @@ The search engine uses the auto-completion internally.
 Usage:
 ----
 
-Stand-alone Autocomplete Usage:
-	Autocomplete autocomplete = new Autocomplete();
-	autocomplete.add("The quick brown fox jumps over the lazy dog");
-	autocomplete.getCompletions("uic browns", true, 10); // will contain "quick brown"
-	
-Search Usage:
-	SearchEngine searchEngine = new InMemorySearchEngine();
-	searchEngine.add(null, 6l, "The quick brown fox jumps over the lazy dog");
-	searchEngine.getCompletions("brown uic", false, 10); // will contain "quick brown"
-	Set<Long> results = searchEngine.search("uic browns", 3); // will contain 6
+Stand-alone Autocomplete Usage:<br>
+```
+Autocomplete autocomplete = new Autocomplete();
+autocomplete.add("The quick brown fox jumps over the lazy dog");
+autocomplete.getCompletions("uic browns", true, 10); // will contain "quick brown"
+```
 
+Search Usage:
+```
+SearchEngine searchEngine = new InMemorySearchEngine();
+searchEngine.add(null, 6l, "The quick brown fox jumps over the lazy dog");
+searchEngine.getCompletions("brown uic", false, 10); // will contain "quick brown"
+Set<Long> results = searchEngine.search("uic browns", 3); // will contain 6
+```
 	
 Implementation:
 ----
