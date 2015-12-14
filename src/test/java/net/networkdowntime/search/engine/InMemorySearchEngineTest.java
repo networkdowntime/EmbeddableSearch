@@ -46,7 +46,7 @@ public class InMemorySearchEngineTest {
 
 	@Test
 	public void testUnigramHistogramOrderedCommpletions() {
-		List<String> orderedList = se.getCompletions("a", false);
+		List<String> orderedList = se.getCompletions("a", false, 10);
 
 		assertEquals("band", orderedList.get(0));
 		assertEquals("banana", orderedList.get(1));
@@ -59,7 +59,7 @@ public class InMemorySearchEngineTest {
 	
 	@Test
 	public void testSearchResults() {
-		List<String> orderedList = se.getCompletions("a", false);
+		List<String> orderedList = se.getCompletions("a", false, 10);
 		assertEquals("band", orderedList.get(0));
 		assertEquals("banana", orderedList.get(1));
 		assertEquals("cacao", orderedList.get(2));
@@ -71,32 +71,32 @@ public class InMemorySearchEngineTest {
 	
 	@Test
 	public void testDigramHistogramCompletionFirstWordExcactMatch() {
-		List<String> orderedList = se.getCompletions("quick b", false);
+		List<String> orderedList = se.getCompletions("quick b", false, 10);
 		assertEquals("quick brown", orderedList.get(0));
 	}
 
 	@Test
 	public void testDigramHistogramCompletionFirstWordFuzzyMatch() {
-		List<String> orderedList = se.getCompletions("uic b", true);
+		List<String> orderedList = se.getCompletions("uic b", true, 10);
 		assertEquals("quick brown", orderedList.get(0));
 	}
 
 	@Test
 	public void testDigramHistogramCompletionFirstWordFuzzyMatch2() {
-		List<String> orderedList = se.getCompletions("uic browns", true);
+		List<String> orderedList = se.getCompletions("uic browns", true, 10);
 		assertEquals("quick brown", orderedList.get(0));
 	}
 
 	@Test
 	public void testDigramHistogramCompletionFirstWordFuzzyMatch3() {
-		List<String> orderedList = se.getCompletions("uic bro", true);
+		List<String> orderedList = se.getCompletions("uic bro", true, 10);
 		assertEquals(1, orderedList.size());
 		assertEquals("quick brown", orderedList.get(0));
 	}
 
 	@Test
 	public void testDigramHistogramCompletionWordReversal() {
-		List<String> orderedList = se.getCompletions("brown uic", false);
+		List<String> orderedList = se.getCompletions("brown uic", false, 10);
 		assertEquals("quick brown", orderedList.get(0));
 	}
 

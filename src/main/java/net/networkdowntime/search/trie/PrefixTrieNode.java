@@ -68,7 +68,7 @@ public class PrefixTrieNode implements Trei {
 	 * @see net.networkdowntime.search.trie.Trei#getCompletions(java.lang.String)
 	 */
 	@Override
-	public List<String> getCompletions(String searchString) {
+	public List<String> getCompletions(String searchString, int limit) {
 		// TODO move toLowerCase out of the prefix trei node to make this class more generic
 		searchString = searchString.toLowerCase();
 		
@@ -92,17 +92,21 @@ public class PrefixTrieNode implements Trei {
 			
 		}
 
-		completions.addAll(currentNode.getCompletionsInternal(searchString));
+		completions.addAll(currentNode.getCompletionsInternal(searchString, limit));
 		
+		while (completions.size() > limit) {
+			completions.remove(completions.size() - 1);
+		}
 		return completions;
 	}
 	
 	/**
 	 * Private internal method to walk the trei and find the completions
 	 * @param suffix The suffix to find the completions for
+	 * @param limit TODO
 	 * @return Not null list of the found completions
 	 */
-	private List<String> getCompletionsInternal(String suffix) {
+	private List<String> getCompletionsInternal(String suffix, int limit) {
 		List<String> completions = new ArrayList<String>();
 
 		if (this.isEnd) {
@@ -112,7 +116,9 @@ public class PrefixTrieNode implements Trei {
 		if (children != null) {
 			for (Object obj : children.values()) {
 				PrefixTrieNode child = (PrefixTrieNode) obj;
-				completions.addAll(child.getCompletionsInternal(child.prefix + suffix));
+				completions.addAll(child.getCompletionsInternal(child.prefix + suffix, limit));
+				if (completions.size() >= limit)
+					break;
 			}
 		}
 

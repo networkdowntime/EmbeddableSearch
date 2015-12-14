@@ -16,9 +16,10 @@ public interface SearchEngine {
 	 * 
 	 * @param searchTerm String to search for completions, can contain multiple words or word fragments
 	 * @param fuzzyMatch Not implemented 
+	 * @param limit Max number of returned search results
 	 * @return Not-null ordered list of suggested completions ordered by their search weight
 	 */
-	public List<String> getCompletions(String searchTerm, boolean fuzzyMatch);
+	public List<String> getCompletions(String searchTerm, boolean fuzzyMatch, int limit);
 	
 	
 	/**

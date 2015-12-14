@@ -23,8 +23,7 @@ public class UnigramHistogram {
 	private Tuple<String>[] mostCommonWords = new Tuple[15];
 
 	private Map<Integer, Integer> histogram = new HashMap<Integer, Integer>();
-	
-	
+
 	/**
 	 * Returns the most common words stored in the histogram.
 	 * 
@@ -34,8 +33,7 @@ public class UnigramHistogram {
 	public static Tuple<String>[] getMostCommonWords(UnigramHistogram unigram) {
 		return unigram.mostCommonWords;
 	}
-	
-	
+
 	/**
 	 * Adds an occurrence of the word to the histogram
 	 * 
@@ -44,7 +42,7 @@ public class UnigramHistogram {
 	 */
 	public static void add(UnigramHistogram unigram, String word) {
 		word = word.toLowerCase();
-		
+
 		Integer count = unigram.histogram.get(word.hashCode());
 		if (count == null) {
 			count = 1;
@@ -52,11 +50,10 @@ public class UnigramHistogram {
 			count = count + 1;
 		}
 		unigram.histogram.put(word.hashCode(), count);
-		
+
 		unigram.mostCommonWords = Tuple.updateSortTupleArray(unigram.mostCommonWords, word, count, 15);
 	}
-	
-	
+
 	/**
 	 * Removes an occurrence of the word from the histogram decrementing it's count.  If the count is 0, the word is deleted.
 	 * 
@@ -66,22 +63,34 @@ public class UnigramHistogram {
 	 */
 	public static int remove(UnigramHistogram unigram, String word) {
 		word = word.toLowerCase();
+		int wordKey = word.hashCode();
 
-		Integer count = unigram.histogram.get(word.hashCode());
-		
+		Integer count = unigram.histogram.get(wordKey);
+
 		if (count != null) {
 			if (count <= 1) {
-				unigram.histogram.remove(word.hashCode());
+				unigram.histogram.remove(wordKey);
 			} else {
 				count = count - 1;
-				unigram.histogram.put(word.hashCode(), count);
+				unigram.histogram.put(wordKey, count);
 				unigram.mostCommonWords = Tuple.updateSortTupleArray(unigram.mostCommonWords, word, count, 15);
 			}
 		}
 		return unigram.histogram.size();
 	}
-	
-	
+
+	/**
+	 * Checks whether the search histogram contains the word.
+	 * 
+	 * @param word Word to look for
+	 * @return true/false based on whether the word was found
+	 */
+	public static boolean contains(UnigramHistogram unigram, String word) {
+		word = word.toLowerCase();
+		int wordKey = word.hashCode();
+		return (unigram.histogram.containsKey(wordKey));
+	}
+
 	/**
 	 * Gets the histogram occurrence count of the word.
 	 * 
@@ -91,19 +100,19 @@ public class UnigramHistogram {
 	 */
 	public static int getOccurrenceCount(UnigramHistogram unigram, String word) {
 		word = word.toLowerCase();
+		int wordKey = word.hashCode();
 
-		Integer count = unigram.histogram.get(word.hashCode());
+		Integer count = unigram.histogram.get(wordKey);
 
 		if (count == null) {
 			count = 0;
 		}
-		
+
 		return count;
 	}
-	
-	
+
 	/**
-	 * For a given set of words adds returns an order list based on each words occurrence count.
+	 * For a given set of words returns an ordered list based on each words occurrence count.
 	 * 
 	 * @param unigram Instance of the histogram
 	 * @param words A List of words
@@ -111,9 +120,9 @@ public class UnigramHistogram {
 	 * @return
 	 */
 	public static List<String> getOrderedResults(UnigramHistogram unigram, List<String> words, int limit) {
-		
+
 		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
-		
+
 		for (String word : words) {
 			Tuple<String> t = new Tuple<String>();
 			t.word = word;
@@ -122,16 +131,16 @@ public class UnigramHistogram {
 				orderedResults.add(t);
 			}
 		}
-		
+
 		List<String> retval = new ArrayList<String>();
-		
+
 		int count = 0;
 		Iterator<Tuple<String>> iter = orderedResults.iterator();
 		while (iter.hasNext()) {
 			Tuple<String> tuple = iter.next();
 			count++;
 			retval.add(tuple.word);
-			
+
 			if (count == limit) {
 				break;
 			}
@@ -139,5 +148,5 @@ public class UnigramHistogram {
 		
 		return retval;
 	}
-	
+
 }

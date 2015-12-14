@@ -33,25 +33,25 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testGetCompletionsNotNull() {
-		List<String> completions = prefixTrie.getCompletions("not_there");
+		List<String> completions = prefixTrie.getCompletions("not_there", 50);
 		assertTrue(completions != null);
 	}
 
 	@Test
 	public void testGetCompletions1() {
-		List<String> completions = prefixTrie.getCompletions("not_there");
+		List<String> completions = prefixTrie.getCompletions("not_there", 50);
 		assertEquals(0, completions.size());
 	}
 
 	@Test
 	public void testGetCompletions2() {
-		List<String> completions = prefixTrie.getCompletions("o");
+		List<String> completions = prefixTrie.getCompletions("o", 50);
 		assertEquals("cacao", completions.get(0));
 	}
 
 	@Test
 	public void testGetCompletions3() {
-		List<String> completions = prefixTrie.getCompletions("a");
+		List<String> completions = prefixTrie.getCompletions("a", 50);
 		assertEquals(5, completions.size());
 	}
 

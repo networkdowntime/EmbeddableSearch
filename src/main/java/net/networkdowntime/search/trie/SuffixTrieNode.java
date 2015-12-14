@@ -67,7 +67,7 @@ public class SuffixTrieNode implements Trei {
 	 * @see net.networkdowntime.search.trie.Trei#getCompletions(java.lang.String)
 	 */
 	@Override
-	public List<String> getCompletions(String searchString) {
+	public List<String> getCompletions(String searchString, int limit) {
 		searchString = searchString.toLowerCase();
 
 		List<String> completions = new ArrayList<String>();

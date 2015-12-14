@@ -18,7 +18,7 @@ public class KeywordScrubber {
 	
 	private Set<String>					doNotIndexWords		= new TreeSet<String>();
 	
-	int minKeywordLength = 2;
+	int minKeywordLength = 1;
 	int maxKeywordLength = 40;
 
 	
