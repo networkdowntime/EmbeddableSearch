@@ -6,6 +6,10 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.networkdowntime.search.SearchResult;
+import net.networkdowntime.search.SearchResultComparator;
+import net.networkdowntime.search.SearchResultType;
+
 /**
  * The search histogram tracks the association between a key word, it's search results,
  * and the occurrence count/weight of the result.
@@ -91,15 +95,15 @@ public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
 	 *  
 	 * @return A set containing the matched search results up to the specified limit
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public FixedSizeSortedSet<Tuple> getSearchResults(Set<String> words, int limit) {
+	@SuppressWarnings("rawtypes")
+	public FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> words, int limit) {
 
-		FixedSizeSortedSet<Tuple> orderedResults = super.getSearchResults(words, limit);
-		FixedSizeSortedSet<Tuple> retval = new FixedSizeSortedSet<Tuple>((new Tuple()).new TupleComparator(), limit);
+		FixedSizeSortedSet<SearchResult> orderedLongResults = super.getSearchResults(words, limit);
+		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
 
-		for (Tuple<Long> t : orderedResults.getResultSet(limit)) {
-			retval.add(new Tuple<String>(stringLookupMap.get(t.word.intValue()), t.count));
+		for (SearchResult result : orderedLongResults.getResultSet(limit)) {
+			orderedResults.add(new SearchResult<String>(SearchResultType.String, stringLookupMap.get(((Long) result.getResult()).intValue()), result.getWeight()));
 		}
-		return retval;
+		return orderedResults;
 	}
 }

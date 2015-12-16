@@ -3,6 +3,9 @@ package net.networkdowntime.search.histogram;
 import gnu.trove.map.hash.TIntLongHashMap;
 import gnu.trove.map.hash.TLongByteHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
+import net.networkdowntime.search.SearchResult;
+import net.networkdowntime.search.SearchResultComparator;
+import net.networkdowntime.search.SearchResultType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -223,7 +226,7 @@ abstract class UnigramSearchHistogram {
 	 * @return A set containing the matched search results up to the specified limit
 	 */
 	@SuppressWarnings("rawtypes")
-	public FixedSizeSortedSet<Tuple> getSearchResults(Set<String> words, int limit) {
+	public FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> words, int limit) {
 
 		TLongIntHashMap results = new TLongIntHashMap();
 
@@ -265,14 +268,14 @@ abstract class UnigramSearchHistogram {
 			}
 		}
 
-		@SuppressWarnings("unchecked")
-		FixedSizeSortedSet<Tuple> orderedResults = new FixedSizeSortedSet<Tuple>((new Tuple()).new TupleComparator(), limit);
+		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
 
+		int count = 0;
 		for (Long result : results.keys()) {
-			Tuple<Long> t = new Tuple<Long>(result, results.get(result));
+			count = results.get(result);
+			orderedResults.add(new SearchResult<Long>(SearchResultType.Long, result, count));
 
-			logger.debug("result: " + t.word + "; count: " + t.count);
-			orderedResults.add(t);
+			logger.debug("result: " + result + "; count: " + count);
 		}
 
 		return orderedResults;
