@@ -36,6 +36,21 @@ import java.util.List;
  *  
  * Using this implementation I was able to successfully implement a full prefix trie across a sample 843,888 word data set.
  * 
+ * This software is licensed under the MIT license
+ * Copyright (c) 2015 Ryan Wiles
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
+ * files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
+ * modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+ * is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR 
+ * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
  * @author rwiles
  *
  */
@@ -56,6 +71,7 @@ public class SuffixTrieNode implements Trei {
 
 	/**
 	 * Allows the creator to create either a full of non-full suffix tree
+	 * 
 	 * @param createFullSuffixTree
 	 */
 	public SuffixTrieNode(boolean createFullSuffixTree) {
@@ -99,6 +115,7 @@ public class SuffixTrieNode implements Trei {
 
 	/**
 	 * Private internal method to walk the trei and find the completions
+	 * 
 	 * @param prefix The prefix to find the completions for
 	 * @return Not null list of the found completions
 	 */
@@ -127,6 +144,7 @@ public class SuffixTrieNode implements Trei {
 
 	/**
 	 * Private internal method to recursively add prefix the prefix trei structure
+	 * 
 	 * @param prefix Prefix to be added to the trei
 	 */
 	private void addInternal(String suffix) {

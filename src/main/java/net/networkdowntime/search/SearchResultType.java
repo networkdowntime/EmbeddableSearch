@@ -1,9 +1,8 @@
-package net.networkdowntime.search.textProcessing;
+package net.networkdowntime.search;
 
 /**
- * Interface for implementing various text scrubbers that can clean an input string.  An example is the HtmlTagTextScrubber 
- * which will strip the HTML tag elements from a string.
- * 
+ * Describes the data type of the search results supported by the SearchEngine.
+ *  
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
  * 
@@ -22,13 +21,6 @@ package net.networkdowntime.search.textProcessing;
  * @author rwiles
  *
  */
-public interface TextScrubber {
-
-	/**
-	 * Runs the scrubText on the input returning a sanitized string.
-	 * @param textToScrub Text to sanitize
-	 * @return Sanitized text
-	 */
-	public abstract String scrubText(String textToScrub);
-
+public enum SearchResultType {
+	String, Long
 }
