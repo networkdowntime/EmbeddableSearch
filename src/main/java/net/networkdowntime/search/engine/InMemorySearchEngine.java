@@ -9,7 +9,11 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import net.networkdowntime.search.SupportedSearchResults;
+import net.networkdowntime.search.SearchResult;
+import net.networkdowntime.search.SearchResultComparator;
+import net.networkdowntime.search.SearchResultType;
+import net.networkdowntime.search.histogram.FixedSizeSortedSet;
+import net.networkdowntime.search.histogram.Tuple;
 import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
 import net.networkdowntime.search.histogram.UnigramStringSearchHistogram;
 import net.networkdowntime.search.textProcessing.ContentSplitter;
@@ -89,12 +93,84 @@ public class InMemorySearchEngine implements SearchEngine {
 	}
 
 	@Override
+	public void add(Long searchResult, String text) {
+		this.add((Object) searchResult, text);
+	}
+
+	@Override
+	public void add(String searchResult, String text) {
+		this.add((Object) searchResult, text);
+
+	}
+
+	/**
+	 * Indexes the supplied text and associates it with the search result.
+	 * 
+	 * @param searchResult Search result to associate to the keywords in the text
+	 * @param text String to scrub, split, and index to the search result
+	 */
+	private void add(Object searchResult, String text) {
+		text = textScrubber.scrubText(text);
+		String[] words = splitter.splitContent(text);
+		List<String> keywords = keywordScrubber.scrubKeywords(words);
+
+		autocomplete.add(keywords);
+
+		if (searchResult instanceof Long) {
+			logger.debug("Adding Long result: " + searchResult);
+			for (String word : keywords) {
+				unigramLongSearchHistogram.add(word, (Long) searchResult);
+			}
+		} else if (searchResult instanceof String) {
+			logger.debug("Adding Long result: " + searchResult);
+			for (String word : keywords) {
+				unigramStringSearchHistogram.add(word, (String) searchResult);
+			}
+		}
+	}
+
+	@Override
+	public void remove(Long searchResult, String text) {
+		this.add((Object) searchResult, text);
+	}
+
+	@Override
+	public void remove(String searchResult, String text) {
+		this.add((Object) searchResult, text);
+	}
+
+	/**
+	 * De-indexes the supplied text from the search result.
+	 * 
+	 * @param searchResult Search result to de-index from the keywords in the text
+	 * @param text String to scrub, split, and de-index to the search result
+	 */
+	public void remove(Object searchResult, String text) {
+		text = textScrubber.scrubText(text);
+		String[] words = splitter.splitContent(text);
+		List<String> keywords = keywordScrubber.scrubKeywords(words);
+
+		autocomplete.remove(keywords);
+
+		if (searchResult instanceof Long) {
+			for (String word : keywords) {
+				unigramLongSearchHistogram.remove(word, (Long) searchResult);
+			}
+		} else if (searchResult instanceof String) {
+			for (String word : keywords) {
+				unigramStringSearchHistogram.remove(word, (String) searchResult);
+			}
+		}
+	}
+
+	@Override
 	public List<String> getCompletions(String searchTerm, boolean fuzzyMatch, int limit) {
 		return new ArrayList<String>(autocomplete.getCompletions(searchTerm, fuzzyMatch, limit));
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public Set<Long> search(SupportedSearchResults type, String searchTerm, int limit) {
+	public Set<SearchResult> search(String searchTerm, int limit) {
 		long t1 = System.currentTimeMillis();
 		logger.debug("Searching for text \"" + searchTerm + "\"");
 
@@ -130,36 +206,24 @@ public class InMemorySearchEngine implements SearchEngine {
 		logger.debug("\tgot uniq completions; size = " + uniqCompletions.size());
 		t1 = System.currentTimeMillis();
 
-		Set<Long> results = unigramLongSearchHistogram.getSearchResults(uniqCompletions, limit);
+		FixedSizeSortedSet<Tuple> resultsLong = unigramLongSearchHistogram.getSearchResults(uniqCompletions, limit);
+		FixedSizeSortedSet<Tuple> resultsString = unigramStringSearchHistogram.getSearchResults(uniqCompletions, limit);
 
+		logger.debug("Long results: " + resultsLong.size());
+		logger.debug("String results: " + resultsString.size());
+
+		Set<SearchResult> results = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
+
+		for (Tuple tuple : resultsLong) { // combine and sort the results from each type
+			results.add(new SearchResult<Long>(SearchResultType.Long, (Long) tuple.word, tuple.count));
+		}
+		
+		for (Tuple tuple : resultsString) { // combine and sort the results from each type
+			results.add(new SearchResult<String>(SearchResultType.String, (String) tuple.word, tuple.count));
+		}
+		
 		timeForSearchResults += System.currentTimeMillis() - t1;
 		return results;
 	}
 
-	@Override
-	public void add(SupportedSearchResults type, Long id, String text) {
-		text = textScrubber.scrubText(text);
-		String[] words = splitter.splitContent(text);
-		List<String> keywords = keywordScrubber.scrubKeywords(words);
-
-		autocomplete.add(keywords);
-
-		for (String word : keywords) {
-			unigramLongSearchHistogram.add(word, id);
-		}
-	}
-
-	@Override
-	public void remove(SupportedSearchResults type, Long id, String text) {
-		text = textScrubber.scrubText(text);
-		String[] words = splitter.splitContent(text);
-		List<String> keywords = keywordScrubber.scrubKeywords(words);
-
-		autocomplete.remove(keywords);
-
-		for (String word : keywords) {
-			unigramLongSearchHistogram.remove(word, id);
-		}
-	}
-	
 }

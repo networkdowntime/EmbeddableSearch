@@ -237,9 +237,10 @@ public class UnigramStringSearchHistogram {
 	 * @param words The set of words to get the search results for.
 	 * @param limit Max number of results to return
 	 *  
-	 * @return
+	 * @return A set containing the matched search results up to the specified limit
 	 */
-	public Set<String> getSearchResults(Set<String> words, int limit) {
+	@SuppressWarnings("rawtypes")
+	public FixedSizeSortedSet<Tuple> getSearchResults(Set<String> words, int limit) {
 
 		TIntIntHashMap results = new TIntIntHashMap();
 
@@ -292,9 +293,11 @@ public class UnigramStringSearchHistogram {
 			orderedResults.add(t);
 		}
 
-		Set<String> retval = new LinkedHashSet<String>();
+		@SuppressWarnings("unchecked")
+		FixedSizeSortedSet<Tuple> retval = new FixedSizeSortedSet<Tuple>((new Tuple()).new TupleComparator(), limit);
+		
 		for (Tuple<Integer> t : orderedResults.getResultSet(limit)) {
-			retval.add(stringLookupMap.get(t.word));
+			retval.add(new Tuple<String>(stringLookupMap.get(t.word), t.count));
 		}
 		return retval;
 	}

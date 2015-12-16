@@ -34,10 +34,12 @@ public class FixedSizeSortedSet<E> extends TreeSet<E> {
 	private final Comparator<? super E> _comparator;
 	private final int maxSize;
 
-	public FixedSizeSortedSet(int maxSize) {
-		this(null, maxSize);
-	}
-
+	/**
+	 * Creates a new FixedSizeSortedSet using a specified Comparator and a maxSize.
+	 * 
+	 * @param comparator The Comparator to use for sorting
+	 * @param maxSize Max size of the set
+	 */
 	public FixedSizeSortedSet(Comparator<? super E> comparator, int maxSize) {
 		super(comparator);
 		_comparator = comparator;
@@ -68,7 +70,7 @@ public class FixedSizeSortedSet<E> extends TreeSet<E> {
 	 * Returns the contents of up to a maximum specified size
 	 * 
 	 * @param limit Max number of results to return
-	 * @return
+	 * @return An ordered set of results up to the the specified limit
 	 */
 	public Set<E> getResultSet(int limit) {
 		Set<E> retval = new LinkedHashSet<E>();

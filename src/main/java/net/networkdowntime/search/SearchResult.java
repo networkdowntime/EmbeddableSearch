@@ -1,6 +1,7 @@
 package net.networkdowntime.search;
 
 /**
+ * Contains the details about the result of a search.  Including the SearchResultType, the actual result, and its search weight. 
  * 
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
@@ -22,23 +23,49 @@ package net.networkdowntime.search;
  * @param <T>
  */
 public class SearchResult<T> {
-	SupportedSearchResults type;
+	SearchResultType type;
 	T result;
+	int weight;
 
-	public SupportedSearchResults getType() {
+	/**
+	 * Creates a Search Result with the specified values
+	 * 
+	 * @param type The data type that is being returned in result
+	 * @param result The search result
+	 * @param weight The weight of that search result
+	 */
+	public SearchResult(SearchResultType type, T result, int weight) {
+		super();
+		this.type = type;
+		this.result = result;
+		this.weight = weight;
+	}
+
+	/**
+	 * Gets the data type of the search result
+	 * 
+	 * @return The search result type
+	 */
+	public SearchResultType getType() {
 		return type;
 	}
 
-	public void setType(SupportedSearchResults type) {
-		this.type = type;
-	}
-
+	/**
+	 * Gets the search result value
+	 * 
+	 * @return The value for the search result
+	 */
 	public T getResult() {
 		return result;
 	}
 
-	public void setResult(T result) {
-		this.result = result;
+	/**
+	 * Gets the weight of the search result
+	 * 
+	 * @return
+	 */
+	public int getWeight() {
+		return weight;
 	}
 
 }

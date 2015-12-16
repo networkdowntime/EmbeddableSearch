@@ -7,7 +7,6 @@ import gnu.trove.map.hash.TLongIntHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -229,9 +228,10 @@ public class UnigramLongSearchHistogram {
 	 * @param words The set of words to get the search results for.
 	 * @param limit Max number of results to return
 	 *  
-	 * @return
+	 * @return A set containing the matched search results up to the specified limit
 	 */
-	public Set<Long> getSearchResults(Set<String> words, int limit) {
+	@SuppressWarnings("rawtypes")
+	public FixedSizeSortedSet<Tuple> getSearchResults(Set<String> words, int limit) {
 
 		TLongIntHashMap results = new TLongIntHashMap();
 
@@ -273,21 +273,16 @@ public class UnigramLongSearchHistogram {
 			}
 		}
 
-		FixedSizeSortedSet<Tuple<Long>> orderedResults = new FixedSizeSortedSet<Tuple<Long>>((new Tuple<Long>()).new TupleComparator<Long>(), limit);
+		@SuppressWarnings("unchecked")
+		FixedSizeSortedSet<Tuple> orderedResults = new FixedSizeSortedSet<Tuple>((new Tuple()).new TupleComparator(), limit);
 
 		for (Long result : results.keys()) {
-			Tuple<Long> t = new Tuple<Long>();
-			t.word = result;
-			t.count = results.get(result);
+			Tuple<Long> t = new Tuple<Long>(result, results.get(result));
 
 			logger.debug("result: " + t.word + "; count: " + t.count);
 			orderedResults.add(t);
 		}
 
-		Set<Long> retval = new LinkedHashSet<Long>();
-		for (Tuple<Long> t : orderedResults.getResultSet(limit)) {
-			retval.add(t.word);
-		}
-		return retval;
+		return orderedResults;
 	}
 }

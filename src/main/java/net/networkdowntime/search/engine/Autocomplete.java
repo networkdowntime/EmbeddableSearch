@@ -90,7 +90,7 @@ public class Autocomplete {
 	/**
 	 * Adds text to auto-completion
 	 * 
-	 * @param text The text to add
+	 * @param keywords The text to add
 	 */
 	void add(List<String> keywords) {
 		String currentWord = null;

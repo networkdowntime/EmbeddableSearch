@@ -71,6 +71,7 @@ public class SuffixTrieNode implements Trei {
 
 	/**
 	 * Allows the creator to create either a full of non-full suffix tree
+	 * 
 	 * @param createFullSuffixTree
 	 */
 	public SuffixTrieNode(boolean createFullSuffixTree) {
@@ -114,6 +115,7 @@ public class SuffixTrieNode implements Trei {
 
 	/**
 	 * Private internal method to walk the trei and find the completions
+	 * 
 	 * @param prefix The prefix to find the completions for
 	 * @return Not null list of the found completions
 	 */
@@ -142,6 +144,7 @@ public class SuffixTrieNode implements Trei {
 
 	/**
 	 * Private internal method to recursively add prefix the prefix trei structure
+	 * 
 	 * @param prefix Prefix to be added to the trei
 	 */
 	private void addInternal(String suffix) {

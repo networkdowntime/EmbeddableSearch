@@ -35,7 +35,6 @@ public class DigramHistogram {
 	/**
 	 * Adds a word pair to the digram histogram
 	 * 
-	 * @param digram
 	 * @param firstWord
 	 * @param secondWord
 	 */

@@ -50,6 +50,7 @@ public class Tuple<T extends Comparable<T>> {
 		this.count = count;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof Tuple) {

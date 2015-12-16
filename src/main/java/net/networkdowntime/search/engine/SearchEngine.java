@@ -3,7 +3,8 @@ package net.networkdowntime.search.engine;
 import java.util.List;
 import java.util.Set;
 
-import net.networkdowntime.search.SupportedSearchResults;
+import net.networkdowntime.search.SearchResult;
+import net.networkdowntime.search.SearchResultType;
 
 /**
  * Interface for SearchEngine implementations
@@ -29,6 +30,38 @@ import net.networkdowntime.search.SupportedSearchResults;
 public interface SearchEngine {
 
 	/**
+	 * Indexes the supplied text and associates it with the search result.
+	 * 
+	 * @param searchResult Search result to associate to the keywords in the text
+	 * @param text String to scrub, split, and index to the search result
+	 */
+	public void add(Long searchResult, String text);
+
+	/**
+	 * Indexes the supplied text and associates it with the search result.
+	 * 
+	 * @param searchResult Search result to associate to the keywords in the text
+	 * @param text String to scrub, split, and index to the search result
+	 */
+	public void add(String searchResult, String text);
+
+	/**
+	 * De-indexes the supplied text from the search result.
+	 * 
+	 * @param searchResult Search result to de-index from the keywords in the text
+	 * @param text String to scrub, split, and de-index to the search result
+	 */
+	public void remove(Long searchResult, String text);
+
+	/**
+	 * De-indexes the supplied text from the search result.
+	 * 
+	 * @param searchResult Search result to de-index from the keywords in the text
+	 * @param text String to scrub, split, and de-index to the search result
+	 */
+	public void remove(String searchResult, String text);
+
+	/**
 	 * Get the known completions for the given string.  This will provide completions for missing prefix or suffix on the word and order based on the
 	 * completions weight in the search histogram (i.e. completions that match more results will be returned first)
 	 * 
@@ -47,24 +80,7 @@ public interface SearchEngine {
 	 * @param limit Max number of returned search results
 	 * @return
 	 */
-	public Set<Long> search(SupportedSearchResults type, String searchTerm, int limit);
-
-	/**
-	 * Indexes the supplied text and associates it with the id.
-	 * 
-	 * @param type Not currently implemented
-	 * @param id Id to associate to the keywords in the text
-	 * @param text String to scrub, split, and index to the id
-	 */
-	public void add(SupportedSearchResults type, Long id, String text);
-
-	/**
-	 * De-indexes the supplied text from the id.
-	 * 
-	 * @param type Not currently implemented
-	 * @param id Id to de-index from the keywords in the text
-	 * @param text String to scrub, split, and de-index to the id
-	 */
-	public void remove(SupportedSearchResults type, Long id, String text);
+	@SuppressWarnings("rawtypes")
+	public Set<SearchResult> search(String searchTerm, int limit);
 
 }

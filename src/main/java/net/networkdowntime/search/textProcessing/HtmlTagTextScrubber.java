@@ -4,7 +4,8 @@ package net.networkdowntime.search.textProcessing;
  * The HtmlTagTextScrubber is a preprocessor that does scrubbing of multi-word input text removing HTML tags prior to splitting 
  * the content and scrubbing the keywords.
  * HTML tags can contain additional fields that would lose context after splitting:
- * 	i.e. <input type="text"><input/>
+ * 	i.e. <div type="text">Foo<div/>
+ *  would evaluate to "Foo" 
  *  
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
@@ -28,6 +29,9 @@ public class HtmlTagTextScrubber implements TextScrubber {
 
 	private String htmlTagRegex = "</?\\w+((\\s+\\w+(\\s*=\\s*(?:\".*?\"|'.*?'|[^'\">\\s]+))?)+\\s*|\\s*)/?>";
 
+	/**
+	 * Default constructor
+	 */
 	public HtmlTagTextScrubber() {
 
 	}

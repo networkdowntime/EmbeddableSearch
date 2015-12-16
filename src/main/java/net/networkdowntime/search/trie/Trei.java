@@ -36,6 +36,7 @@ public interface Trei {
 
 	/**
 	 * Adds a word to the trei
+	 * 
 	 * @param word Word to be added
 	 */
 	public abstract void add(String word);

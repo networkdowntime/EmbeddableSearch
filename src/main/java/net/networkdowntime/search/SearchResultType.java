@@ -1,7 +1,7 @@
 package net.networkdowntime.search;
 
 /**
- * Provides the types of search results supported by the SearchEngine.
+ * Describes the data type of the search results supported by the SearchEngine.
  *  
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
@@ -21,6 +21,6 @@ package net.networkdowntime.search;
  * @author rwiles
  *
  */
-public enum SupportedSearchResults {
+public enum SearchResultType {
 	String, Long
 }
