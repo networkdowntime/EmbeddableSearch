@@ -1,4 +1,4 @@
-Embeddable Search With Partial Word Auto-Complete
+Embeddable Search With Partial Word Auto-Completion
 ====
 
 A fast and lightweight in memory embeddable search engine for Java.  Provides robust auto-completion, ordered search results, search results can be either
@@ -14,10 +14,10 @@ The search engine uses the auto-completion internally to improve matching result
 Performance:
 ----
 For 5 million unique 9 character strings:
-'''
+```
 Avg. time to add: 0.0167 ms
 Avg. time to search: 0.0538 ms
-'''
+```
 
 Usage:
 ----
