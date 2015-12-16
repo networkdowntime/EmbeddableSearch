@@ -10,10 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.networkdowntime.search.SearchResult;
-import net.networkdowntime.search.SearchResultComparator;
-import net.networkdowntime.search.SearchResultType;
 import net.networkdowntime.search.histogram.FixedSizeSortedSet;
-import net.networkdowntime.search.histogram.Tuple;
 import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
 import net.networkdowntime.search.histogram.UnigramStringSearchHistogram;
 import net.networkdowntime.search.textProcessing.ContentSplitter;
