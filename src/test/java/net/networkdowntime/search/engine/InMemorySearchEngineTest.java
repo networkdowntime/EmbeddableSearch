@@ -13,7 +13,7 @@ import net.networkdowntime.search.SearchResultType;
 
 public class InMemorySearchEngineTest {
 
-	SearchEngine searchEngine = new InMemorySearchEngine();
+	InMemorySearchEngine searchEngine = new InMemorySearchEngine();
 
 	@Before
 	public void setUp() throws Exception {
@@ -178,37 +178,38 @@ public class InMemorySearchEngineTest {
 
 //	// Leaving this commented out right now because it takes a while to run
 //	// Using largish numbers as strings to simulate a deterministic dataset for capacity testing
-//	@Test
-//	public void testCapacity() {
-//		long numOfElementsToTest = 5000000; // max limit where it runs out of memory is 7,168,000 on my 16GB MacBook Pro
-//		long baseNumber = 100000000; // yields a 9 digit string
-//		long tenPercent = Math.round(numOfElementsToTest / 10.0d);
-//		System.out.print("Test InMemorySearchEngine Capacity, Filling: ");
-//		for (long i=0; i < numOfElementsToTest; i++) { 
-//			searchEngine.add(i, (baseNumber + i) + "");
-//			if (i % tenPercent == 0) {
-//				int percentage = (int) (100 * ((double) i / numOfElementsToTest));
-//				if (percentage != 0)
-//					System.out.print(",");
-//				System.out.print(" " + percentage + "%");
-//			}
-//		}
-//		
-//		System.out.print("\rSearching for test strings: ");
-//		for (long i= 0; i < numOfElementsToTest; i++) { 
-//			boolean foundResult = false;
-//			for (SearchResult result : searchEngine.search((baseNumber + i) + "", 10)) {
-////				System.out.println(result);
-//				foundResult |= ((Long) result.getResult()) == i;
-//			}
-//			assertTrue(foundResult);
-//			if (i % tenPercent == 0) {
-//				int percentage = (int) (100 * ((double) i / numOfElementsToTest));
-//				if (percentage != 0)
-//					System.out.print(",");
-//				System.out.print(" " + percentage + "%");
-//			}
-//		}
-//		
-//	}
+	@Test
+	public void testCapacity() {
+		searchEngine.resetTimes();
+		long numOfElementsToTest = 5000000; // max limit where it runs out of memory is 7,168,000 on my 16GB MacBook Pro
+		long baseNumber = 100000000; // yields a 9 digit string
+		long tenPercent = Math.round(numOfElementsToTest / 10.0d);
+		System.out.print("Test InMemorySearchEngine Capacity, Filling: ");
+		for (long i=0; i < numOfElementsToTest; i++) { 
+			searchEngine.add(i, (baseNumber + i) + "");
+			if (i % tenPercent == 0) {
+				int percentage = (int) (100 * ((double) i / numOfElementsToTest));
+				if (percentage != 0)
+					System.out.print(",");
+				System.out.print(" " + percentage + "%");
+			}
+		}
+		
+		System.out.print("\rSearching for test strings: ");
+		for (long i= 0; i < numOfElementsToTest; i++) { 
+			boolean foundResult = false;
+			for (SearchResult result : searchEngine.search((baseNumber + i) + "", 10)) {
+				foundResult |= ((Long) result.getResult()) == i;
+			}
+			assertTrue(foundResult);
+			if (i % tenPercent == 0) {
+				int percentage = (int) (100 * ((double) i / numOfElementsToTest));
+				if (percentage != 0)
+					System.out.print(",");
+				System.out.print(" " + percentage + "%");
+			}
+		}
+		System.out.println();
+		searchEngine.printTimes();
+	}
 }

@@ -1,17 +1,23 @@
 Embeddable Search With Partial Word Auto-Complete
 ====
 
-A lightweight embeddable search engine for Java that provides robust auto-completion.  Auto-completion can also be used stand-alone.  
+A fast and lightweight in memory embeddable search engine for Java.  Provides robust auto-completion, ordered search results, search results can be either
+ Strings or Longs.  Auto-completion can also be used in independently of search.  
 
-I've frequently lamented the ability to simply add search functionality to some of my java projects.  This search implementation strives to provide a lightweight 
-in-memory search implementation that supports auto-completion and ordered search results.  
-
-Provides the ability to store either a String or Long value as a search result for a given string.  String search results work for a variety of search results.
+String search results work for a variety of types of searches such as returning a URL as the search results.
 Using a Long search results matches well with the typical pattern of storing a surrogate-key for the ID in the database allowing data to be indexed on application
  startup and the search results to be matched back to the data in the database.
    
-The search engine uses the auto-completion internally to improve matching results.  Results for matching Long and String search results get included based on
-their weights.
+The search engine uses the auto-completion internally to improve matching results.  Results for matching Long and String search results returned together and ordered
+ based on their weights.
+ 
+Performance:
+----
+For 5 million unique 9 character strings:
+'''
+Avg. time to add: 0.0167 ms
+Avg. time to search: 0.0538 ms
+'''
 
 Usage:
 ----

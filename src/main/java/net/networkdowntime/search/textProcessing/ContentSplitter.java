@@ -1,5 +1,7 @@
 package net.networkdowntime.search.textProcessing;
 
+import java.util.regex.Pattern;
+
 /**
  * Content Splitter uses regex processing to split apart strings into indexable words.
  * The default splitting regex includes whitespaces, various punctuation marks, parenthesis,
@@ -26,6 +28,7 @@ package net.networkdowntime.search.textProcessing;
 public class ContentSplitter {
 
 	private String splittingRegex;
+	private Pattern pattern;
 
 	/**
 	 * Default constructor, sets up the initial splitting regular expression 
@@ -52,7 +55,8 @@ public class ContentSplitter {
 
 		splittingRegex += "|\\s{0,}<\\s{0,}"; // < led or followed by a whitespace
 		splittingRegex += "|\\s{0,}>\\s{0,}"; // > led or followed by a whitespace
-
+		
+		pattern = Pattern.compile(splittingRegex);
 	}
 
 	/**
@@ -71,6 +75,7 @@ public class ContentSplitter {
 	 */
 	public void setSplittingRegex(String splittingRegex) {
 		this.splittingRegex = splittingRegex;
+		pattern = Pattern.compile(splittingRegex);
 	}
 
 	/**
@@ -80,7 +85,8 @@ public class ContentSplitter {
 	 * @return String array containing the individual split into words 
 	 */
 	public String[] splitContent(String content) {
-		return content.split(splittingRegex);
+		return pattern.split(content);
+//		return content.split(splittingRegex);
 	}
 
 }

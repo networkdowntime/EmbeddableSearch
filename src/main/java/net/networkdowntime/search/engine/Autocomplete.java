@@ -159,6 +159,21 @@ public class Autocomplete {
 		autocompleteInput = textScrubber.scrubText(autocompleteInput);
 		String[] words = contentSplitter.splitContent(autocompleteInput);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
+		
+		return getCompletions(keywords, fuzzyMatch, limit);
+	}
+	/**
+	 * Get completions for the given input.  This will provide completions for missing prefix or suffix on the words.
+	 * If using histogram word ordering it orders those completions based on their histogram occurrence counts.  This 
+	 * only looks at the last two words in the text providing recommendations for continued auto-completions.  Assumption 
+	 * is made that earlier words in the input where correctly matched via suggested completions. 
+	 * 
+	 * @param autocompleteInput String to search for completions, can contain multiple words or word fragments
+	 * @param fuzzyMatch provides character back-off and re-searching if no completions are found 
+	 * @param limit Max number of results to return
+	 * @return Not-null set of the suggested completions
+	 */
+	Set<String> getCompletions(List<String> keywords, boolean fuzzyMatch, int limit) {
 
 		Set<String> orderedCompletions = new TLinkedHashSet<String>();
 
@@ -261,4 +276,5 @@ public class Autocomplete {
 		}
 		return retval;
 	}
+	
 }

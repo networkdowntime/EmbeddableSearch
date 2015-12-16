@@ -53,32 +53,40 @@ public class InMemorySearchEngine implements SearchEngine {
 	private KeywordScrubber keywordScrubber = new KeywordScrubber();
 
 	// The following variables are used for tracking the times of various parts of the search operations
+	private long timeForAdding = 0;
 	private long timeForScrubbing = 0;
 	private long timeForCompletions = 0;
 	private long timeForUniqCompletions = 0;
 	private long timeForSearchResults = 0;
+	private long addCount = 0;
+	private long searchCount = 0;
 	// end timing variables
 
 	/**
 	 * Resets the timing variables
 	 */
 	public void resetTimes() {
+		timeForAdding = 0;
 		timeForScrubbing = 0;
 		timeForCompletions = 0;
 		timeForUniqCompletions = 0;
 		timeForSearchResults = 0;
+		searchCount = 0;
 	}
 
 	/**
 	 * Print the timing variables out to logger.info()
 	 */
 	public void printTimes() {
+		logger.info("\ttimeForAdding: " + (timeForAdding / 1000d) + " secs");
 		logger.info("\ttimeForScrubbing: " + (timeForScrubbing / 1000d) + " secs");
 		logger.info("\ttimeForCompletions: " + (timeForCompletions / 1000d) + " secs");
 		logger.info("\ttimeForUniqCompletions: " + (timeForUniqCompletions / 1000d) + " secs");
 		logger.info("\ttimeForSearchResults: " + (timeForSearchResults / 1000d) + " secs");
 
-		logger.info("\ttotal time: " + ((timeForScrubbing + timeForCompletions + timeForUniqCompletions + timeForSearchResults) / 1000d) + "secs");
+		logger.info("\ttotal time: " + ((timeForAdding + timeForScrubbing + timeForCompletions + timeForUniqCompletions + timeForSearchResults) / 1000d) + "secs");
+		logger.info("\tavg time to add: " + ((timeForAdding / (float) addCount)) + " ms");
+		logger.info("\tavg time to search: " + (((timeForScrubbing + timeForCompletions + timeForUniqCompletions + timeForSearchResults) / (float) searchCount)) + " ms");
 	}
 
 	/**
@@ -91,13 +99,22 @@ public class InMemorySearchEngine implements SearchEngine {
 
 	@Override
 	public void add(Long searchResult, String text) {
+		addCount++;
+		long t1 = System.currentTimeMillis();
+
 		this.add((Object) searchResult, text);
+
+		timeForAdding += System.currentTimeMillis() - t1;
 	}
 
 	@Override
 	public void add(String searchResult, String text) {
+		addCount++;
+		long t1 = System.currentTimeMillis();
+
 		this.add((Object) searchResult, text);
 
+		timeForAdding += System.currentTimeMillis() - t1;
 	}
 
 	/**
@@ -114,12 +131,10 @@ public class InMemorySearchEngine implements SearchEngine {
 		autocomplete.add(keywords);
 
 		if (searchResult instanceof Long) {
-			logger.debug("Adding Long result: " + searchResult);
 			for (String word : keywords) {
 				unigramLongSearchHistogram.add(word, (Long) searchResult);
 			}
 		} else if (searchResult instanceof String) {
-			logger.debug("Adding Long result: " + searchResult);
 			for (String word : keywords) {
 				unigramStringSearchHistogram.add(word, (String) searchResult);
 			}
@@ -147,6 +162,7 @@ public class InMemorySearchEngine implements SearchEngine {
 		String[] words = splitter.splitContent(text);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
 
+
 		autocomplete.remove(keywords);
 
 		if (searchResult instanceof Long) {
@@ -168,20 +184,17 @@ public class InMemorySearchEngine implements SearchEngine {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Set<SearchResult> search(String searchTerm, int limit) {
+		searchCount++;
 		long t1 = System.currentTimeMillis();
-		logger.debug("Searching for text \"" + searchTerm + "\"");
 
 		searchTerm = textScrubber.scrubText(searchTerm);
 		String[] words = splitter.splitContent(searchTerm);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
 
-		logger.debug("Scrubbed Test \"" + searchTerm + "\"");
-		logger.debug("Keywords:", keywords);
-
 		timeForScrubbing += System.currentTimeMillis() - t1;
 		t1 = System.currentTimeMillis();
 
-		List<String> completions = getCompletions(searchTerm, true, limit * 2);
+		Set<String> completions = autocomplete.getCompletions(keywords, true, limit * 2);
 
 		timeForCompletions += System.currentTimeMillis() - t1;
 		t1 = System.currentTimeMillis();
@@ -189,25 +202,21 @@ public class InMemorySearchEngine implements SearchEngine {
 		TLinkedHashSet<String> uniqCompletions = new TLinkedHashSet<String>();
 
 		for (String completion : completions) {
-			logger.debug("Completion: " + completion);
-
-			words = splitter.splitContent(completion);
-
-			for (String word : words) {
+			for (String word : completion.split(" ")) {
 				uniqCompletions.add(word);
 			}
 		}
 
 		timeForUniqCompletions += System.currentTimeMillis() - t1;
-		logger.debug("Uniq Completions:", uniqCompletions);
-		logger.debug("\tgot uniq completions; size = " + uniqCompletions.size());
+//		logger.debug("Uniq Completions:", uniqCompletions);
+//		logger.debug("\tgot uniq completions; size = " + uniqCompletions.size());
 		t1 = System.currentTimeMillis();
 
 		FixedSizeSortedSet<SearchResult> results = unigramLongSearchHistogram.getSearchResults(uniqCompletions, limit);
 		FixedSizeSortedSet<SearchResult> resultsString = unigramStringSearchHistogram.getSearchResults(uniqCompletions, limit);
 
-		logger.debug("Long results: " + results.size());
-		logger.debug("String results: " + resultsString.size());
+//		logger.debug("Long results: " + results.size());
+//		logger.debug("String results: " + resultsString.size());
 
 		for (SearchResult searchResult : resultsString) { // combine and sort the results from each type
 			results.add(searchResult);

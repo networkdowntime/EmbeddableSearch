@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 /**
  * Attempts to sanitize input text.  Strips out common words, provides for min and max length of keywords, removes special 
@@ -33,9 +34,43 @@ public class KeywordScrubber {
 
 	private Set<String> doNotIndexWords = new TreeSet<String>();
 
-	int minKeywordLength = 1;
-	int maxKeywordLength = 40;
+	private int minKeywordLength = 1;
+	private int maxKeywordLength = 40;
+	
+	private static Pattern dateMatcher = Pattern.compile("(^[0-9]+/[0-9]+/[0-9]+$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$)"); // dates 08/20/2001, 08/20/01, or 2001-08-20
+	private static Pattern timeMatcher1 = Pattern.compile("^[0-9]+:[0-9]+:[0-9]+$"); // a common time format 07:12:20 or 7:12:20
+	private static Pattern timeMatcher2 = Pattern.compile("^[0-9]+:[0-9]+:[0-9]+\\.[0-9]+$"); // a common time format 07:12:20.0123 or 7:12:20.01234
+	private static Pattern timeMatcher3 = Pattern.compile("^[0-9]+:[0-9]+$"); // a common time format 07:12 or 7:12
 
+	public static void main(String... args) {
+		String[] words = { "08/20/2001", "08/20/01", "2001-08-20" };
+		
+		for (String keyword : words)
+			if (dateMatcher.matcher(keyword).matches()) 
+				System.out.println("matches");
+
+//		if (keyword.matches("^[0-9]+\\.[0-9]+$")) // simple numbers with decimals
+//			return null;
+//
+//		if (keyword.length() < 5 && keyword.matches("^[0-9]+$")) // numbers with less than 5 numbers
+//			return null;
+//
+//		if (keyword.matches("^[\\-]+$")) // common separator -------------------
+//			return null;
+//
+//		if (keyword.matches("^[#]+$")) // common separator ==================
+//			return null;
+//
+//		if (keyword.matches("^[=]+$")) // common separator ==================
+//			return null;
+//
+//		if (keyword.matches("^[_]+$")) // common separator _________________
+//			return null;
+//
+//		if (keyword.matches("^[*]+$")) // common separator *****************
+//			return null;
+
+	}
 	/**
 	 * Default constructor, 2-40 min/max length, ignores ["and", "the"]
 	 */
@@ -153,21 +188,18 @@ public class KeywordScrubber {
 		if (keyword.length() < minKeywordLength || keyword.length() > maxKeywordLength) // nothing two characters or less 
 			return null;
 
-		if ((keyword.length() == 7 || keyword.length() == 8) && keyword.matches("^[0-9]+:[0-9]+:[0-9]+$")) // a common time format 07:12:20 or 7:12:20
+		if ((keyword.length() == 7 || keyword.length() == 8) && timeMatcher1.matcher(keyword).matches()) // a common time format 07:12:20 or 7:12:20
 			return null;
 
-		if (keyword.matches("^[0-9]+:[0-9]+:[0-9]+\\.[0-9]+$")) // a common time format 07:12:20.0123 or 7:12:20.01234
+		if (timeMatcher2.matcher(keyword).matches()) // a common time format 07:12:20.0123 or 7:12:20.01234
 			return null;
 
-		if ((keyword.length() == 4 || keyword.length() == 5) && (keyword.matches("^[0-9]+:[0-9]+$"))) // a common time format 07:12 or 7:12
+		if ((keyword.length() == 4 || keyword.length() == 5) && timeMatcher3.matcher(keyword).matches()) // a common time format 07:12 or 7:12
 			return null;
 
-		if (keyword.matches("^[0-9]+/[0-9]+/[0-9]+$")) // dates 08/20/2001 or 08/20/01
+		if (dateMatcher.matcher(keyword).matches()) // dates 08/20/2001, 08/20/01, or 2001-08-20
 			return null;
-
-		if (keyword.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$")) // dates 2001-08-20
-			return null;
-
+		
 		if (keyword.matches("^[0-9]+\\.[0-9]+$")) // simple numbers with decimals
 			return null;
 
