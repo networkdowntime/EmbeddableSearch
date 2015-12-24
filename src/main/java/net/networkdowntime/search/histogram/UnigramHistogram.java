@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import gnu.trove.map.hash.TIntIntHashMap;
+
 /**
  * Single word/string histogram.
  * 
@@ -37,7 +39,7 @@ public class UnigramHistogram {
 	@SuppressWarnings("unchecked")
 	private Tuple<String>[] mostCommonWords = new Tuple[15];
 
-	private Map<Integer, Integer> histogram = new HashMap<Integer, Integer>();
+	private TIntIntHashMap histogram = new TIntIntHashMap();
 
 	/**
 	 * Returns the most common words stored in the histogram.

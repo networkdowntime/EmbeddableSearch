@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import gnu.trove.map.hash.TIntObjectHashMap;
+
 /**
  * Implements a digram histogram.  For any two word pairs it tracks the frequency that those words were added.
  * 
@@ -30,7 +32,7 @@ import java.util.TreeSet;
  */
 public class DigramHistogram {
 
-	Map<Integer, UnigramHistogram> histogram = new HashMap<Integer, UnigramHistogram>();
+	TIntObjectHashMap<UnigramHistogram> histogram = new TIntObjectHashMap<UnigramHistogram>();
 
 	/**
 	 * Adds a word pair to the digram histogram

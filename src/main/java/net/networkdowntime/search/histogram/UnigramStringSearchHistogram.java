@@ -6,6 +6,7 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import gnu.trove.map.hash.TIntObjectHashMap;
 import net.networkdowntime.search.SearchResult;
 import net.networkdowntime.search.SearchResultComparator;
 import net.networkdowntime.search.SearchResultType;
@@ -49,7 +50,7 @@ import net.networkdowntime.search.SearchResultType;
 public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
 	static final Logger logger = LogManager.getLogger(UnigramStringSearchHistogram.class.getName());
 
-	private HashMap<Integer, String> stringLookupMap = new HashMap<Integer, String>();
+	private TIntObjectHashMap<String> stringLookupMap = new TIntObjectHashMap<String>();
 
 	/**
 	 * Adds a word along with it's result to the search histogram

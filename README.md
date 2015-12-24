@@ -13,10 +13,10 @@ The search engine uses the auto-completion internally to improve matching result
  
 Performance:
 ----
-For 5 million unique 9 character strings:
+For adding/searching 20 million unique 9 character strings using 12G of heap on a 2.5 GHz Quad Core i7 with 16G of RAM:
 ```
-Avg. time to add: 0.0167 ms
-Avg. time to search: 0.0538 ms
+Avg. time to add: 0.0134 ms
+Avg. time to search: 0.0422 ms
 ```
 
 Usage:
