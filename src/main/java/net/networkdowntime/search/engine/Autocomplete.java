@@ -156,12 +156,15 @@ public class Autocomplete {
 	 * @return Not-null set of the suggested completions
 	 */
 	public Set<String> getCompletions(String autocompleteInput, boolean fuzzyMatch, int limit) {
+		boolean hasTrailingSpace = autocompleteInput.endsWith(" ");
+
 		autocompleteInput = textScrubber.scrubText(autocompleteInput);
 		String[] words = contentSplitter.splitContent(autocompleteInput);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
-		
-		return getCompletions(keywords, fuzzyMatch, limit);
+
+		return getCompletions(keywords, fuzzyMatch, hasTrailingSpace, limit);
 	}
+
 	/**
 	 * Get completions for the given input.  This will provide completions for missing prefix or suffix on the words.
 	 * If using histogram word ordering it orders those completions based on their histogram occurrence counts.  This 
@@ -173,7 +176,7 @@ public class Autocomplete {
 	 * @param limit Max number of results to return
 	 * @return Not-null set of the suggested completions
 	 */
-	Set<String> getCompletions(List<String> keywords, boolean fuzzyMatch, int limit) {
+	Set<String> getCompletions(List<String> keywords, boolean fuzzyMatch, boolean hasTrailingSpace, int limit) {
 
 		Set<String> orderedCompletions = new TLinkedHashSet<String>();
 
@@ -189,7 +192,8 @@ public class Autocomplete {
 				logger.debug("\tcurrentWord: " + currentWord + "; currentWordCompletion: " + s);
 			}
 
-			if (keywords.size() == 1) { // one word
+			if (keywords.size() == 1 && !hasTrailingSpace) { // one word
+
 				currentWordCompletions = new TLinkedHashSet<String>(UnigramHistogram.getOrderedResults(unigramHistogram, new ArrayList<String>(currentWordCompletions), limit));
 
 				// makes sense that if there is an exact match, it should show up in the results
@@ -202,21 +206,31 @@ public class Autocomplete {
 				}
 
 				orderedCompletions = currentWordCompletions;
-			} else { // at least two words
-				String previousWord = keywords.get(keywords.size() - 2);
-				Set<String> previousWordCompletions = getCompletionsSingleWordUnordered(previousWord, fuzzyMatch, limit * 3);
+			} else { // at least two words or looking for two words
+				List<String> digramCompletions;
 
-				for (String s : currentWordCompletions) {
-					logger.debug("\tpreviousWord: " + previousWord + "; currentWordCompletion: " + s);
+				if (hasTrailingSpace) {
+					digramCompletions = digramHistogram.getOrderedResults(currentWordCompletions, null, limit);
+					for (String s : digramCompletions) {
+						logger.debug("\tdigramCompletions: " + s);
+					}
+
+				} else {
+					String previousWord = keywords.get(keywords.size() - 2);
+					Set<String> previousWordCompletions = getCompletionsSingleWordUnordered(previousWord, fuzzyMatch, limit * 3);
+
+					for (String s : currentWordCompletions) {
+						logger.debug("\tpreviousWord: " + previousWord + "; currentWordCompletion: " + s);
+					}
+
+					digramCompletions = digramHistogram.getOrderedResults(previousWordCompletions, currentWordCompletions, limit);
 				}
-
-				List<String> digramCompletions = digramHistogram.getOrderedResults(previousWordCompletions, currentWordCompletions, limit);
 
 				for (String s : digramCompletions) {
 					logger.debug("\tdigramCompletions: " + s);
 				}
 
-				if (keywords.size() == 2) {
+				if (keywords.size() <= 2) {
 					orderedCompletions.addAll(digramCompletions);
 				} else { // add the beginning back to the results
 					String beginningOfInput = listToString(keywords, 2);
@@ -276,5 +290,5 @@ public class Autocomplete {
 		}
 		return retval;
 	}
-	
+
 }

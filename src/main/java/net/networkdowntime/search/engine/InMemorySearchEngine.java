@@ -187,6 +187,8 @@ public class InMemorySearchEngine implements SearchEngine {
 		searchCount++;
 		long t1 = System.currentTimeMillis();
 
+		boolean hasTrailingSpace = searchTerm.endsWith(" ");
+		
 		searchTerm = textScrubber.scrubText(searchTerm);
 		String[] words = splitter.splitContent(searchTerm);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
@@ -194,7 +196,7 @@ public class InMemorySearchEngine implements SearchEngine {
 		timeForScrubbing += System.currentTimeMillis() - t1;
 		t1 = System.currentTimeMillis();
 
-		Set<String> completions = autocomplete.getCompletions(keywords, true, limit * 2);
+		Set<String> completions = autocomplete.getCompletions(keywords, true, hasTrailingSpace, limit * 2);
 
 		timeForCompletions += System.currentTimeMillis() - t1;
 		t1 = System.currentTimeMillis();

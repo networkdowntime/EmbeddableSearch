@@ -123,8 +123,14 @@ public class DigramHistogram {
 
 		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
 
-		for (String firstWord : firstWords) {
-			orderedResults = getResults(firstWord, secondWords);
+		if (secondWords == null) {
+			for (String firstWord : firstWords) {
+				orderedResults = getResults(firstWord);
+			}
+		} else {
+			for (String firstWord : firstWords) {
+				orderedResults = getResults(firstWord, secondWords);
+			}
 		}
 
 		List<String> retval = toList(orderedResults, limit);
@@ -170,6 +176,23 @@ public class DigramHistogram {
 				for (Tuple<String> t : UnigramHistogram.getMostCommonWords(unigram)) {
 					orderedResults.add(t);
 				}
+			}
+		}
+
+		return orderedResults;
+	}
+
+	private TreeSet<Tuple<String>> getResults(String firstWord) {
+		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
+
+		firstWord = firstWord.toLowerCase();
+
+		UnigramHistogram unigramHistogram = histogram.get(firstWord.hashCode());
+
+		for (Tuple<String> t : UnigramHistogram.getMostCommonWords(unigramHistogram)) {
+			if (t != null) {
+				Tuple<String> tuple = new Tuple<String>(firstWord + " " + t.word, t.count);
+				orderedResults.add(tuple);
 			}
 		}
 

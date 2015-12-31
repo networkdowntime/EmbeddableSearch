@@ -276,7 +276,7 @@ abstract class UnigramSearchHistogram {
 			count = results.get(result);
 			orderedResults.add(new SearchResult<Long>(SearchResultType.Long, result, count));
 
-			logger.debug("result: " + result + "; count: " + count);
+//			logger.debug("result: " + result + "; count: " + count);
 		}
 
 		return orderedResults;
