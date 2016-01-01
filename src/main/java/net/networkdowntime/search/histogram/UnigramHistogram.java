@@ -1,10 +1,8 @@
 package net.networkdowntime.search.histogram;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 
 import gnu.trove.map.hash.TIntIntHashMap;
@@ -61,7 +59,7 @@ public class UnigramHistogram {
 		word = word.toLowerCase();
 
 		Integer count = unigram.histogram.get(word.hashCode());
-		if (count == null) {
+		if (unigram.histogram.getNoEntryValue() == count) {
 			count = 1;
 		} else {
 			count = count + 1;
@@ -121,7 +119,7 @@ public class UnigramHistogram {
 
 		Integer count = unigram.histogram.get(wordKey);
 
-		if (count == null) {
+		if (unigram.histogram.getNoEntryValue() == count) {
 			count = 0;
 		}
 
