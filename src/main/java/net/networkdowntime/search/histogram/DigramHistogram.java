@@ -45,6 +45,7 @@ public class DigramHistogram {
 		secondWord = secondWord.toLowerCase();
 
 		UnigramHistogram unigram = histogram.get(firstWord.hashCode());
+
 		if (unigram == null) {
 			unigram = new UnigramHistogram();
 			histogram.put(firstWord.hashCode(), unigram);
@@ -125,11 +126,11 @@ public class DigramHistogram {
 
 		if (secondWords == null) {
 			for (String firstWord : firstWords) {
-				orderedResults = getResults(firstWord);
+				orderedResults.addAll(getResults(firstWord));
 			}
 		} else {
 			for (String firstWord : firstWords) {
-				orderedResults = getResults(firstWord, secondWords);
+				orderedResults.addAll(getResults(firstWord, secondWords));
 			}
 		}
 
@@ -189,13 +190,15 @@ public class DigramHistogram {
 
 		UnigramHistogram unigramHistogram = histogram.get(firstWord.hashCode());
 
-		for (Tuple<String> t : UnigramHistogram.getMostCommonWords(unigramHistogram)) {
-			if (t != null) {
-				Tuple<String> tuple = new Tuple<String>(firstWord + " " + t.word, t.count);
-				orderedResults.add(tuple);
+		if (unigramHistogram != null) {
+			for (Tuple<String> t : UnigramHistogram.getMostCommonWords(unigramHistogram)) {
+				if (t != null) {
+					Tuple<String> tuple = new Tuple<String>(firstWord + " " + t.word, t.count);
+					orderedResults.add(tuple);
+				}
 			}
 		}
-
+		
 		return orderedResults;
 	}
 
