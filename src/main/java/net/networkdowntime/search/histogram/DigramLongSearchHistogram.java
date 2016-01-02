@@ -31,28 +31,21 @@ import net.networkdowntime.search.SearchResultType;
  * @author rwiles
  *
  */
-public class DigramStringSearchHistogram extends DigramSearchHistogram {
-	static final Logger logger = LogManager.getLogger(DigramStringSearchHistogram.class.getName());
-
-	private TIntObjectHashMap<String> stringLookupMap = new TIntObjectHashMap<String>();
+public class DigramLongSearchHistogram extends DigramSearchHistogram {
+	static final Logger logger = LogManager.getLogger(DigramLongSearchHistogram.class.getName());
 
 	/**
 	 * Adds a word along with it's result to the search histogram
 	 * 
-	 * @param firstWord First word to be added
-	 * @param secondWord Second word to be added
+	 * @param firstWord Word to be added
+	 * @param secondWord Word to be added
 	 * @param result The search result to associate with the word
 	 */
-	public void add(String firstWord, String secondWord, String result) {
+	public void add(String firstWord, String secondWord, long result) {
 		firstWord = firstWord.toLowerCase();
-		secondWord = secondWord.toLowerCase();
-		int resultKey = result.hashCode();
+		secondWord = firstWord.toLowerCase();
 
-		if (!stringLookupMap.containsKey(resultKey)) {
-			stringLookupMap.put(resultKey, result);
-		}
-
-		super.add(firstWord, secondWord, resultKey);
+		this.add(firstWord, secondWord, result);
 	}
 
 	/**
@@ -62,12 +55,11 @@ public class DigramStringSearchHistogram extends DigramSearchHistogram {
 	 * @param secondWord The second word to remove the result for.
 	 * @param result The result to be removed.
 	 */
-	public void remove(String firstWord, String secondWord, String result) {
+	public void remove(String firstWord, String secondWord, long result) {
 		firstWord = firstWord.toLowerCase();
-		secondWord = secondWord.toLowerCase();
-		int resultKey = result.hashCode();
+		secondWord = firstWord.toLowerCase();
 
-		super.remove(firstWord, secondWord, (long) resultKey);
+		this.remove(firstWord, secondWord, result);
 	}
 
 	/**
@@ -82,12 +74,6 @@ public class DigramStringSearchHistogram extends DigramSearchHistogram {
 	@SuppressWarnings("rawtypes")
 	public FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> firstWords, Set<String> secondWords, int limit) {
 
-		FixedSizeSortedSet<SearchResult> orderedLongResults = super.getSearchResults(firstWords, secondWords, limit);
-		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
-
-		for (SearchResult result : orderedLongResults.getResultSet(limit)) {
-			orderedResults.add(new SearchResult<String>(SearchResultType.String, stringLookupMap.get(((Long) result.getResult()).intValue()), result.getWeight()));
-		}
-		return orderedResults;
+		return super.getSearchResults(firstWords, firstWords, limit);
 	}
 }

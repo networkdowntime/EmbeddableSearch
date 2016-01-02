@@ -256,6 +256,7 @@ class UnigramSearchHistogram {
 		TLongIntHashMap results = new TLongIntHashMap();
 
 		for (String word : words) {
+			word = word.toLowerCase();
 //			logger.debug("Looking for word: " + word);
 
 			int count = 0;

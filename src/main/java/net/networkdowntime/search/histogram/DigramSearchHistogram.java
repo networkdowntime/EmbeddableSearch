@@ -31,7 +31,7 @@ import net.networkdowntime.search.SearchResultComparator;
  * @author rwiles
  *
  */
-public class DigramSearchHistogram {
+class DigramSearchHistogram {
 	static final Logger logger = LogManager.getLogger(DigramSearchHistogram.class.getName());
 
 	TIntObjectHashMap<UnigramSearchHistogram> histogram = new TIntObjectHashMap<UnigramSearchHistogram>();
@@ -42,7 +42,7 @@ public class DigramSearchHistogram {
 	 * @param firstWord
 	 * @param secondWord
 	 */
-	public void add(String firstWord, String secondWord, long resultKey) {
+	protected void add(String firstWord, String secondWord, long resultKey) {
 		firstWord = firstWord.toLowerCase();
 		secondWord = secondWord.toLowerCase();
 
@@ -63,7 +63,7 @@ public class DigramSearchHistogram {
 	 * @param firstWord The first word to remove
 	 * @param secondWord The second word to remove
 	 */
-	public void remove(String firstWord, String secondWord, long resultKey) {
+	protected void remove(String firstWord, String secondWord, long resultKey) {
 		firstWord = firstWord.toLowerCase();
 		secondWord = secondWord.toLowerCase();
 
@@ -79,17 +79,17 @@ public class DigramSearchHistogram {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> firstWords, Set<String> secondWords, int limit) {
+	protected FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> firstWords, Set<String> secondWords, int limit) {
 
 		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
 
 		for (String firstWord : firstWords) {
-			orderedResults.addAll(getResults(firstWord, secondWords, limit));
+			orderedResults.addAll(getResults(firstWord.toLowerCase(), secondWords, limit));
 		}
 
 		// swap the word order
 		for (String secondWord : secondWords) {
-			orderedResults.addAll(getResults(secondWord, firstWords, limit));
+			orderedResults.addAll(getResults(secondWord.toLowerCase(), firstWords, limit));
 		}
 
 		return orderedResults;
