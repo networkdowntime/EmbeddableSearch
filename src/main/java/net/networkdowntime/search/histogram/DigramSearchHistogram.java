@@ -49,7 +49,6 @@ public class DigramSearchHistogram {
 		UnigramSearchHistogram unigram = histogram.get(firstWord.hashCode());
 
 		if (unigram == null) {
-			logger.debug("New firstWord '" + firstWord + "' creating UnigramSearchHistogram for it");
 			unigram = new UnigramSearchHistogram();
 			histogram.put(firstWord.hashCode(), unigram);
 		}
@@ -70,9 +69,12 @@ public class DigramSearchHistogram {
 
 		UnigramSearchHistogram unigram = histogram.get(firstWord.hashCode());
 		if (unigram != null) {
+
 			int count = UnigramSearchHistogram.removeInternal(unigram, secondWord.hashCode(), resultKey);
-			if (count == 0)
+
+			if (count == 0) {
 				histogram.remove(firstWord.hashCode());
+			}
 		}
 	}
 
@@ -108,8 +110,9 @@ public class DigramSearchHistogram {
 		UnigramSearchHistogram unigram = histogram.get(firstWord.hashCode());
 
 		if (unigram != null) {
-			orderedResults.addAll(UnigramSearchHistogram.getSearchResults(unigram, secondWords, limit));
+			orderedResults.addAll(UnigramSearchHistogram.getSearchResults(unigram, secondWords, 3, limit));
 		}
+
 		return orderedResults;
 	}
 
