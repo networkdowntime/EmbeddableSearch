@@ -86,7 +86,6 @@ public class ContentSplitter {
 	 */
 	public String[] splitContent(String content) {
 		return pattern.split(content);
-//		return content.split(splittingRegex);
 	}
 
 }
