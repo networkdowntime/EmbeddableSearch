@@ -4,22 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * The search histogram tracks the association between a key word, it's search results,
- * and the occurrence count/weight of the result.
- * 
- * This implementation stores the hashcode of the word and a count based on how
- * many times it has been added/removed. Methods are static to reduce the memory
- * footprint of the class.
- * 
- * So there are two different key data structures in the Search Histogram. 
- * 	1. Single Result Map - This is an optimization to reduce overhead for sparsely used
- * 		words that are indexed. Basically, if a word only matches one result then it
- * 		only incurs the penalty of an extra int and long value being stored. Words
- * 		that show up in this data structure have an implied count of 1.
- * 	2. Multi-Result Map - Words that have multiple search results get stored here.
- * 		This applies to counts of 2 for the same word or matches more than one search
- * 		result.  The key is the word's hashcode and the value is a histogram hashmap
- * 		containing the search result and it's histogram count.
+ * Extends the UnigramSearchHistogram and provides public methods for add and remove.
  * 
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
