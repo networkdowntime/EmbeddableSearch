@@ -123,7 +123,7 @@ class UnigramSearchHistogram {
 	 * @param UnigramSearchHistogram The histogram to perform the action on
 	 * @param word Key Hash key of the word
 	 * @param resultKey The result to be removed.
-	 * @return Returns the histogram count value after the removal
+	 * @return Returns the total number of words in this histogram after removal
 	 */
 	protected static int removeInternal(UnigramSearchHistogram histogram, int wordKey, Long resultKey) {
 		int count = 0;
@@ -153,7 +153,8 @@ class UnigramSearchHistogram {
 			histogram.singleResultMap.put(wordKey, resultKey); // now one result
 			histogram.multiResultMap.remove(wordKey);
 		}
-		return count;
+
+		return histogram.singleResultMap.size() + histogram.multiResultMap.size();
 	}
 
 	/**
@@ -255,7 +256,7 @@ class UnigramSearchHistogram {
 		TLongIntHashMap results = new TLongIntHashMap();
 
 		for (String word : words) {
-			logger.debug("Looking for word: " + word);
+//			logger.debug("Looking for word: " + word);
 
 			int count = 0;
 
