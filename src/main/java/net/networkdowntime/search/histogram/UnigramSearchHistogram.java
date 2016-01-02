@@ -236,7 +236,7 @@ class UnigramSearchHistogram {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static FixedSizeSortedSet<SearchResult> getSearchResults(UnigramSearchHistogram histogram, Set<String> words, int limit) {
-		return getSearchResults(histogram, words, limit);
+		return getSearchResults(histogram, words, 1, limit);
 	}
 	
 	/**
