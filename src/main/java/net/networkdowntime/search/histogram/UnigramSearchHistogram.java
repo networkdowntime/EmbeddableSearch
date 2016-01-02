@@ -62,6 +62,7 @@ class UnigramSearchHistogram {
 	/**
 	 * Get the total search weight from the multi-result hashmap.
 	 * 
+	 * @param UnigramSearchHistogram The histogram to perform the action on
 	 * @param word Key Hash key of the word
 	 * @return The total weight of the word in the multi-result map
 	 */
@@ -79,6 +80,8 @@ class UnigramSearchHistogram {
 
 	/**
 	 * Adds a word along with it's result to the search histogram
+	 * 
+	 * @param UnigramSearchHistogram The histogram to perform the action on
 	 * @param word Key Hash key of the word 
 	 * @param resultKey The search result to associate with the word
 	 */
@@ -117,6 +120,7 @@ class UnigramSearchHistogram {
 	/**
 	 * Removes a word/result from the search histogram.  If the word is associated with multiple results, they will be left alone.
 	 * 
+	 * @param UnigramSearchHistogram The histogram to perform the action on
 	 * @param word Key Hash key of the word
 	 * @param resultKey The result to be removed.
 	 * @return Returns the histogram count value after the removal
@@ -155,6 +159,7 @@ class UnigramSearchHistogram {
 	/**
 	 * Checks whether the search histogram contains the word.
 	 * 
+	 * @param UnigramSearchHistogram The histogram to perform the action on
 	 * @param word Word to look for
 	 * @return true/false based on whether the word was found
 	 */
@@ -167,6 +172,7 @@ class UnigramSearchHistogram {
 	/**
 	 * Gets the total occurrence count of the word in the search histogram
 	 * 
+	 * @param UnigramSearchHistogram The histogram to perform the action on
 	 * @param word Key Hash key of the word 
 	 * @return The total occurrence count of the word or 0 if not found
 	 */
@@ -184,6 +190,7 @@ class UnigramSearchHistogram {
 	/**
 	 * Gets the ordered set of search words based on their weight
 	 * 
+	 * @param UnigramSearchHistogram The histogram to perform the action on
 	 * @param words The set of words to get the search results for
 	 * @param limit Max number of results to return
 	 * @return
@@ -221,6 +228,7 @@ class UnigramSearchHistogram {
 	/**
 	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.
 	 * 
+	 * @param UnigramSearchHistogram The histogram to perform the action on
 	 * @param words The set of words to get the search results for.
 	 * @param limit Max number of results to return
 	 *  
@@ -228,6 +236,21 @@ class UnigramSearchHistogram {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static FixedSizeSortedSet<SearchResult> getSearchResults(UnigramSearchHistogram histogram, Set<String> words, int limit) {
+		return getSearchResults(histogram, words, limit);
+	}
+	
+	/**
+	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.
+	 * 
+	 * @param UnigramSearchHistogram The histogram to perform the action on
+	 * @param words The set of words to get the search results for
+	 * @param weightMultiplier Adjusts the weight by a scalar multiplier
+	 * @param limit Max number of results to return
+	 *  
+	 * @return A set containing the matched search results up to the specified limit
+	 */
+	@SuppressWarnings("rawtypes")
+	static FixedSizeSortedSet<SearchResult> getSearchResults(UnigramSearchHistogram histogram, Set<String> words, int weightMultiplier, int limit) {
 
 		TLongIntHashMap results = new TLongIntHashMap();
 
@@ -274,7 +297,7 @@ class UnigramSearchHistogram {
 		int count = 0;
 		for (Long result : results.keys()) {
 			count = results.get(result);
-			orderedResults.add(new SearchResult<Long>(SearchResultType.Long, result, count));
+			orderedResults.add(new SearchResult<Long>(SearchResultType.Long, result, weightMultiplier * count));
 
 //			logger.debug("result: " + result + "; count: " + count);
 		}
