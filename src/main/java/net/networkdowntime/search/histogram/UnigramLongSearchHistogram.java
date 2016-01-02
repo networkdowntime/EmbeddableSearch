@@ -52,7 +52,7 @@ public class UnigramLongSearchHistogram extends UnigramSearchHistogram {
 		word = word.toLowerCase();
 		int wordKey = word.hashCode();
 
-		addInternal(wordKey, result);
+		addInternal(this, wordKey, result);
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class UnigramLongSearchHistogram extends UnigramSearchHistogram {
 		word = word.toLowerCase();
 		int wordKey = word.hashCode();
 
-		removeInternal(wordKey, result);
+		removeInternal(this, wordKey, result);
 	}
 
 }

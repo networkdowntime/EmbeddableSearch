@@ -214,7 +214,7 @@ public class InMemorySearchEngine implements SearchEngine {
 //		logger.debug("\tgot uniq completions; size = " + uniqCompletions.size());
 		t1 = System.currentTimeMillis();
 
-		FixedSizeSortedSet<SearchResult> results = unigramLongSearchHistogram.getSearchResults(uniqCompletions, limit);
+		FixedSizeSortedSet<SearchResult> results = UnigramLongSearchHistogram.getSearchResults(unigramLongSearchHistogram, uniqCompletions, limit);
 		FixedSizeSortedSet<SearchResult> resultsString = unigramStringSearchHistogram.getSearchResults(uniqCompletions, limit);
 
 //		logger.debug("Long results: " + results.size());

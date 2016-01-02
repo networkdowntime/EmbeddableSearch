@@ -66,7 +66,7 @@ public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
 			stringLookupMap.put(resultKey, result);
 		}
 
-		addInternal(wordKey, (long) resultKey);
+		addInternal(this, wordKey, (long) resultKey);
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
 			stringLookupMap.remove(resultKey);
 		}
 
-		removeInternal(wordKey, (long) resultKey);
+		removeInternal(this, wordKey, (long) resultKey);
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
 	@SuppressWarnings("rawtypes")
 	public FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> words, int limit) {
 
-		FixedSizeSortedSet<SearchResult> orderedLongResults = super.getSearchResults(words, limit);
+		FixedSizeSortedSet<SearchResult> orderedLongResults = super.getSearchResults(this, words, limit);
 		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
 
 		for (SearchResult result : orderedLongResults.getResultSet(limit)) {
