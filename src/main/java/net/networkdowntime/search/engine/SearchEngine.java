@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import net.networkdowntime.search.SearchResult;
-import net.networkdowntime.search.SearchResultType;
 
 /**
  * Interface for SearchEngine implementations

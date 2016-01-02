@@ -1,6 +1,5 @@
 package net.networkdowntime.search.histogram;
 
-import java.util.HashMap;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
