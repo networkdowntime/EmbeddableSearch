@@ -10,7 +10,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.networkdowntime.search.SearchResult;
+import net.networkdowntime.search.histogram.DigramLongSearchHistogram;
+import net.networkdowntime.search.histogram.DigramStringSearchHistogram;
 import net.networkdowntime.search.histogram.FixedSizeSortedSet;
+import net.networkdowntime.search.histogram.UnigramHistogram;
 import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
 import net.networkdowntime.search.histogram.UnigramStringSearchHistogram;
 import net.networkdowntime.search.textProcessing.ContentSplitter;
@@ -45,6 +48,9 @@ public class InMemorySearchEngine implements SearchEngine {
 
 	private UnigramLongSearchHistogram unigramLongSearchHistogram = new UnigramLongSearchHistogram();
 	private UnigramStringSearchHistogram unigramStringSearchHistogram = new UnigramStringSearchHistogram();
+
+	private DigramLongSearchHistogram digramLongSearchHistogram = new DigramLongSearchHistogram();
+	private DigramStringSearchHistogram digramStringSearchHistogram = new DigramStringSearchHistogram();
 
 	private Autocomplete autocomplete = new Autocomplete();
 
@@ -130,25 +136,40 @@ public class InMemorySearchEngine implements SearchEngine {
 
 		autocomplete.add(keywords);
 
+		String currentWord = null;
+		String previousWord = null;
+
 		if (searchResult instanceof Long) {
-			for (String word : keywords) {
-				unigramLongSearchHistogram.add(word, (Long) searchResult);
+			for (int i = 0; i < keywords.size(); i++) {
+				previousWord = (currentWord != null) ? currentWord : null;
+				currentWord = keywords.get(i);
+
+				unigramLongSearchHistogram.add(currentWord, (Long) searchResult);
+				if (previousWord != null) {
+					digramLongSearchHistogram.add(previousWord, currentWord, (Long) searchResult);
+				}
 			}
 		} else if (searchResult instanceof String) {
-			for (String word : keywords) {
-				unigramStringSearchHistogram.add(word, (String) searchResult);
+			for (int i = 0; i < keywords.size(); i++) {
+				previousWord = (currentWord != null) ? currentWord : null;
+				currentWord = keywords.get(i);
+
+				unigramStringSearchHistogram.add(currentWord, (String) searchResult);
+				if (previousWord != null) {
+					digramStringSearchHistogram.add(previousWord, currentWord, (String) searchResult);
+				}
 			}
 		}
 	}
 
 	@Override
 	public void remove(Long searchResult, String text) {
-		this.add((Object) searchResult, text);
+		this.remove((Object) searchResult, text);
 	}
 
 	@Override
 	public void remove(String searchResult, String text) {
-		this.add((Object) searchResult, text);
+		this.remove((Object) searchResult, text);
 	}
 
 	/**
@@ -162,16 +183,30 @@ public class InMemorySearchEngine implements SearchEngine {
 		String[] words = splitter.splitContent(text);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
 
-
 		autocomplete.remove(keywords);
 
+		String currentWord = null;
+		String previousWord = null;
+
 		if (searchResult instanceof Long) {
-			for (String word : keywords) {
-				unigramLongSearchHistogram.remove(word, (Long) searchResult);
+			for (int i = 0; i < keywords.size(); i++) {
+				previousWord = (currentWord != null) ? currentWord : null;
+				currentWord = keywords.get(i);
+
+				unigramLongSearchHistogram.remove(currentWord, (Long) searchResult);
+				if (previousWord != null) {
+					digramLongSearchHistogram.remove(previousWord, currentWord, (Long) searchResult);
+				}
 			}
 		} else if (searchResult instanceof String) {
-			for (String word : keywords) {
-				unigramStringSearchHistogram.remove(word, (String) searchResult);
+			for (int i = 0; i < keywords.size(); i++) {
+				previousWord = (currentWord != null) ? currentWord : null;
+				currentWord = keywords.get(i);
+
+				unigramStringSearchHistogram.remove(currentWord, (String) searchResult);
+				if (previousWord != null) {
+					digramStringSearchHistogram.remove(previousWord, currentWord, (String) searchResult);
+				}
 			}
 		}
 	}
@@ -188,7 +223,7 @@ public class InMemorySearchEngine implements SearchEngine {
 		long t1 = System.currentTimeMillis();
 
 		boolean hasTrailingSpace = searchTerm.endsWith(" ");
-		
+
 		searchTerm = textScrubber.scrubText(searchTerm);
 		String[] words = splitter.splitContent(searchTerm);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
@@ -210,20 +245,24 @@ public class InMemorySearchEngine implements SearchEngine {
 		}
 
 		timeForUniqCompletions += System.currentTimeMillis() - t1;
-//		logger.debug("Uniq Completions:", uniqCompletions);
-//		logger.debug("\tgot uniq completions; size = " + uniqCompletions.size());
+		//		logger.debug("Uniq Completions:", uniqCompletions);
+		//		logger.debug("\tgot uniq completions; size = " + uniqCompletions.size());
 		t1 = System.currentTimeMillis();
 
-		FixedSizeSortedSet<SearchResult> results = UnigramLongSearchHistogram.getSearchResults(unigramLongSearchHistogram, uniqCompletions, limit);
-		FixedSizeSortedSet<SearchResult> resultsString = unigramStringSearchHistogram.getSearchResults(uniqCompletions, limit);
+		FixedSizeSortedSet<SearchResult> results;
+		FixedSizeSortedSet<SearchResult> resultsString;
+		
+//		results = digramLongSearchHistogram.getSearchResults(firstWords, secondWords, limit)
+		results = UnigramLongSearchHistogram.getSearchResults(unigramLongSearchHistogram, uniqCompletions, limit);
+		resultsString = unigramStringSearchHistogram.getSearchResults(uniqCompletions, limit);
 
-//		logger.debug("Long results: " + results.size());
-//		logger.debug("String results: " + resultsString.size());
+		//		logger.debug("Long results: " + results.size());
+		//		logger.debug("String results: " + resultsString.size());
 
 		for (SearchResult searchResult : resultsString) { // combine and sort the results from each type
 			results.add(searchResult);
 		}
-		
+
 		timeForSearchResults += System.currentTimeMillis() - t1;
 		return results;
 	}
