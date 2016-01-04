@@ -69,7 +69,7 @@ class UnigramSearchHistogram {
 	protected static int getMultiResultCount(UnigramSearchHistogram histogram, int wordKey) {
 		TLongByteHashMap hashMap = histogram.multiResultMap.get(wordKey);
 		int count = 0;
-	
+
 		if (hashMap != null) {
 			for (byte resultCount : hashMap.values()) {
 				count += resultCount;
@@ -127,9 +127,9 @@ class UnigramSearchHistogram {
 	 */
 	protected static int removeInternal(UnigramSearchHistogram histogram, int wordKey, Long resultKey) {
 		int count = 0;
-	
+
 		TLongByteHashMap hashMap = histogram.multiResultMap.get(wordKey);
-	
+
 		if (hashMap == null) { // not more than 1 result already
 			if (histogram.singleResultMap.contains(wordKey)) { // one result
 				histogram.singleResultMap.remove(wordKey); // now no results
@@ -138,17 +138,17 @@ class UnigramSearchHistogram {
 			if (hashMap.contains(resultKey)) {
 				hashMap.remove(resultKey);
 			}
-	
+
 			count = UnigramSearchHistogram.getMultiResultCount(histogram, wordKey);
-	
+
 			if (count == 1) {
 				histogram.singleResultMap.put((wordKey), resultKey);
 				count = 1;
 			}
 		}
-	
+
 		count = UnigramSearchHistogram.getOccuranceCount(histogram, wordKey);
-	
+
 		if (count == 1) {
 			histogram.singleResultMap.put(wordKey, resultKey); // now one result
 			histogram.multiResultMap.remove(wordKey);
@@ -165,7 +165,6 @@ class UnigramSearchHistogram {
 	 * @return true/false based on whether the word was found
 	 */
 	protected static boolean contains(UnigramSearchHistogram histogram, String word) {
-		word = word.toLowerCase();
 		int wordKey = word.hashCode();
 		return (histogram.singleResultMap.contains((wordKey))) || (histogram.multiResultMap.get(wordKey) != null);
 	}
@@ -239,7 +238,7 @@ class UnigramSearchHistogram {
 	public static FixedSizeSortedSet<SearchResult> getSearchResults(UnigramSearchHistogram histogram, Set<String> words, int limit) {
 		return getSearchResults(histogram, words, 1, limit);
 	}
-	
+
 	/**
 	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.
 	 * 
@@ -256,8 +255,7 @@ class UnigramSearchHistogram {
 		TLongIntHashMap results = new TLongIntHashMap();
 
 		for (String word : words) {
-			word = word.toLowerCase();
-//			logger.debug("Looking for word: " + word);
+			//			logger.debug("Looking for word: " + word);
 
 			int count = 0;
 
@@ -301,9 +299,10 @@ class UnigramSearchHistogram {
 			count = results.get(result);
 			orderedResults.add(new SearchResult<Long>(SearchResultType.Long, result, weightMultiplier * count));
 
-//			logger.debug("result: " + result + "; count: " + count);
+			//			logger.debug("result: " + result + "; count: " + count);
 		}
 
 		return orderedResults;
 	}
+
 }
