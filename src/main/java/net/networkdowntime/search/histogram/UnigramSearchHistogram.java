@@ -243,50 +243,59 @@ class UnigramSearchHistogram {
 	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.
 	 * 
 	 * @param UnigramSearchHistogram The histogram to perform the action on
-	 * @param words The set of words to get the search results for
+	 * @param searchTerm The set of words to get the search results for
 	 * @param weightMultiplier Adjusts the weight by a scalar multiplier
 	 * @param limit Max number of results to return
 	 *  
 	 * @return A set containing the matched search results up to the specified limit
 	 */
 	@SuppressWarnings("rawtypes")
-	static FixedSizeSortedSet<SearchResult> getSearchResults(UnigramSearchHistogram histogram, Set<String> words, int weightMultiplier, int limit) {
+	static FixedSizeSortedSet<SearchResult> getSearchResults(UnigramSearchHistogram histogram, Set<String> searchTerm, int weightMultiplier, int limit) {
 
 		TLongIntHashMap results = new TLongIntHashMap();
 
-		for (String word : words) {
-			//			logger.debug("Looking for word: " + word);
+		for (String term : searchTerm) {
+			String[] words;
+			if (term.contains(" ")) {
+				words = term.split(" ");
+			} else {
+				words = new String[] { term };
+			}
 
-			int count = 0;
+			for (String word : words) {
+				logger.debug("Looking for word: " + word);
 
-			if (word != null) {
-				int wordKey = word.hashCode();
-				TLongByteHashMap hashMap = histogram.multiResultMap.get(wordKey);
+				int count = 0;
 
-				if (hashMap == null) { // 0 or 1 result
+				if (word != null) {
+					int wordKey = word.hashCode();
+					TLongByteHashMap hashMap = histogram.multiResultMap.get(wordKey);
 
-					if (histogram.singleResultMap.contains(wordKey)) { // 1 result
-						long result = histogram.singleResultMap.get(wordKey);
+					if (hashMap == null) { // 0 or 1 result
 
-						if (results.contains(result)) {
-							count = results.get(result);
+						if (histogram.singleResultMap.contains(wordKey)) { // 1 result
+							long result = histogram.singleResultMap.get(wordKey);
+
+							if (results.contains(result)) {
+								count = results.get(result);
+							}
+							count++;
+							results.put(result, count);
 						}
-						count++;
-						results.put(result, count);
-					}
-				} else { // more than one result
-					long[] hashMapResults = hashMap.keys();
-					byte[] hashMapCounts = hashMap.values();
+					} else { // more than one result
+						long[] hashMapResults = hashMap.keys();
+						byte[] hashMapCounts = hashMap.values();
 
-					for (int i = 0; i < hashMapResults.length; i++) {
-						count = 0;
-						long result = hashMapResults[i];
+						for (int i = 0; i < hashMapResults.length; i++) {
+							count = 0;
+							long result = hashMapResults[i];
 
-						if (results.contains(result)) {
-							count = results.get(result);
+							if (results.contains(result)) {
+								count = results.get(result);
+							}
+							count += hashMapCounts[i];
+							results.put(result, count);
 						}
-						count += hashMapCounts[i];
-						results.put(result, count);
 					}
 				}
 			}
