@@ -62,7 +62,6 @@ public class InMemorySearchEngine implements SearchEngine {
 	private long timeForAdding = 0;
 	private long timeForScrubbing = 0;
 	private long timeForCompletions = 0;
-	private long timeForUniqCompletions = 0;
 	private long timeForSearchResults = 0;
 	private long addCount = 0;
 	private long searchCount = 0;
@@ -75,7 +74,6 @@ public class InMemorySearchEngine implements SearchEngine {
 		timeForAdding = 0;
 		timeForScrubbing = 0;
 		timeForCompletions = 0;
-		timeForUniqCompletions = 0;
 		timeForSearchResults = 0;
 		searchCount = 0;
 	}
@@ -87,12 +85,11 @@ public class InMemorySearchEngine implements SearchEngine {
 		logger.info("\ttimeForAdding: " + (timeForAdding / 1000d) + " secs");
 		logger.info("\ttimeForScrubbing: " + (timeForScrubbing / 1000d) + " secs");
 		logger.info("\ttimeForCompletions: " + (timeForCompletions / 1000d) + " secs");
-		logger.info("\ttimeForUniqCompletions: " + (timeForUniqCompletions / 1000d) + " secs");
 		logger.info("\ttimeForSearchResults: " + (timeForSearchResults / 1000d) + " secs");
 
-		logger.info("\ttotal time: " + ((timeForAdding + timeForScrubbing + timeForCompletions + timeForUniqCompletions + timeForSearchResults) / 1000d) + "secs");
+		logger.info("\ttotal time: " + ((timeForAdding + timeForScrubbing + timeForCompletions + timeForSearchResults) / 1000d) + "secs");
 		logger.info("\tavg time to add: " + ((timeForAdding / (float) addCount)) + " ms");
-		logger.info("\tavg time to search: " + (((timeForScrubbing + timeForCompletions + timeForUniqCompletions + timeForSearchResults) / (float) searchCount)) + " ms");
+		logger.info("\tavg time to search: " + (((timeForScrubbing + timeForCompletions + timeForSearchResults) / (float) searchCount)) + " ms");
 	}
 
 	/**
@@ -231,22 +228,9 @@ public class InMemorySearchEngine implements SearchEngine {
 		timeForScrubbing += System.currentTimeMillis() - t1;
 		t1 = System.currentTimeMillis();
 
-		Set<String> completions = autocomplete.getCompletions(keywords, true, hasTrailingSpace, limit * 2);
+		Set<String> uniqCompletions = autocomplete.getCompletions(keywords, true, hasTrailingSpace, limit * 2);
 
 		timeForCompletions += System.currentTimeMillis() - t1;
-		t1 = System.currentTimeMillis();
-
-		TLinkedHashSet<String> uniqCompletions = new TLinkedHashSet<String>();
-
-		for (String completion : completions) {
-			for (String word : completion.split(" ")) {
-				uniqCompletions.add(word);
-			}
-		}
-
-		timeForUniqCompletions += System.currentTimeMillis() - t1;
-		//		logger.debug("Uniq Completions:", uniqCompletions);
-		//		logger.debug("\tgot uniq completions; size = " + uniqCompletions.size());
 		t1 = System.currentTimeMillis();
 
 		FixedSizeSortedSet<SearchResult> results;
