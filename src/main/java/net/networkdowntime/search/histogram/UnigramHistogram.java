@@ -56,8 +56,6 @@ public class UnigramHistogram {
 	 * @param word The word to be added
 	 */
 	public static void add(UnigramHistogram unigram, String word) {
-		word = word.toLowerCase();
-
 		Integer count = unigram.histogram.get(word.hashCode());
 		if (unigram.histogram.getNoEntryValue() == count) {
 			count = 1;
@@ -77,7 +75,6 @@ public class UnigramHistogram {
 	 * @return The number of elements left in the histogram
 	 */
 	public static int remove(UnigramHistogram unigram, String word) {
-		word = word.toLowerCase();
 		int wordKey = word.hashCode();
 
 		Integer count = unigram.histogram.get(wordKey);
@@ -101,7 +98,6 @@ public class UnigramHistogram {
 	 * @return true/false based on whether the word was found
 	 */
 	public static boolean contains(UnigramHistogram unigram, String word) {
-		word = word.toLowerCase();
 		int wordKey = word.hashCode();
 		return (unigram.histogram.containsKey(wordKey));
 	}
@@ -114,7 +110,6 @@ public class UnigramHistogram {
 	 * @return The number of occurrences of the word or 0 if it is not in the histogram
 	 */
 	public static int getOccurrenceCount(UnigramHistogram unigram, String word) {
-		word = word.toLowerCase();
 		int wordKey = word.hashCode();
 
 		Integer count = unigram.histogram.get(wordKey);
