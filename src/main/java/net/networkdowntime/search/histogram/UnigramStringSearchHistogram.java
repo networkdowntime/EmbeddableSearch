@@ -43,7 +43,6 @@ public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
 	 * @param result The search result to associate with the word
 	 */
 	public void add(String word, String result) {
-		word = word.toLowerCase();
 		int wordKey = word.hashCode();
 		int resultKey = result.hashCode();
 
@@ -61,7 +60,6 @@ public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
 	 * @param result The result to be removed.
 	 */
 	public void remove(String word, String result) {
-		word = word.toLowerCase();
 		int wordKey = word.hashCode();
 		int resultKey = result.hashCode();
 
