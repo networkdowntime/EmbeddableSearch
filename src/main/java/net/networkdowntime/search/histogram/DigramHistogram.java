@@ -39,9 +39,6 @@ public class DigramHistogram {
 	 * @param secondWord
 	 */
 	public void add(String firstWord, String secondWord) {
-		firstWord = firstWord.toLowerCase();
-		secondWord = secondWord.toLowerCase();
-
 		UnigramHistogram unigram = histogram.get(firstWord.hashCode());
 
 		if (unigram == null) {
@@ -60,9 +57,6 @@ public class DigramHistogram {
 	 * @param secondWord The second word to remove
 	 */
 	public void remove(String firstWord, String secondWord) {
-		firstWord = firstWord.toLowerCase();
-		secondWord = secondWord.toLowerCase();
-
 		UnigramHistogram unigram = histogram.get(firstWord.hashCode());
 		if (unigram != null) {
 			int count = UnigramHistogram.remove(unigram, secondWord);
@@ -79,9 +73,6 @@ public class DigramHistogram {
 	 * @return The occurrence count of the word pair
 	 */
 	public int getOccuranceCount(String firstWord, String secondWord) {
-		firstWord = firstWord.toLowerCase();
-		secondWord = secondWord.toLowerCase();
-
 		int count = 0;
 
 		UnigramHistogram unigram = histogram.get(firstWord.hashCode());
@@ -183,8 +174,6 @@ public class DigramHistogram {
 
 	private TreeSet<Tuple<String>> getResults(String firstWord) {
 		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
-
-		firstWord = firstWord.toLowerCase();
 
 		UnigramHistogram unigramHistogram = histogram.get(firstWord.hashCode());
 
