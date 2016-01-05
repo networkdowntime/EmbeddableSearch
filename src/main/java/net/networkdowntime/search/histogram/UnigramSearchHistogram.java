@@ -4,7 +4,6 @@ import gnu.trove.map.hash.TIntLongHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TLongByteHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
-import net.networkdowntime.search.SearchResult;
 
 import java.util.ArrayList;
 import java.util.Iterator;
