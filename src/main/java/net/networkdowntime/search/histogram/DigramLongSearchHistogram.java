@@ -5,6 +5,7 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import gnu.trove.map.hash.TLongIntHashMap;
 import net.networkdowntime.search.SearchResult;
 import net.networkdowntime.search.SearchResultComparator;
 import net.networkdowntime.search.textProcessing.ContentSplitter;
@@ -55,18 +56,7 @@ public class DigramLongSearchHistogram extends DigramSearchHistogram {
 		super.remove(firstWord, secondWord, result);
 	}
 
-	/**
-	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.
-	 * 
-	 * @param firstWords The set of first words to get the search results for.
-	 * @param secondWords The set of second words to get the search results for.
-	 * @param limit Max number of results to return
-	 *  
-	 * @return A set containing the matched search results up to the specified limit
-	 */
-//	@SuppressWarnings("rawtypes")
-//	public FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> searchTerm, int limit) {
-//		return super.getResultsRaw(searchTerm, limit);
-//	}
-		
+	public TLongIntHashMap getSearchResults(Set<String> searchTerms, int weightMultiplier) {
+		return super.getResultsRaw(searchTerms, weightMultiplier);
+	}
 }

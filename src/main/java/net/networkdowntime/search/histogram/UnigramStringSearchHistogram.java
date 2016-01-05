@@ -6,6 +6,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TLongIntHashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import net.networkdowntime.search.SearchResult;
 import net.networkdowntime.search.SearchResultComparator;
 import net.networkdowntime.search.SearchResultType;
@@ -79,14 +81,17 @@ public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
 	 * @return A set containing the matched search results up to the specified limit
 	 */
 	@SuppressWarnings("rawtypes")
-	public FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> words, int limit) {
+	public TObjectIntHashMap<String> getSearchResults(Set<String> words, int limit) {
 
-		FixedSizeSortedSet<SearchResult> orderedLongResults = super.getSearchResults(this, words, limit);
-		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
+		TLongIntHashMap longResults = super.getSearchResults(this, words);
+		TObjectIntHashMap<String> stringResults = new TObjectIntHashMap<String>();
 
-		for (SearchResult result : orderedLongResults.getResultSet(limit)) {
-			orderedResults.add(new SearchResult<String>(SearchResultType.String, stringLookupMap.get(((Long) result.getResult()).intValue()), result.getWeight()));
+		long[] longResultKeys = longResults.keys();
+		int[] longResultValues = longResults.values();
+		
+		for (int i = 0; i < longResultKeys.length; i++) {
+			stringResults.put(stringLookupMap.get(((Long) longResultKeys[i]).intValue()), longResultValues[i]);
 		}
-		return orderedResults;
+		return stringResults;
 	}
 }

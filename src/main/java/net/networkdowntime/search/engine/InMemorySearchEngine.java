@@ -1,7 +1,7 @@
 package net.networkdowntime.search.engine;
 
 import gnu.trove.map.hash.TLongIntHashMap;
-import gnu.trove.set.hash.TLinkedHashSet;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +11,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.networkdowntime.search.SearchResult;
+import net.networkdowntime.search.SearchResultType;
 import net.networkdowntime.search.histogram.DigramLongSearchHistogram;
-//import net.networkdowntime.search.histogram.DigramStringSearchHistogram;
+import net.networkdowntime.search.histogram.DigramStringSearchHistogram;
 import net.networkdowntime.search.histogram.FixedSizeSortedSet;
 import net.networkdowntime.search.histogram.SearchHistogramUtil;
-import net.networkdowntime.search.histogram.UnigramHistogram;
 import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
 import net.networkdowntime.search.histogram.UnigramStringSearchHistogram;
 import net.networkdowntime.search.textProcessing.ContentSplitter;
@@ -52,7 +52,7 @@ public class InMemorySearchEngine implements SearchEngine {
 	private UnigramStringSearchHistogram unigramStringSearchHistogram = new UnigramStringSearchHistogram();
 
 	private DigramLongSearchHistogram digramLongSearchHistogram = new DigramLongSearchHistogram();
-//	private DigramStringSearchHistogram digramStringSearchHistogram = new DigramStringSearchHistogram();
+	private DigramStringSearchHistogram digramStringSearchHistogram = new DigramStringSearchHistogram();
 
 	private Autocomplete autocomplete = new Autocomplete();
 
@@ -155,7 +155,7 @@ public class InMemorySearchEngine implements SearchEngine {
 
 				unigramStringSearchHistogram.add(currentWord, (String) searchResult);
 				if (previousWord != null) {
-//					digramStringSearchHistogram.add(previousWord, currentWord, (String) searchResult);
+					digramStringSearchHistogram.add(previousWord, currentWord, (String) searchResult);
 				}
 			}
 		}
@@ -204,7 +204,7 @@ public class InMemorySearchEngine implements SearchEngine {
 
 				unigramStringSearchHistogram.remove(currentWord, (String) searchResult);
 				if (previousWord != null) {
-//					digramStringSearchHistogram.remove(previousWord, currentWord, (String) searchResult);
+					digramStringSearchHistogram.remove(previousWord, currentWord, (String) searchResult);
 				}
 			}
 		}
@@ -239,23 +239,25 @@ public class InMemorySearchEngine implements SearchEngine {
 		t1 = System.currentTimeMillis();
 
 		TLongIntHashMap longResults = new TLongIntHashMap();
+		TObjectIntHashMap<String> stringResults = new TObjectIntHashMap<String>();
 		
 		if (keywords.size() > 1) {
-			longResults = digramLongSearchHistogram.getResultsRaw(uniqCompletions, 10);
+			longResults = digramLongSearchHistogram.getSearchResults(uniqCompletions, 10);
+			stringResults = digramStringSearchHistogram.getSearchResults(uniqCompletions, 10);
 		}
 		
 		SearchHistogramUtil.addResultToMap(longResults, UnigramLongSearchHistogram.getSearchResults(unigramLongSearchHistogram, uniqCompletions));
-		FixedSizeSortedSet<SearchResult> results = SearchHistogramUtil.resultsMapToSet(longResults, limit);
-//		resultsString = unigramStringSearchHistogram.getSearchResults(uniqCompletions, limit);
+		SearchHistogramUtil.addResultToMap(stringResults, unigramStringSearchHistogram.getSearchResults(uniqCompletions, limit));
+
+		FixedSizeSortedSet<SearchResult> results = SearchHistogramUtil.resultsMapToLongSet(SearchResultType.Long, longResults, limit);
+		FixedSizeSortedSet<SearchResult> resultsString = SearchHistogramUtil.resultsMapToStringSet(SearchResultType.String, stringResults, limit);
 
 		logger.debug("Long results: " + results.size());
-//		logger.debug("String results: " + resultsString.size());
+		logger.debug("String results: " + resultsString.size());
 
-		FixedSizeSortedSet<SearchResult> resultsString;
-
-//		for (SearchResult searchResult : resultsString) { // combine and sort the results from each type
-//			results.add(searchResult);
-//		}
+		for (SearchResult searchResult : resultsString) { // combine and sort the results from each type
+			results.add(searchResult);
+		}
 
 		timeForSearchResults += System.currentTimeMillis() - t1;
 		return results;

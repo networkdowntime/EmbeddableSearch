@@ -9,9 +9,9 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import gnu.trove.map.hash.TLongIntHashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
-public class DigramLongSearchHistogramTest {
+public class DigramStringSearchHistogramTest {
 
 	@Before
 	public void setUp() throws Exception {
@@ -25,12 +25,12 @@ public class DigramLongSearchHistogramTest {
 
 	@Test
 	public void testAddSearchSingleResultMap() {
-		DigramLongSearchHistogram digramHistogram = new DigramLongSearchHistogram();
-		long desiredResultId = 1;
+		DigramStringSearchHistogram digramHistogram = new DigramStringSearchHistogram();
+		String desiredResultId = "result1";
 
 		digramHistogram.add("word1", "word2", desiredResultId);
 
-		TLongIntHashMap results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
+		TObjectIntHashMap<String> results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
 
 		assertEquals(1, results.size()); // only 1 result returned
 		assertTrue(results.contains(desiredResultId)); // desired result key contained
@@ -39,12 +39,12 @@ public class DigramLongSearchHistogramTest {
 
 	@Test
 	public void testAddSearchSingleResultMapWeightMultiplier() {
-		DigramLongSearchHistogram digramHistogram = new DigramLongSearchHistogram();
-		long desiredResultId = 1;
+		DigramStringSearchHistogram digramHistogram = new DigramStringSearchHistogram();
+		String desiredResultId = "result1";
 
 		digramHistogram.add("word1", "word2", desiredResultId);
 
-		TLongIntHashMap results = digramHistogram.getSearchResults(toSet("word1 word2"), 10);
+		TObjectIntHashMap<String> results = digramHistogram.getSearchResults(toSet("word1 word2"), 10);
 
 		assertEquals(1, results.size()); // only 1 result returned
 		assertTrue(results.contains(desiredResultId)); // desired result key contained
@@ -53,12 +53,12 @@ public class DigramLongSearchHistogramTest {
 
 	@Test
 	public void testAddSearchReversedOrderSingleResultMap() {
-		DigramLongSearchHistogram digramHistogram = new DigramLongSearchHistogram();
-		long desiredResultId = 1;
+		DigramStringSearchHistogram digramHistogram = new DigramStringSearchHistogram();
+		String desiredResultId = "result1";
 
 		digramHistogram.add("word1", "word2", desiredResultId);
 
-		TLongIntHashMap results = digramHistogram.getSearchResults(toSet("word2 word1"), 1);
+		TObjectIntHashMap<String> results = digramHistogram.getSearchResults(toSet("word2 word1"), 1);
 
 		assertEquals(1, results.size()); // only 1 result returned
 		assertTrue(results.contains(desiredResultId)); // desired result key contained
@@ -67,40 +67,40 @@ public class DigramLongSearchHistogramTest {
 
 	@Test
 	public void testAddRemoveSearchSingleResultMap1() {
-		DigramLongSearchHistogram digramHistogram = new DigramLongSearchHistogram();
-		long desiredResultId = 1;
+		DigramStringSearchHistogram digramHistogram = new DigramStringSearchHistogram();
+		String desiredResultId = "result1";
 
 		digramHistogram.add("word1", "word2", desiredResultId);
 		digramHistogram.remove("word1", "word2", desiredResultId);
 
-		TLongIntHashMap results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
+		TObjectIntHashMap<String> results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
 
 		assertEquals(0, results.size());
 	}
 
 	@Test
 	public void testAddRemoveSearchSingleResultMap2() {
-		DigramLongSearchHistogram digramHistogram = new DigramLongSearchHistogram();
-		long desiredResultId = 1;
+		DigramStringSearchHistogram digramHistogram = new DigramStringSearchHistogram();
+		String desiredResultId = "result1";
 
 		digramHistogram.add("word1", "word2", desiredResultId);
 		digramHistogram.add("word3", "word4", desiredResultId); // creates another single result map for "word3"
 		digramHistogram.remove("word1", "word2", desiredResultId);
 
-		TLongIntHashMap results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
+		TObjectIntHashMap<String> results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
 
 		assertEquals(0, results.size());
 	}
 
 	@Test
 	public void testAddSearchMultiResultMap1() {
-		DigramLongSearchHistogram digramHistogram = new DigramLongSearchHistogram();
-		long desiredResultId = 1;
+		DigramStringSearchHistogram digramHistogram = new DigramStringSearchHistogram();
+		String desiredResultId = "result1";
 
 		digramHistogram.add("word1", "word2", desiredResultId);
 		digramHistogram.add("word1", "word2", desiredResultId);
 
-		TLongIntHashMap results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
+		TObjectIntHashMap<String> results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
 
 		assertEquals(1, results.size()); // only 1 result returned
 		assertTrue(results.contains(desiredResultId)); // desired result key contained
@@ -109,13 +109,13 @@ public class DigramLongSearchHistogramTest {
 
 	@Test
 	public void testAddSearchMultiResultMap2() {
-		DigramLongSearchHistogram digramHistogram = new DigramLongSearchHistogram();
-		long desiredResultId = 1;
+		DigramStringSearchHistogram digramHistogram = new DigramStringSearchHistogram();
+		String desiredResultId = "result1";
 
 		digramHistogram.add("word1", "word2", desiredResultId);
 		digramHistogram.add("word1", "word3", desiredResultId);
 
-		TLongIntHashMap results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
+		TObjectIntHashMap<String> results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
 
 		assertEquals(1, results.size()); // only 1 result returned
 		assertTrue(results.contains(desiredResultId)); // desired result key contained
@@ -124,13 +124,13 @@ public class DigramLongSearchHistogramTest {
 
 	@Test
 	public void testAddSearchReversedOrderMultiResultMap1() {
-		DigramLongSearchHistogram digramHistogram = new DigramLongSearchHistogram();
-		long desiredResultId = 1;
+		DigramStringSearchHistogram digramHistogram = new DigramStringSearchHistogram();
+		String desiredResultId = "result1";
 
 		digramHistogram.add("word1", "word2", desiredResultId);
 		digramHistogram.add("word1", "word2", desiredResultId);
 
-		TLongIntHashMap results = digramHistogram.getSearchResults(toSet("word2 word1"), 1);
+		TObjectIntHashMap<String> results = digramHistogram.getSearchResults(toSet("word2 word1"), 1);
 
 		assertEquals(1, results.size()); // only 1 result returned
 		assertTrue(results.contains(desiredResultId)); // desired result key contained
@@ -139,13 +139,13 @@ public class DigramLongSearchHistogramTest {
 
 	@Test
 	public void testAddSearchReversedOrderMultiResultMap2() {
-		DigramLongSearchHistogram digramHistogram = new DigramLongSearchHistogram();
-		long desiredResultId = 1;
+		DigramStringSearchHistogram digramHistogram = new DigramStringSearchHistogram();
+		String desiredResultId = "result1";
 
 		digramHistogram.add("word1", "word2", desiredResultId);
 		digramHistogram.add("word2", "word1", desiredResultId);
 
-		TLongIntHashMap results = digramHistogram.getSearchResults(toSet("word2 word1"), 1);
+		TObjectIntHashMap<String> results = digramHistogram.getSearchResults(toSet("word2 word1"), 1);
 
 		assertEquals(1, results.size()); // only 1 result returned
 		assertTrue(results.contains(desiredResultId)); // desired result key contained
@@ -154,28 +154,28 @@ public class DigramLongSearchHistogramTest {
 
 	@Test
 	public void testAddRemoveSearchMultiResultMap1() {
-		DigramLongSearchHistogram digramHistogram = new DigramLongSearchHistogram();
-		long desiredResultId = 1;
+		DigramStringSearchHistogram digramHistogram = new DigramStringSearchHistogram();
+		String desiredResultId = "result1";
 
 		digramHistogram.add("word1", "word2", desiredResultId);
 		digramHistogram.add("word1", "word2", desiredResultId);
 		digramHistogram.remove("word1", "word2", desiredResultId);
 
-		TLongIntHashMap results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
+		TObjectIntHashMap<String> results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
 
 		assertEquals(0, results.size()); // only 1 result returned
 	}
 
 	@Test
 	public void testAddRemoveSearchMultiResultMap2() {
-		DigramLongSearchHistogram digramHistogram = new DigramLongSearchHistogram();
-		long desiredResultId = 1;
+		DigramStringSearchHistogram digramHistogram = new DigramStringSearchHistogram();
+		String desiredResultId = "result1";
 
 		digramHistogram.add("word1", "word2", desiredResultId);
 		digramHistogram.add("word1", "word2", desiredResultId);
 		digramHistogram.remove("word1", "word2", 2);
 
-		TLongIntHashMap results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
+		TObjectIntHashMap<String> results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
 
 		assertEquals(1, results.size()); // only 1 result returned
 		assertTrue(results.contains(desiredResultId)); // desired result key contained
@@ -184,16 +184,16 @@ public class DigramLongSearchHistogramTest {
 
 	@Test
 	public void testAddRemoveSearchMultiResultMap3() {
-		DigramLongSearchHistogram digramHistogram = new DigramLongSearchHistogram();
-		long desiredResultId = 1;
-		long desiredResultId2 = 2;
+		DigramStringSearchHistogram digramHistogram = new DigramStringSearchHistogram();
+		String desiredResultId = "result1";
+		String desiredResultId2 = "result2";
 
 		digramHistogram.add("word1", "word2", desiredResultId);
 		digramHistogram.add("word1", "word2", desiredResultId);
 		digramHistogram.add("word1", "word3", desiredResultId2);
 		digramHistogram.remove("word1", "word2", desiredResultId);
 
-		TLongIntHashMap results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
+		TObjectIntHashMap<String> results = digramHistogram.getSearchResults(toSet("word1 word2"), 1);
 		assertEquals(0, results.size());
 
 		results = digramHistogram.getSearchResults(toSet("word1 word3"), 1);

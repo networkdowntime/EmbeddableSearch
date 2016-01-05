@@ -100,15 +100,15 @@ public class InMemorySearchEngineTest {
 		}
 	}
 
-//	@Test
-//	public void testSearchSingleElementMatchString() {
-//		searchEngine.add("one", "singleElementString");
-//		Set<SearchResult> results = searchEngine.search("singleElementString", 1);
-//		assertEquals(1, results.size());
-//		for (SearchResult result : results) {
-//			assertEquals("one", (String) result.getResult());
-//		}
-//	}
+	@Test
+	public void testSearchSingleElementMatchString() {
+		searchEngine.add("one", "singleElementString");
+		Set<SearchResult> results = searchEngine.search("singleElementString", 1);
+		assertEquals(1, results.size());
+		for (SearchResult result : results) {
+			assertEquals("one", (String) result.getResult());
+		}
+	}
 
 	@Test
 	public void testSearchMultiResultMatchLong1() {
@@ -121,26 +121,26 @@ public class InMemorySearchEngineTest {
 		}
 	}
 
-//	@Test
-//	public void testSearchMultiResultMatchString1() {
-//		searchEngine.add("one", "multiResultString1");
-//		searchEngine.add("one", "multiResultString1");
-//		Set<SearchResult> results = searchEngine.search("multiResultString1", 1);
-//		assertEquals(1, results.size());
-//		for (SearchResult result : results) {
-//			assertEquals("one", (String) result.getResult());
-//		}
-//	}
-//
-//	@Test
-//	public void testSearchString() {
-//		searchEngine.add("mySearchResult", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod");
-//		Set<SearchResult> results = searchEngine.search("sect am", 3); // will contain "mySearchResult"
-//		for (SearchResult result : results) {
-//			assertEquals("mySearchResult", (String) result.getResult());
-//		}
-//		
-//	}
+	@Test
+	public void testSearchMultiResultMatchString1() {
+		searchEngine.add("one", "multiResultString1");
+		searchEngine.add("one", "multiResultString1");
+		Set<SearchResult> results = searchEngine.search("multiResultString1", 1);
+		assertEquals(1, results.size());
+		for (SearchResult result : results) {
+			assertEquals("one", (String) result.getResult());
+		}
+	}
+
+	@Test
+	public void testSearchString() {
+		searchEngine.add("mySearchResult", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod");
+		Set<SearchResult> results = searchEngine.search("sect am", 3); // will contain "mySearchResult"
+		for (SearchResult result : results) {
+			assertEquals("mySearchResult", (String) result.getResult());
+		}
+		
+	}
 	
 	@Test
 	public void testSearchMultiResultMatchOrderingLong() {
@@ -159,25 +159,25 @@ public class InMemorySearchEngineTest {
 		assertEquals(3l, (long) (arr[2]).getResult());
 	}
 
-//	@Test
-//	public void testSearchMultiResultMatchOrderingString() {
-//		searchEngine.add("one", "multiResultMatchOrderingString1");
-//		searchEngine.add("one", "multiResultMatchOrderingString1");
-//		searchEngine.add("two", "multiResultMatchOrderingString1");
-//		searchEngine.add("two", "multiResultMatchOrderingString1");
-//		searchEngine.add("two", "multiResultMatchOrderingString1");
-//		searchEngine.add("three", "multiResultMatchOrderingString1");
-//		Set<SearchResult> results = searchEngine.search("multiResultMatchOrderingString1", 3);
-//		assertEquals(3, results.size());
-//		
-//		SearchResult[] arr = results.toArray(new SearchResult[0]);
-//		assertEquals("two", (String) (arr[0]).getResult());
-//		assertEquals("one", (String) (arr[1]).getResult());
-//		assertEquals("three", (String) (arr[2]).getResult());
-//	}
+	@Test
+	public void testSearchMultiResultMatchOrderingString() {
+		searchEngine.add("one", "multiResultMatchOrderingString1");
+		searchEngine.add("one", "multiResultMatchOrderingString1");
+		searchEngine.add("two", "multiResultMatchOrderingString1");
+		searchEngine.add("two", "multiResultMatchOrderingString1");
+		searchEngine.add("two", "multiResultMatchOrderingString1");
+		searchEngine.add("three", "multiResultMatchOrderingString1");
+		Set<SearchResult> results = searchEngine.search("multiResultMatchOrderingString1", 3);
+		assertEquals(3, results.size());
+		
+		SearchResult[] arr = results.toArray(new SearchResult[0]);
+		assertEquals("two", (String) (arr[0]).getResult());
+		assertEquals("one", (String) (arr[1]).getResult());
+		assertEquals("three", (String) (arr[2]).getResult());
+	}
 
-//	// Leaving this commented out right now because it takes a while to run
-//	// Using largish numbers as strings to simulate a deterministic dataset for capacity testing
+	// Leaving this commented out right now because it takes a while to run
+	// Using largish numbers as strings to simulate a deterministic dataset for capacity testing
 //	@Test
 //	public void testCapacity() {
 //		searchEngine.resetTimes();

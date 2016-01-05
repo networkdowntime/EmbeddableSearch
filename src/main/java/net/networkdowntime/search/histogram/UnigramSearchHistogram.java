@@ -232,10 +232,10 @@ class UnigramSearchHistogram {
 	 *  
 	 * @return A set containing the matched search results up to the specified limit
 	 */
-	@SuppressWarnings("rawtypes")
-	public static FixedSizeSortedSet<SearchResult> getSearchResults(UnigramSearchHistogram histogram, Set<String> words, int limit) {
-		return SearchHistogramUtil.resultsMapToSet(getSearchResults(histogram, words), limit);
-	}
+//	@SuppressWarnings("rawtypes")
+//	public static FixedSizeSortedSet<SearchResult> getSearchResults(UnigramSearchHistogram histogram, Set<String> words, int limit) {
+//		return SearchHistogramUtil.resultsMapToSet(getSearchResults(histogram, words), limit);
+//	}
 
 	/**
 	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.

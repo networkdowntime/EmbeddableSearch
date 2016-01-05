@@ -92,15 +92,15 @@ class DigramSearchHistogram {
 	//	}
 
 	/**
-	 * An internal method that for a given first word and a set of second words, returns the results in order of most common occurrence.
+	 * For a given set of search terms, returns the results in order of most common occurrence.
 	 * A swapped order of first and second words are also taken into consideration.
 	 * 
-	 * @param firstWord The first word for consideration
-	 * @param secondWords A set of second words for consideration
-	 * @param orderedResults Not-null TreeSet of Tuples
+	 * @param searchTerms Set of potentially multiple word strings
+	 * @param weightMultiplier Multiplier of how much additional weight to apply to these results
+	 * @return A TLongIntHashMap containing all of the results and their weights
 	 */
 	@SuppressWarnings("rawtypes")
-	public TLongIntHashMap getResultsRaw(Set<String> searchTerms, int weightMultiplier) {
+	protected TLongIntHashMap getResultsRaw(Set<String> searchTerms, int weightMultiplier) {
 		TLongIntHashMap results = new TLongIntHashMap();
 
 		for (String term : searchTerms) {
@@ -138,19 +138,4 @@ class DigramSearchHistogram {
 		return results;
 	}
 
-	//	protected FixedSizeSortedSet<SearchResult> getResults(List<String> keywords, int limit) {
-	//		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
-	//		String currentWord = null;
-	//		String previousWord = null;
-	//
-	//		for (int i = 0; i < keywords.size(); i++) {
-	//			previousWord = (currentWord != null) ? currentWord : null;
-	//			currentWord = keywords.get(i);
-	//
-	//			//			if (previousWord != null) {
-	//			//				digramLongSearchHistogram.add(previousWord, currentWord, (Long) searchResult);
-	//			//			}
-	//		}
-	//		return orderedResults;
-	//	}
 }
