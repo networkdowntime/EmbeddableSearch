@@ -5,8 +5,6 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TLongByteHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
 import net.networkdowntime.search.SearchResult;
-import net.networkdowntime.search.SearchResultComparator;
-import net.networkdowntime.search.SearchResultType;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -236,7 +234,7 @@ class UnigramSearchHistogram {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static FixedSizeSortedSet<SearchResult> getSearchResults(UnigramSearchHistogram histogram, Set<String> words, int limit) {
-		return getSearchResults(histogram, words, 1, limit);
+		return SearchHistogramUtil.resultsMapToSet(getSearchResults(histogram, words), limit);
 	}
 
 	/**
@@ -249,8 +247,7 @@ class UnigramSearchHistogram {
 	 *  
 	 * @return A set containing the matched search results up to the specified limit
 	 */
-	@SuppressWarnings("rawtypes")
-	static FixedSizeSortedSet<SearchResult> getSearchResults(UnigramSearchHistogram histogram, Set<String> searchTerm, int weightMultiplier, int limit) {
+	public static TLongIntHashMap getSearchResults(UnigramSearchHistogram histogram, Set<String> searchTerm) {
 
 		TLongIntHashMap results = new TLongIntHashMap();
 
@@ -265,8 +262,6 @@ class UnigramSearchHistogram {
 			for (String word : words) {
 				logger.debug("Looking for word: " + word);
 
-				int count = 0;
-
 				if (word != null) {
 					int wordKey = word.hashCode();
 					TLongByteHashMap hashMap = histogram.multiResultMap.get(wordKey);
@@ -276,42 +271,51 @@ class UnigramSearchHistogram {
 						if (histogram.singleResultMap.contains(wordKey)) { // 1 result
 							long result = histogram.singleResultMap.get(wordKey);
 
-							if (results.contains(result)) {
-								count = results.get(result);
-							}
-							count++;
-							results.put(result, count);
+							SearchHistogramUtil.addResultToMap(results, result, 1);
 						}
 					} else { // more than one result
 						long[] hashMapResults = hashMap.keys();
 						byte[] hashMapCounts = hashMap.values();
 
 						for (int i = 0; i < hashMapResults.length; i++) {
-							count = 0;
 							long result = hashMapResults[i];
-
-							if (results.contains(result)) {
-								count = results.get(result);
-							}
-							count += hashMapCounts[i];
-							results.put(result, count);
+							SearchHistogramUtil.addResultToMap(results, result, hashMapCounts[i]);
 						}
 					}
 				}
 			}
 		}
 
-		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
+		return results;
+	}
 
-		int count = 0;
-		for (Long result : results.keys()) {
-			count = results.get(result);
-			orderedResults.add(new SearchResult<Long>(SearchResultType.Long, result, weightMultiplier * count));
+	static TLongIntHashMap getSearchResults(UnigramSearchHistogram histogram, TLongIntHashMap results, String word, int weightMultiplier) {
 
-			//			logger.debug("result: " + result + "; count: " + count);
+		logger.debug("Looking for word: " + word);
+
+		if (word != null) {
+			int wordKey = word.hashCode();
+			TLongByteHashMap hashMap = histogram.multiResultMap.get(wordKey);
+
+			if (hashMap == null) { // 0 or 1 result
+
+				if (histogram.singleResultMap.contains(wordKey)) { // 1 result
+					long result = histogram.singleResultMap.get(wordKey);
+
+					SearchHistogramUtil.addResultToMap(results, result, weightMultiplier);
+				}
+			} else { // more than one result
+				long[] hashMapResults = hashMap.keys();
+				byte[] hashMapCounts = hashMap.values();
+
+				for (int i = 0; i < hashMapResults.length; i++) {
+					long result = hashMapResults[i];
+					SearchHistogramUtil.addResultToMap(results, result, hashMapCounts[i] * weightMultiplier);
+				}
+			}
 		}
 
-		return orderedResults;
+		return results;
 	}
 
 }

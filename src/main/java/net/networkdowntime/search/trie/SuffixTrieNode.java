@@ -80,8 +80,6 @@ public class SuffixTrieNode implements Trei {
 
 	@Override
 	public List<String> getCompletions(String searchString, int limit) {
-		searchString = searchString.toLowerCase();
-
 		List<String> completions = new ArrayList<String>();
 
 		SuffixTrieNode currentNode = this;
@@ -138,7 +136,7 @@ public class SuffixTrieNode implements Trei {
 
 	@Override
 	public void add(String suffix) {
-		addInternal(suffix.toLowerCase());
+		addInternal(suffix);
 
 	}
 

@@ -1,12 +1,14 @@
 package net.networkdowntime.search.histogram;
 
-
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TLongIntHashMap;
 import net.networkdowntime.search.SearchResult;
 import net.networkdowntime.search.SearchResultComparator;
 
@@ -43,9 +45,6 @@ class DigramSearchHistogram {
 	 * @param secondWord
 	 */
 	protected void add(String firstWord, String secondWord, long resultKey) {
-		firstWord = firstWord.toLowerCase();
-		secondWord = secondWord.toLowerCase();
-
 		UnigramSearchHistogram unigram = histogram.get(firstWord.hashCode());
 
 		if (unigram == null) {
@@ -64,9 +63,6 @@ class DigramSearchHistogram {
 	 * @param secondWord The second word to remove
 	 */
 	protected void remove(String firstWord, String secondWord, long resultKey) {
-		firstWord = firstWord.toLowerCase();
-		secondWord = secondWord.toLowerCase();
-
 		UnigramSearchHistogram unigram = histogram.get(firstWord.hashCode());
 		if (unigram != null) {
 
@@ -78,22 +74,22 @@ class DigramSearchHistogram {
 		}
 	}
 
-	@SuppressWarnings("rawtypes")
-	protected FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> firstWords, Set<String> secondWords, int limit) {
-
-		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
-
-		for (String firstWord : firstWords) {
-			orderedResults.addAll(getResults(firstWord.toLowerCase(), secondWords, limit));
-		}
-
-		// swap the word order
-		for (String secondWord : secondWords) {
-			orderedResults.addAll(getResults(secondWord.toLowerCase(), firstWords, limit));
-		}
-
-		return orderedResults;
-	}
+	//	@SuppressWarnings("rawtypes")
+	//	protected FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> firstWords, Set<String> secondWords, int limit) {
+	//
+	//		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
+	//
+	//		for (String firstWord : firstWords) {
+	////			orderedResults.addAll(getResults(firstWord, secondWords, limit));
+	//		}
+	//
+	//		// swap the word order
+	//		for (String secondWord : secondWords) {
+	////			orderedResults.addAll(getResults(secondWord, firstWords, limit));
+	//		}
+	//
+	//		return orderedResults;
+	//	}
 
 	/**
 	 * An internal method that for a given first word and a set of second words, returns the results in order of most common occurrence.
@@ -104,16 +100,57 @@ class DigramSearchHistogram {
 	 * @param orderedResults Not-null TreeSet of Tuples
 	 */
 	@SuppressWarnings("rawtypes")
-	private FixedSizeSortedSet<SearchResult> getResults(String firstWord, Set<String> secondWords, int limit) {
-		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
+	public TLongIntHashMap getResultsRaw(Set<String> searchTerms, int weightMultiplier) {
+		TLongIntHashMap results = new TLongIntHashMap();
 
-		UnigramSearchHistogram unigram = histogram.get(firstWord.hashCode());
+		for (String term : searchTerms) {
+			String[] keywords;
+			if (term.contains(" ")) {
+				keywords = term.split(" ");
+			} else {
+				keywords = new String[] { term };
+			}
 
-		if (unigram != null) {
-			orderedResults.addAll(UnigramSearchHistogram.getSearchResults(unigram, secondWords, 3, limit));
+			String currentWord = null;
+			String previousWord = null;
+
+			for (int i = 0; i < keywords.length; i++) {
+				previousWord = (currentWord != null) ? currentWord : null;
+				currentWord = keywords[i];
+
+				if (previousWord != null) {
+					logger.debug("Looking for " + previousWord + " " + currentWord);
+					UnigramSearchHistogram unigram = histogram.get(previousWord.hashCode());
+
+					if (unigram != null) {
+						UnigramSearchHistogram.getSearchResults(unigram, results, currentWord, weightMultiplier);
+					}
+
+					logger.debug("Looking for " + currentWord + " " + previousWord);
+					unigram = histogram.get(currentWord.hashCode());
+
+					if (unigram != null) {
+						UnigramSearchHistogram.getSearchResults(unigram, results, previousWord, weightMultiplier);
+					}
+				}
+			}
 		}
-
-		return orderedResults;
+		return results;
 	}
 
+	//	protected FixedSizeSortedSet<SearchResult> getResults(List<String> keywords, int limit) {
+	//		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
+	//		String currentWord = null;
+	//		String previousWord = null;
+	//
+	//		for (int i = 0; i < keywords.size(); i++) {
+	//			previousWord = (currentWord != null) ? currentWord : null;
+	//			currentWord = keywords.get(i);
+	//
+	//			//			if (previousWord != null) {
+	//			//				digramLongSearchHistogram.add(previousWord, currentWord, (Long) searchResult);
+	//			//			}
+	//		}
+	//		return orderedResults;
+	//	}
 }

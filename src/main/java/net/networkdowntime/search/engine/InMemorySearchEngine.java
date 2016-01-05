@@ -1,5 +1,6 @@
 package net.networkdowntime.search.engine;
 
+import gnu.trove.map.hash.TLongIntHashMap;
 import gnu.trove.set.hash.TLinkedHashSet;
 
 import java.util.ArrayList;
@@ -11,8 +12,9 @@ import org.apache.logging.log4j.Logger;
 
 import net.networkdowntime.search.SearchResult;
 import net.networkdowntime.search.histogram.DigramLongSearchHistogram;
-import net.networkdowntime.search.histogram.DigramStringSearchHistogram;
+//import net.networkdowntime.search.histogram.DigramStringSearchHistogram;
 import net.networkdowntime.search.histogram.FixedSizeSortedSet;
+import net.networkdowntime.search.histogram.SearchHistogramUtil;
 import net.networkdowntime.search.histogram.UnigramHistogram;
 import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
 import net.networkdowntime.search.histogram.UnigramStringSearchHistogram;
@@ -50,7 +52,7 @@ public class InMemorySearchEngine implements SearchEngine {
 	private UnigramStringSearchHistogram unigramStringSearchHistogram = new UnigramStringSearchHistogram();
 
 	private DigramLongSearchHistogram digramLongSearchHistogram = new DigramLongSearchHistogram();
-	private DigramStringSearchHistogram digramStringSearchHistogram = new DigramStringSearchHistogram();
+//	private DigramStringSearchHistogram digramStringSearchHistogram = new DigramStringSearchHistogram();
 
 	private Autocomplete autocomplete = new Autocomplete();
 
@@ -153,7 +155,7 @@ public class InMemorySearchEngine implements SearchEngine {
 
 				unigramStringSearchHistogram.add(currentWord, (String) searchResult);
 				if (previousWord != null) {
-					digramStringSearchHistogram.add(previousWord, currentWord, (String) searchResult);
+//					digramStringSearchHistogram.add(previousWord, currentWord, (String) searchResult);
 				}
 			}
 		}
@@ -202,7 +204,7 @@ public class InMemorySearchEngine implements SearchEngine {
 
 				unigramStringSearchHistogram.remove(currentWord, (String) searchResult);
 				if (previousWord != null) {
-					digramStringSearchHistogram.remove(previousWord, currentWord, (String) searchResult);
+//					digramStringSearchHistogram.remove(previousWord, currentWord, (String) searchResult);
 				}
 			}
 		}
@@ -229,23 +231,31 @@ public class InMemorySearchEngine implements SearchEngine {
 		t1 = System.currentTimeMillis();
 
 		Set<String> uniqCompletions = autocomplete.getCompletions(keywords, true, hasTrailingSpace, limit * 2);
-
+		for (String s : uniqCompletions) {
+			logger.debug("\tuniq completion: " + s);
+		}
+		
 		timeForCompletions += System.currentTimeMillis() - t1;
 		t1 = System.currentTimeMillis();
 
-		FixedSizeSortedSet<SearchResult> results;
-		FixedSizeSortedSet<SearchResult> resultsString;
+		TLongIntHashMap longResults = new TLongIntHashMap();
 		
-//		results = digramLongSearchHistogram.getSearchResults(firstWords, secondWords, limit)
-		results = UnigramLongSearchHistogram.getSearchResults(unigramLongSearchHistogram, uniqCompletions, limit);
-		resultsString = unigramStringSearchHistogram.getSearchResults(uniqCompletions, limit);
-
-		//		logger.debug("Long results: " + results.size());
-		//		logger.debug("String results: " + resultsString.size());
-
-		for (SearchResult searchResult : resultsString) { // combine and sort the results from each type
-			results.add(searchResult);
+		if (keywords.size() > 1) {
+			longResults = digramLongSearchHistogram.getResultsRaw(uniqCompletions, 10);
 		}
+		
+		SearchHistogramUtil.addResultToMap(longResults, UnigramLongSearchHistogram.getSearchResults(unigramLongSearchHistogram, uniqCompletions));
+		FixedSizeSortedSet<SearchResult> results = SearchHistogramUtil.resultsMapToSet(longResults, limit);
+//		resultsString = unigramStringSearchHistogram.getSearchResults(uniqCompletions, limit);
+
+		logger.debug("Long results: " + results.size());
+//		logger.debug("String results: " + resultsString.size());
+
+		FixedSizeSortedSet<SearchResult> resultsString;
+
+//		for (SearchResult searchResult : resultsString) { // combine and sort the results from each type
+//			results.add(searchResult);
+//		}
 
 		timeForSearchResults += System.currentTimeMillis() - t1;
 		return results;

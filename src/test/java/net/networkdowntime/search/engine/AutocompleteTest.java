@@ -102,20 +102,20 @@ public class AutocompleteTest {
 
 	// Leaving this commented out right now because it takes a while to run
 	// Using largish numbers as strings to simulate a deterministic dataset for capacity testing
-	@Test
-	public void testCapacity() {
-		long numOfElementsToTest = 5000000; // max limit where it runs out of memory is 7,168,000 on my 16GB MacBook Pro
-		long baseNumber = 100000000; // yields a 9 digit string
-		long tenPercent = Math.round(numOfElementsToTest / 10.0d);
-		System.out.print("Test Autocomplete Capacity, Filling: ");
-		for (long i = 0; i < numOfElementsToTest; i++) {
-			autocomplete.add((baseNumber + i) + "");
-			if (i % tenPercent == 0) {
-				int percentage = (int) (100 * ((double) i / numOfElementsToTest));
-				if (percentage != 0)
-					System.out.print(",");
-				System.out.print(" " + percentage + "%");
-			}
-		}
-	}
+//	@Test
+//	public void testCapacity() {
+//		long numOfElementsToTest = 5000000; // max limit where it runs out of memory is 7,168,000 on my 16GB MacBook Pro
+//		long baseNumber = 100000000; // yields a 9 digit string
+//		long tenPercent = Math.round(numOfElementsToTest / 10.0d);
+//		System.out.print("Test Autocomplete Capacity, Filling: ");
+//		for (long i = 0; i < numOfElementsToTest; i++) {
+//			autocomplete.add((baseNumber + i) + "");
+//			if (i % tenPercent == 0) {
+//				int percentage = (int) (100 * ((double) i / numOfElementsToTest));
+//				if (percentage != 0)
+//					System.out.print(",");
+//				System.out.print(" " + percentage + "%");
+//			}
+//		}
+//	}
 }

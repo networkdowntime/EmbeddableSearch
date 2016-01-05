@@ -5,10 +5,9 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import gnu.trove.map.hash.TIntObjectHashMap;
 import net.networkdowntime.search.SearchResult;
 import net.networkdowntime.search.SearchResultComparator;
-import net.networkdowntime.search.SearchResultType;
+import net.networkdowntime.search.textProcessing.ContentSplitter;
 
 /**
  * Wrapper around DigramSearchHistogram to provide String lookups for search results.
@@ -42,10 +41,7 @@ public class DigramLongSearchHistogram extends DigramSearchHistogram {
 	 * @param result The search result to associate with the word
 	 */
 	public void add(String firstWord, String secondWord, long result) {
-		firstWord = firstWord.toLowerCase();
-		secondWord = firstWord.toLowerCase();
-
-		this.add(firstWord, secondWord, result);
+		super.add(firstWord, secondWord, result);
 	}
 
 	/**
@@ -56,10 +52,7 @@ public class DigramLongSearchHistogram extends DigramSearchHistogram {
 	 * @param result The result to be removed.
 	 */
 	public void remove(String firstWord, String secondWord, long result) {
-		firstWord = firstWord.toLowerCase();
-		secondWord = firstWord.toLowerCase();
-
-		this.remove(firstWord, secondWord, result);
+		super.remove(firstWord, secondWord, result);
 	}
 
 	/**
@@ -71,9 +64,9 @@ public class DigramLongSearchHistogram extends DigramSearchHistogram {
 	 *  
 	 * @return A set containing the matched search results up to the specified limit
 	 */
-	@SuppressWarnings("rawtypes")
-	public FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> firstWords, Set<String> secondWords, int limit) {
-
-		return super.getSearchResults(firstWords, firstWords, limit);
-	}
+//	@SuppressWarnings("rawtypes")
+//	public FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> searchTerm, int limit) {
+//		return super.getResultsRaw(searchTerm, limit);
+//	}
+		
 }

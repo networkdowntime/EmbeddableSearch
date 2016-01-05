@@ -83,9 +83,6 @@ public class PrefixTrieNode implements Trei {
 
 	@Override
 	public List<String> getCompletions(String searchString, int limit) {
-		// TODO move toLowerCase out of the prefix trei node to make this class more generic
-		searchString = searchString.toLowerCase();
-
 		List<String> completions = new ArrayList<String>();
 
 		PrefixTrieNode currentNode = this;
@@ -142,7 +139,7 @@ public class PrefixTrieNode implements Trei {
 
 	@Override
 	public void add(String word) {
-		addInternal(word.toLowerCase());
+		addInternal(word);
 
 	}
 
