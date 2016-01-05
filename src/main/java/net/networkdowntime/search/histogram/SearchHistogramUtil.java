@@ -8,6 +8,7 @@ import net.networkdowntime.search.SearchResultType;
 
 public class SearchHistogramUtil {
 
+	@SuppressWarnings("rawtypes")
 	public static FixedSizeSortedSet<SearchResult> resultsMapToLongSet(SearchResultType resultType, TLongIntHashMap results, int limit) {
 		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
 
@@ -20,6 +21,7 @@ public class SearchHistogramUtil {
 		return orderedResults;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static FixedSizeSortedSet<SearchResult> resultsMapToStringSet(SearchResultType resultType, TObjectIntHashMap<String> results, int limit) {
 		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
 
