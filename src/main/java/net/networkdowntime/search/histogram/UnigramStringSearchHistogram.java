@@ -8,9 +8,6 @@ import org.apache.logging.log4j.Logger;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-import net.networkdowntime.search.SearchResult;
-import net.networkdowntime.search.SearchResultComparator;
-import net.networkdowntime.search.SearchResultType;
 
 /**
  * Wrapper around UnigramSearchHistogram to provide String lookups for search results.
@@ -80,7 +77,6 @@ public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
 	 *  
 	 * @return A set containing the matched search results up to the specified limit
 	 */
-	@SuppressWarnings("rawtypes")
 	public TObjectIntHashMap<String> getSearchResults(Set<String> words, int limit) {
 
 		TLongIntHashMap longResults = super.getSearchResults(this, words);
