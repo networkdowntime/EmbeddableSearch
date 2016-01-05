@@ -6,9 +6,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import gnu.trove.map.hash.TLongIntHashMap;
-import net.networkdowntime.search.SearchResult;
-import net.networkdowntime.search.SearchResultComparator;
-import net.networkdowntime.search.textProcessing.ContentSplitter;
 
 /**
  * Wrapper around DigramSearchHistogram to provide String lookups for search results.
