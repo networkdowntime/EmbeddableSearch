@@ -1,7 +1,5 @@
 package net.networkdowntime.search.histogram;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -9,8 +7,6 @@ import org.apache.logging.log4j.Logger;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
-import net.networkdowntime.search.SearchResult;
-import net.networkdowntime.search.SearchResultComparator;
 
 /**
  * Implements a digram search histogram.  For any two word pairs it tracks the results that those words appear together.
@@ -99,7 +95,6 @@ class DigramSearchHistogram {
 	 * @param weightMultiplier Multiplier of how much additional weight to apply to these results
 	 * @return A TLongIntHashMap containing all of the results and their weights
 	 */
-	@SuppressWarnings("rawtypes")
 	protected TLongIntHashMap getResultsRaw(Set<String> searchTerms, int weightMultiplier) {
 		TLongIntHashMap results = new TLongIntHashMap();
 
