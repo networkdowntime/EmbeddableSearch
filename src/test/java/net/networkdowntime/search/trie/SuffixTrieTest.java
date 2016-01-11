@@ -27,31 +27,31 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testGetCompletionsNotNull() {
-		List<String> completions = suffixTrie.getCompletions("not_there", 0);
+		List<String> completions = suffixTrie.getCompletions("not_there", 50);
 		assertTrue(completions != null);
 	}
 
 	@Test
 	public void testGetCompletions1() {
-		List<String> completions = suffixTrie.getCompletions("not_there", 0);
+		List<String> completions = suffixTrie.getCompletions("not_there", 50);
 		assertEquals(5, completions.size());
 	}
 
 	@Test
 	public void testGetCompletions2() {
-		List<String> completions = suffixTrie.getCompletions("o", 0);
+		List<String> completions = suffixTrie.getCompletions("o", 50);
 		assertEquals("o", completions.get(0));
 	}
 
 	@Test
 	public void testGetCompletions3() {
-		List<String> completions = suffixTrie.getCompletions("a", 0);
+		List<String> completions = suffixTrie.getCompletions("a", 50);
 		assertEquals(9, completions.size());
 	}
 
 	@Test
 	public void testGetCompletions4() {
-		List<String> completions = suffixTrie.getCompletions("bananas", 0);
+		List<String> completions = suffixTrie.getCompletions("bananas", 50);
 		assertEquals(1, completions.size());
 	}
 
