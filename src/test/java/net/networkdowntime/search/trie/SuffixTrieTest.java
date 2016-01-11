@@ -34,7 +34,7 @@ public class SuffixTrieTest {
 	@Test
 	public void testGetCompletions1() {
 		List<String> completions = suffixTrie.getCompletions("not_there", 50);
-		assertEquals(5, completions.size());
+		assertEquals(0, completions.size());
 	}
 
 	@Test
@@ -52,7 +52,7 @@ public class SuffixTrieTest {
 	@Test
 	public void testGetCompletions4() {
 		List<String> completions = suffixTrie.getCompletions("bananas", 50);
-		assertEquals(1, completions.size());
+		assertEquals(0, completions.size());
 	}
 
 }

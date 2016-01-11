@@ -82,6 +82,25 @@ public class SuffixTrieNode implements Trei {
 	public List<String> getCompletions(String searchString, int limit) {
 		List<String> completions = new ArrayList<String>();
 
+		SuffixTrieNode currentNode = this;
+		int i = 0;
+
+		while (i < searchString.length()) {
+			char c = searchString.charAt(i);
+
+			if (currentNode != null && currentNode.children != null) {
+				currentNode = currentNode.children.get(c);
+			} else {
+				currentNode = null;
+			}
+			
+			if (currentNode == null) { // no match
+				return completions;
+			}
+			
+			i++;
+		}
+
 		findLastNode(searchString).getCompletionsInternal(completions, searchString, limit);
 
 		return completions;
@@ -205,7 +224,7 @@ public class SuffixTrieNode implements Trei {
 		while (i < word.length()) {
 			char c = word.charAt(i);
 
-			if (currentNode.children != null) {
+			if (currentNode != null && currentNode.children != null) {
 				currentNode = currentNode.children.get(c);
 			}
 			i++;
