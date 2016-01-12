@@ -283,8 +283,8 @@ public class Autocomplete {
 		Set<String> completions = new TLinkedHashSet<String>();
 
 		if (word != null && word.length() > 0) {
-			for (String wordPlusPrefix : prefixTrie.getCompletions(word, limit)) {
-				for (String completedWord : suffixTrie.getCompletions(wordPlusPrefix, 0)) {
+			for (String wordPlusPrefix : prefixTrie.getCompletions(word, limit * 2)) {
+				for (String completedWord : suffixTrie.getCompletions(wordPlusPrefix, limit * 2)) {
 					completions.add(completedWord);
 				}
 			}
