@@ -86,61 +86,58 @@ public class PrefixTrieNode implements Trei {
 		List<String> completions = new ArrayList<String>();
 
 		PrefixTrieNode currentNode = this;
-
 		int i = searchString.length() - 1;
 
 		while (i >= 0) {
 			char c = searchString.charAt(i);
 
-			if (currentNode.children != null) {
+			if (currentNode != null && currentNode.children != null) {
 				currentNode = currentNode.children.get(c);
-
-				if (currentNode == null) { // no match
-					return completions;
-				}
+			} else {
+				currentNode = null;
 			}
+
+			if (currentNode == null) { // no match
+				return completions;
+			}
+
 			i--;
-
 		}
 
-		completions.addAll(currentNode.getCompletionsInternal(searchString, limit));
+		currentNode.getCompletionsInternal(completions, searchString, limit);
 
-		while (completions.size() > limit) {
-			completions.remove(completions.size() - 1);
-		}
 		return completions;
 	}
 
 	/**
-	 * Private internal method to walk the trei and find the completions
+	 * Private internal method to walk the trei and find the completions, this is called from the last matching node
+	 * of the suffix
 	 * 
-	 * @param suffix The suffix to find the completions for
-	 * @param limit TODO
+	 * @param prefix The prefix to find the completions for
+	 * @param limit Max number of results to return
 	 * @return Not null list of the found completions
 	 */
-	private List<String> getCompletionsInternal(String suffix, int limit) {
-		List<String> completions = new ArrayList<String>();
+	private void getCompletionsInternal(List<String> completions, String suffix, int limit) {
 
 		if (this.isEnd) {
 			completions.add(suffix);
+			if (completions.size() >= limit)
+				return;
 		}
 
 		if (children != null) {
 			for (Object obj : children.values()) {
 				PrefixTrieNode child = (PrefixTrieNode) obj;
-				completions.addAll(child.getCompletionsInternal(child.prefix + suffix, limit));
+				child.getCompletionsInternal(completions, child.prefix + suffix, limit);
 				if (completions.size() >= limit)
 					break;
 			}
 		}
-
-		return completions;
 	}
 
 	@Override
 	public void add(String word) {
 		addInternal(word);
-
 	}
 
 	/**
@@ -168,7 +165,7 @@ public class PrefixTrieNode implements Trei {
 				children.put(c, child);
 			}
 
-			if (prefix.length() > 1) {
+			if (length > 1) {
 				child.addInternal(prefix.substring(0, length - 1));
 			} else if (length == 1) { // This is the end of the string and not on the root node, add a child marker to denote end of suffix
 				child.isEnd = true;
@@ -183,55 +180,136 @@ public class PrefixTrieNode implements Trei {
 		}
 	}
 
+	public void remove(String word) {
+		List<String> completions = getCompletions(word, 2);
+
+		if (!completions.isEmpty() && completions.contains(word) && completions.size() == 1) {
+
+			String prefixToBeRemoved = "";
+			String subword = word;
+
+			for (int i = 0; i <= word.length(); i++) {
+				subword = word.substring(i);
+
+				// need to know if the word is the only word on that branch of the trie and it's the exact word.
+				completions = getCompletions(subword, 2);
+
+				// check that it was a single word exact match
+				if (!completions.isEmpty() && completions.contains(word) && completions.size() == 1) {
+					// now, need to figure out how many of the letters in the word can be removed
+					prefixToBeRemoved = prefixToBeRemoved + subword.substring(0, 1);
+				} else {
+					break;
+				}
+			}
+
+			if (prefixToBeRemoved.length() > 0) {
+				PrefixTrieNode currentNode = findLastNode(subword);
+
+				currentNode.children.remove(prefixToBeRemoved.charAt(prefixToBeRemoved.length() - 1));
+				if (currentNode.children.size() == 0) {
+					currentNode.children = null;
+				}
+				remove(word.substring(0, word.length() - 1));
+			}
+		} else {
+			PrefixTrieNode currentNode = findLastNode(word);
+			currentNode.isEnd = false;
+			if (word.length() > 0) {
+				remove(word.substring(0, word.length() - 1));
+			}
+			
+		}
+	}
+
+	private PrefixTrieNode findLastNode(String word) {
+		PrefixTrieNode currentNode = this;
+		int i = word.length() - 1;
+
+		while (i >= 0) {
+			char c = word.charAt(i);
+
+			if (currentNode.children != null) {
+				currentNode = currentNode.children.get(c);
+			}
+			i--;
+		}
+		return currentNode;
+	}
+
 	// Uncomment the following if you want to play around or do debugging.
-	//	public static void main(String[] args) {
-	//		PrefixTrieNode t = new PrefixTrieNode();
-	//		t.add("foo");
-	//		t.print();
-	//		
-	//	}
-	//	private static String getTabs(int tabSpaces) {
-	//		String tabs = "";
-	//		for (int i = 0; i < tabSpaces; i++) {
-	//			tabs = tabs + "\t";
-	//		}
-	//		return tabs;
-	//		
-	//	}
-	//
-	//	
-	//	public void print() {
-	//		print(0);
-	//	}
-	//
-	//	
-	//	private void print(int tabSpaces) {
-	//		String tabs = getTabs(tabSpaces);
-	//
-	//		if (prefix == 0) {
-	//			System.out.print(tabs + "Root Node: " + children.size()	+ " children [");
-	//			for (Object n : children.values()) {
-	//				System.out.print(((PrefixTrieNode)n).prefix + ", ");
-	//			}
-	//			System.out.println("]");
-	//		} else {
-	//			System.out.print(tabs + "Child Node: " + prefix + ": " + ((children == null) ? "0" : children.size()) + " children [");
-	//			if (children != null) {
-	//				for (Object n : children.values()) {
-	//					System.out.print(((PrefixTrieNode)n).prefix + ", ");
-	//				}
-	//			}
-	//			if (isEnd) {
-	//				System.out.print(Character.MAX_VALUE);
-	//			}
-	//			System.out.println("]");
-	//		}
-	//
-	//		if (children != null) {
-	//			for (Object n : children.values()) {
-	//				((PrefixTrieNode)n).print(tabSpaces + 1);
-	//			}
-	//		}
-	//	}
+	public static void main(String[] args) {
+		PrefixTrieNode t = new PrefixTrieNode();
+		t.add("barfoo");
+		PrefixTrieNode.print(t);
+		t.add("foo");
+//		t.print();
+//		for (String s : t.getCompletions("oo", 50)) {
+//			System.out.println("found: " + s);
+//		}
+		//		System.out.println("Prefix for last node for b: " + t.findLastNode("b").prefix);
+		t.remove("foo");
+		PrefixTrieNode.print(t);
+	}
+
+	private static String getTabs(int tabSpaces) {
+		String tabs = "";
+		for (int i = 0; i < tabSpaces; i++) {
+			tabs = tabs + "\t";
+		}
+		return tabs;
+	}
+
+	public static void print(PrefixTrieNode node) {
+		List<String> trace = getTrace(node, 0);
+		for (String s : trace)
+			System.out.println(s);
+	}
+
+	private static List<String> getTrace(PrefixTrieNode node, int tabSpaces) {
+		List<String> trace = new ArrayList<String>();
+		String tabs = getTabs(tabSpaces);
+
+		if (node.prefix == 0) {
+			boolean isFirst = true;
+			StringBuffer buff = new StringBuffer(tabs + "Root Node: " + node.children.size() + " children [");
+			for (Object obj : node.children.values()) {
+				if (!isFirst) {
+					buff.append(", ");
+				}
+				buff.append(((PrefixTrieNode) obj).prefix);
+				isFirst = false;
+			}
+			buff.append("]");
+			trace.add(buff.toString());
+		} else {
+			StringBuffer buff = new StringBuffer(tabs + "Child Node: " + node.prefix + ": " + ((node.children == null) ? "0" : node.children.size()) + " children [");
+			boolean isFirst = true;
+			if (node.children != null) {
+				for (Object obj : node.children.values()) {
+					if (!isFirst) {
+						buff.append(", ");
+					}
+					buff.append(((PrefixTrieNode) obj).prefix);
+					isFirst = false;
+				}
+			}
+			if (node.isEnd) {
+				if (!isFirst) {
+					buff.append(", ");
+				}
+				buff.append(Character.MAX_VALUE);
+			}
+			buff.append("]");
+			trace.add(buff.toString());
+		}
+
+		if (node.children != null) {
+			for (Object n : node.children.values()) {
+				trace.addAll(getTrace(((PrefixTrieNode) n), tabSpaces + 1));
+			}
+		}
+		return trace;
+	}
 
 }
