@@ -97,14 +97,13 @@ public class SuffixTrieNode implements Trei {
 			if (currentNode == null) { // no match
 				return completions;
 			}
-			
+
 			i++;
 		}
 
-		findLastNode(searchString).getCompletionsInternal(completions, searchString, limit);
+		currentNode.getCompletionsInternal(completions, searchString, limit);
 
 		return completions;
-
 	}
 
 	/**
@@ -151,7 +150,7 @@ public class SuffixTrieNode implements Trei {
 		if (length > 0) {
 
 			if (children == null)
-				children = new TCharObjectHashMap<SuffixTrieNode>();// HashMap<Integer, SuffixTrieNode>(1, 0.75f);
+				children = new TCharObjectHashMap<SuffixTrieNode>(1, 0.75f);
 
 			char c = suffix.charAt(0);
 			child = children.get(c);
@@ -164,7 +163,7 @@ public class SuffixTrieNode implements Trei {
 
 			if (length > 1) {
 				child.addInternal(suffix.substring(1));
-			} else if (suffix.length() == 1) { // This is the end of the string and not on the root node, add a child marker to denote end of suffix
+			} else if (length == 1) { // This is the end of the string and not on the root node, add a child marker to denote end of suffix
 				child.isEnd = true;
 			}
 
@@ -199,8 +198,10 @@ public class SuffixTrieNode implements Trei {
 					break;
 				}
 			}
+
 			if (suffixToBeRemoved.length() > 0) {
 				SuffixTrieNode currentNode = findLastNode(subword);
+
 				currentNode.children.remove(suffixToBeRemoved.charAt(0));
 				if (currentNode.children.size() == 0) {
 					currentNode.children = null;
@@ -235,18 +236,18 @@ public class SuffixTrieNode implements Trei {
 	//	 Uncomment the following if you want to play around or do debugging.
 	public static void main(String[] args) {
 		SuffixTrieNode t = new SuffixTrieNode(true);
-		t.add("foodies");
-		t.print();
 		t.add("foo");
-//		t.print();
-		for (String s : t.getCompletions("fo", 50)) {
-			System.out.println("found: " + s);
-		}
-		t.remove("foo");
-		t.print();
-		for (String s : t.getCompletions("fo", 50)) {
-			System.out.println("found: " + s);
-		}
+		SuffixTrieNode.print(t);
+		t.add("foodie");
+		SuffixTrieNode.print(t);
+//		for (String s : t.getCompletions("", 50)) {
+//			System.out.println("found: " + s);
+//		}
+		t.remove("foodie");
+		SuffixTrieNode.print(t);
+//		for (String s : t.getCompletions("fo", 50)) {
+//			System.out.println("found: " + s);
+//		}
 	}
 
 	private static String getTabs(int tabSpaces) {
@@ -257,50 +258,56 @@ public class SuffixTrieNode implements Trei {
 		return tabs;
 	}
 
-	public void print() {
-		print(0);
+	public static void print(SuffixTrieNode node) {
+		List<String> trace = getTrace(node, 0);
+		for (String s : trace)
+			System.out.println(s);
 	}
 
-	private void print(int tabSpaces) {
+	private static List<String> getTrace(SuffixTrieNode node, int tabSpaces) {
+		List<String> trace = new ArrayList<String>();
 		String tabs = getTabs(tabSpaces);
 
-		if (suffix == 0) {
+		if (node.suffix == 0) {
 			boolean isFirst = true;
-			System.out.print(tabs + "Root Node: " + children.size() + " children [");
-			for (Object obj : children.values()) {
+			StringBuffer buff = new StringBuffer(tabs + "Root Node: " + node.children.size() + " children [");
+			for (Object obj : node.children.values()) {
 				if (!isFirst) {
-					System.out.print(", ");
+					buff.append(", ");
 				}
-				System.out.print(((SuffixTrieNode) obj).suffix);
+				buff.append(((SuffixTrieNode) obj).suffix);
 				isFirst = false;
 			}
-			System.out.println("]");
+			buff.append("]");
+			trace.add(buff.toString());
 		} else {
-			System.out.print(tabs + "Child Node: " + suffix + ": " + ((children == null) ? "0" : children.size()) + " children [");
+			StringBuffer buff = new StringBuffer(tabs + "Child Node: " + node.suffix + ": " + ((node.children == null) ? "0" : node.children.size()) + " children [");
 			boolean isFirst = true;
-			if (children != null) {
-				for (Object obj : children.values()) {
+			if (node.children != null) {
+				for (Object obj : node.children.values()) {
 					if (!isFirst) {
-						System.out.print(", ");
+						buff.append(", ");
 					}
-					System.out.print(((SuffixTrieNode) obj).suffix);
+					buff.append(((SuffixTrieNode) obj).suffix);
 					isFirst = false;
 				}
 			}
-			if (this.isEnd) {
+			if (node.isEnd) {
 				if (!isFirst) {
-					System.out.print(", ");
+					buff.append(", ");
 				}
-				System.out.print(Character.MAX_VALUE);
+				buff.append(Character.MAX_VALUE);
 			}
-			System.out.println("]");
+			buff.append("]");
+			trace.add(buff.toString());
 		}
 
-		if (children != null) {
-			for (Object obj : children.values()) {
-				((SuffixTrieNode) obj).print(tabSpaces + 1);
+		if (node.children != null) {
+			for (Object obj : node.children.values()) {
+				trace.addAll(getTrace(((SuffixTrieNode) obj), tabSpaces + 1));
 			}
 		}
+		return trace;
 	}
 
 }
