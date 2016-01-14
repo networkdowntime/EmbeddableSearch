@@ -1,20 +1,23 @@
 package net.networkdowntime.search.trie;
 
+
 import gnu.trove.map.hash.TCharObjectHashMap;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * A prefix trei is a data structure that starting with the last letter of a word and iterates backwards through all of the 
+ * A prefix trie is a data structure that starting with the last letter of a word and iterates backwards through all of the 
  * characters building a tree structure. When another word is added it either builds another tree in the data structure, if 
  * the ending of the word does not already exist, or extends a existing tree with the characters at the beginning of the word 
  * that are different than the already indexed words.  This is recursively done for all prefixes of the word to be added by 
- * stripping the last character from the end and re-adding the new word.  The non-full prefix trei can tell you the beginnings 
- * of all of the words with a specific ending while the full prefix trei can tell you all of the beginnings for any substrings 
+ * stripping the last character from the end and re-adding the new word.  The non-full prefix trie can tell you the beginnings 
+ * of all of the words with a specific ending while the full prefix trie can tell you all of the beginnings for any substrings 
  * of the word.
  * 
- * One of the downsides to a trei is memory usage in a performant implementation.  Several attempts were made to improve the memory usage of this class.
+ * One of the downsides to a trie is memory usage in a performant implementation.  Several attempts were made to improve the memory usage of this class.
  * 	Switching out from the common hashmap implementation to the trove data structures.
  * 	Experimenting with the initial size and load factor of the hashmaps.
  * 	Creating the children hashmap on demand.
@@ -57,7 +60,7 @@ import java.util.List;
  * @author rwiles
  *
  */
-public class PrefixTrieNode implements Trei {
+public class PrefixTrieNode {
 
 	private boolean createFullPrefixTree = true;
 
@@ -65,11 +68,17 @@ public class PrefixTrieNode implements Trei {
 
 	char prefix;
 	boolean isEnd = false;
+	boolean isFullWordEnd = false;
 
 	/**
 	 * Default constructor generates a full prefix tree
 	 */
 	public PrefixTrieNode() {
+	}
+
+	public PrefixTrieNode(boolean createFullPrefixTree, char prefix) {
+		this.createFullPrefixTree = createFullPrefixTree;
+		this.prefix = prefix;
 	}
 
 	/**
@@ -81,11 +90,11 @@ public class PrefixTrieNode implements Trei {
 		this.createFullPrefixTree = createFullPrefixTree;
 	}
 
-	@Override
-	public List<String> getCompletions(String searchString, int limit) {
+	//	@Override
+	public static List<String> getCompletions(PrefixTrieNode node, String searchString, int limit) {
 		List<String> completions = new ArrayList<String>();
 
-		PrefixTrieNode currentNode = this;
+		PrefixTrieNode currentNode = node;
 		int i = searchString.length() - 1;
 
 		while (i >= 0) {
@@ -104,152 +113,174 @@ public class PrefixTrieNode implements Trei {
 			i--;
 		}
 
-		currentNode.getCompletionsInternal(completions, searchString, limit);
+		PrefixTrieNode.getCompletionsInternal(currentNode, completions, searchString, limit);
 
 		return completions;
 	}
 
 	/**
-	 * Private internal method to walk the trei and find the completions, this is called from the last matching node
+	 * Private internal method to walk the trie and find the completions, this is called from the last matching node
 	 * of the suffix
 	 * 
 	 * @param prefix The prefix to find the completions for
 	 * @param limit Max number of results to return
 	 * @return Not null list of the found completions
 	 */
-	private void getCompletionsInternal(List<String> completions, String suffix, int limit) {
+	private static void getCompletionsInternal(PrefixTrieNode node, List<String> completions, String suffix, int limit) {
 
-		if (this.isEnd) {
+		if (node.isEnd) {
 			completions.add(suffix);
 			if (completions.size() >= limit)
 				return;
 		}
 
-		if (children != null) {
-			for (Object obj : children.values()) {
+		if (node.children != null) {
+			for (Object obj : node.children.values()) {
 				PrefixTrieNode child = (PrefixTrieNode) obj;
-				child.getCompletionsInternal(completions, child.prefix + suffix, limit);
+				PrefixTrieNode.getCompletionsInternal(child, completions, child.prefix + suffix, limit);
 				if (completions.size() >= limit)
 					break;
 			}
 		}
 	}
 
-	@Override
-	public void add(String word) {
-		addInternal(word);
+	private static void getCompletionsFullWords(PrefixTrieNode node, Set<String> completions, String suffix) {
+		if (node.isEnd && node.isFullWordEnd) {
+			completions.add(suffix);
+		}
+
+		if (node.children != null) {
+			if (node.prefix == 0 && suffix.length() > 0) { // root node
+				PrefixTrieNode child = node.children.get(suffix.charAt(suffix.length() - 1));
+				if (child != null) {
+					PrefixTrieNode.getCompletionsFullWords(child, completions, suffix);
+				}
+			} else {
+				for (Object obj : node.children.values()) {
+					PrefixTrieNode child = (PrefixTrieNode) obj;
+					PrefixTrieNode.getCompletionsFullWords(child, completions, child.prefix + suffix);
+				}
+			}
+		}
+	}
+
+	public static void add(PrefixTrieNode node, String word) {
+		addInternal(node, word, true);
 	}
 
 	/**
-	 * Private internal method to recursively add prefix the prefix trei structure
+	 * Private internal method to recursively add prefix the prefix trie structure
 	 * 
-	 * @param prefix Prefix to be added to the trei
+	 * @param prefix Prefix to be added to the trie
 	 */
-	private void addInternal(String prefix) {
-
-		PrefixTrieNode child = null;
+	private static void addInternal(PrefixTrieNode node, String prefix, boolean isFullWord) {
 
 		int length = prefix.length();
+		node.children = (node.children != null) ? node.children : new TCharObjectHashMap<PrefixTrieNode>(1, 0.75f);
 
-		if (length > 0) {
+		char c = prefix.charAt(length - 1);
+		PrefixTrieNode child = node.children.get(c);
 
-			if (children == null)
-				children = new TCharObjectHashMap<PrefixTrieNode>(1, 0.75f);
+		if (child == null) {
+			child = new PrefixTrieNode(node.createFullPrefixTree, c);
+			node.children.put(c, child);
+		}
 
-			char c = prefix.charAt(length - 1);
-			child = children.get(c);
+		if (length == 1) { // This is the end of the string and not on the root node, add a child marker to denote end of suffix
+			child.isEnd = true;
+			child.isFullWordEnd = isFullWord;
+		} else {
+			String subString = prefix.substring(0, length - 1);
 
-			if (child == null) {
-				child = new PrefixTrieNode(createFullPrefixTree);
-				child.prefix = c;
-				children.put(c, child);
+			PrefixTrieNode.addInternal(child, subString, isFullWord);
+
+			if (node.createFullPrefixTree && node.prefix == 0) { // full tree and root node
+				PrefixTrieNode.addInternal(node, subString, false);
 			}
-
-			if (length > 1) {
-				child.addInternal(prefix.substring(0, length - 1));
-			} else if (length == 1) { // This is the end of the string and not on the root node, add a child marker to denote end of suffix
-				child.isEnd = true;
-			}
-
-			if (createFullPrefixTree) {
-				if (this.prefix == 0 && length > 1) { // if this is the root node
-					this.addInternal(prefix.substring(0, length - 1));
-				}
-			}
-
 		}
 	}
 
-	public void remove(String word) {
-		List<String> completions = getCompletions(word, 2);
+	// to be called on the root node
+	public static void remove(PrefixTrieNode node, String wordToRemove) {
+		Set<String> allFullWords = new HashSet<String>();
 
-		if (!completions.isEmpty() && completions.contains(word) && completions.size() == 1) {
+		if (node.createFullPrefixTree) { // have to account for all words that share a character with wordToRemove
+			getCompletionsFullWords(node, allFullWords, "");
+		} else {
+			getCompletionsFullWords(node, allFullWords, wordToRemove.substring(wordToRemove.length() - 1));
+		}
 
-			String prefixToBeRemoved = "";
-			String subword = word;
+		Set<String> wordsToPreserve = new HashSet<String>();
+		for (String fullWord : allFullWords) {
+			if (fullWord.contains(wordToRemove) && !wordToRemove.equals(fullWord)) {
+				wordsToPreserve.add(fullWord);
+			}
+		}
 
-			for (int i = 0; i <= word.length(); i++) {
-				subword = word.substring(i);
+		removeInternal(node, wordToRemove, true, wordsToPreserve, 0);
 
-				// need to know if the word is the only word on that branch of the trie and it's the exact word.
-				completions = getCompletions(subword, 2);
+	}
 
-				// check that it was a single word exact match
-				if (!completions.isEmpty() && completions.contains(word) && completions.size() == 1) {
-					// now, need to figure out how many of the letters in the word can be removed
-					prefixToBeRemoved = prefixToBeRemoved + subword.substring(0, 1);
-				} else {
-					break;
-				}
+	private static void removeInternal(PrefixTrieNode node, String word, boolean isFullWord, Set<String> wordsToPreserve, int tabs) {
+		int length = word.length();
+
+		char c = word.charAt(length - 1);
+		PrefixTrieNode child = node.children.get(c);
+		boolean isRootNode = node.prefix == 0;
+		boolean isBeginningOfWordToPreserve = false;
+		boolean isPartOfWordToPreserve = false;
+		boolean isEndOfWordToPreserve = false;
+
+		for (String wordToPreserve : wordsToPreserve) {
+			String charStr = "" + child.prefix;
+			isBeginningOfWordToPreserve = isBeginningOfWordToPreserve || child.prefix == wordToPreserve.charAt(0);
+			isPartOfWordToPreserve = isPartOfWordToPreserve || wordToPreserve.contains(charStr);
+			isEndOfWordToPreserve = isEndOfWordToPreserve || child.prefix == wordToPreserve.charAt(wordToPreserve.length() - 1);
+		}
+
+		if (length == 1) {
+			child.isFullWordEnd = child.isFullWordEnd && !isFullWord;
+
+			if (!isBeginningOfWordToPreserve || !node.createFullPrefixTree) {
+				child.isEnd = false;
 			}
 
-			if (prefixToBeRemoved.length() > 0) {
-				PrefixTrieNode currentNode = findLastNode(subword);
-
-				currentNode.children.remove(prefixToBeRemoved.charAt(prefixToBeRemoved.length() - 1));
-				if (currentNode.children.size() == 0) {
-					currentNode.children = null;
-				}
-				remove(word.substring(0, word.length() - 1));
+			if (!child.isEnd && !child.isFullWordEnd && child.children == null) {
+				node.children.remove(c);
 			}
 		} else {
-			PrefixTrieNode currentNode = findLastNode(word);
-			currentNode.isEnd = false;
-			if (word.length() > 0) {
-				remove(word.substring(0, word.length() - 1));
+			String subString = word.substring(0, length - 1);
+			PrefixTrieNode.removeInternal(child, subString, isFullWord, wordsToPreserve, tabs + 1);
+
+			if (node.createFullPrefixTree && isRootNode) { // full tree and root node
+				PrefixTrieNode.removeInternal(node, subString, false, wordsToPreserve, tabs + 1);
 			}
-			
-		}
-	}
 
-	private PrefixTrieNode findLastNode(String word) {
-		PrefixTrieNode currentNode = this;
-		int i = word.length() - 1;
-
-		while (i >= 0) {
-			char c = word.charAt(i);
-
-			if (currentNode.children != null) {
-				currentNode = currentNode.children.get(c);
+			if (child.children.size() == 0 && !child.isEnd) {
+				node.children.remove(child.prefix);
 			}
-			i--;
+
 		}
-		return currentNode;
 	}
 
 	// Uncomment the following if you want to play around or do debugging.
 	public static void main(String[] args) {
 		PrefixTrieNode t = new PrefixTrieNode();
-		t.add("barfoo");
+		PrefixTrieNode.add(t, "fod");
 		PrefixTrieNode.print(t);
-		t.add("foo");
-//		t.print();
-//		for (String s : t.getCompletions("oo", 50)) {
-//			System.out.println("found: " + s);
-//		}
-		//		System.out.println("Prefix for last node for b: " + t.findLastNode("b").prefix);
-		t.remove("foo");
+		List<String> expectedTrace = PrefixTrieNode.getTrace(t, 0);
+
+		PrefixTrieNode.add(t, "f");
 		PrefixTrieNode.print(t);
+		PrefixTrieNode.remove(t, "f");
+		PrefixTrieNode.print(t);
+		List<String> actualTrace = PrefixTrieNode.getTrace(t, 0);
+
+		boolean matches = true;
+		for (int i = 0; i < actualTrace.size(); i++) {
+			matches = matches && actualTrace.get(i).equals(expectedTrace.get(i));
+		}
+		System.out.println("Matches: " + matches);
 	}
 
 	private static String getTabs(int tabSpaces) {
@@ -266,7 +297,7 @@ public class PrefixTrieNode implements Trei {
 			System.out.println(s);
 	}
 
-	private static List<String> getTrace(PrefixTrieNode node, int tabSpaces) {
+	static List<String> getTrace(PrefixTrieNode node, int tabSpaces) {
 		List<String> trace = new ArrayList<String>();
 		String tabs = getTabs(tabSpaces);
 
@@ -299,6 +330,14 @@ public class PrefixTrieNode implements Trei {
 					buff.append(", ");
 				}
 				buff.append(Character.MAX_VALUE);
+				isFirst = false;
+			}
+			if (node.isFullWordEnd) {
+				if (!isFirst) {
+					buff.append(", ");
+				}
+				buff.append("FWE");
+				isFirst = false;
 			}
 			buff.append("]");
 			trace.add(buff.toString());

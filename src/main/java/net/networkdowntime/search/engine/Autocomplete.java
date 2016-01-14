@@ -99,8 +99,8 @@ public class Autocomplete {
 			previousWord = (currentWord != null) ? currentWord : null;
 			currentWord = keywords.get(i);
 
-			prefixTrie.add(currentWord);
-			suffixTrie.add(currentWord);
+			PrefixTrieNode.add(prefixTrie, currentWord);
+			SuffixTrieNode.add(suffixTrie, currentWord);
 
 			UnigramHistogram.add(unigramHistogram, currentWord);
 			if (previousWord != null) {
@@ -138,6 +138,11 @@ public class Autocomplete {
 			// TODO Implement remove functionality for the Tries, don't have a mechanism to do that right now
 
 			UnigramHistogram.remove(unigramHistogram, currentWord);
+			
+			if (!UnigramHistogram.contains(unigramHistogram, currentWord)) {
+				PrefixTrieNode.remove(prefixTrie, currentWord);
+				SuffixTrieNode.remove(suffixTrie, currentWord);
+			}
 			if (previousWord != null) {
 				digramHistogram.remove(previousWord, currentWord);
 			}
@@ -283,8 +288,8 @@ public class Autocomplete {
 		Set<String> completions = new TLinkedHashSet<String>();
 
 		if (word != null && word.length() > 0) {
-			for (String wordPlusPrefix : prefixTrie.getCompletions(word, limit * 2)) {
-				for (String completedWord : suffixTrie.getCompletions(wordPlusPrefix, limit * 2)) {
+			for (String wordPlusPrefix : PrefixTrieNode.getCompletions(prefixTrie, word, limit * 2)) {
+				for (String completedWord : SuffixTrieNode.getCompletions(suffixTrie, wordPlusPrefix, limit * 2)) {
 					completions.add(completedWord);
 				}
 			}

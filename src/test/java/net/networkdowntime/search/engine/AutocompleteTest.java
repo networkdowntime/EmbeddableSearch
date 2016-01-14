@@ -47,7 +47,6 @@ public class AutocompleteTest {
 	@Test
 	public void testUnigramHistogramOrderedCommpletions() {
 		List<String> orderedList = new ArrayList<String>(autocomplete.getCompletions("a", false, 10));
-
 		assertEquals("band", orderedList.get(0));
 		assertEquals("banana", orderedList.get(1));
 		assertEquals("cacao", orderedList.get(2));

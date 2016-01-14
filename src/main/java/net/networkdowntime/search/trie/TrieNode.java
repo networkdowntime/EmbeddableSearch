@@ -1,6 +1,6 @@
 package net.networkdowntime.search.trie;
 
-import java.util.List;
+import gnu.trove.map.hash.TCharObjectHashMap;
 
 /**
  * Common interface implemented by the Prefix and Suffix Tries.
@@ -23,22 +23,12 @@ import java.util.List;
  * @author rwiles
  *
  */
-public interface Trei {
+public class TrieNode {
 
-	/**
-	 * Finds all possible completions for the submitted searchString.  Should only performed on the root node.
-	 * 
-	 * @param searchString The word-stub to find completions for  
-	 * @param limit Max number of results to return
-	 * @return Not null list of the found completions
-	 */
-	public abstract List<String> getCompletions(String searchString, int limit);
+	private TCharObjectHashMap<PrefixTrieNode> children = null;
 
-	/**
-	 * Adds a word to the trei
-	 * 
-	 * @param word Word to be added
-	 */
-	public abstract void add(String word);
+	char prefix;
+	boolean isEnd = false;
+	boolean isFullWordEnd = false;
 
 }
