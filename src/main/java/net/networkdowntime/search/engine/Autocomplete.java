@@ -14,8 +14,8 @@ import net.networkdowntime.search.textProcessing.ContentSplitter;
 import net.networkdowntime.search.textProcessing.HtmlTagTextScrubber;
 import net.networkdowntime.search.textProcessing.KeywordScrubber;
 import net.networkdowntime.search.textProcessing.TextScrubber;
-import net.networkdowntime.search.trie.PrefixTrieNode;
-import net.networkdowntime.search.trie.SuffixTrieNode;
+import net.networkdowntime.search.trie.PrefixTrie;
+import net.networkdowntime.search.trie.SuffixTrie;
 
 /**
  * Implements auto-complete functionality for words using a full prefix-trie and a partial suffix-trie.  
@@ -44,8 +44,8 @@ public class Autocomplete {
 
 	private UnigramHistogram unigramHistogram = new UnigramHistogram();
 	private DigramHistogram digramHistogram = new DigramHistogram();
-	private PrefixTrieNode prefixTrie = new PrefixTrieNode();
-	private SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
+	private PrefixTrie prefixTrie = new PrefixTrie();
+	private SuffixTrie suffixTrie = new SuffixTrie(false);
 
 	private TextScrubber textScrubber = new HtmlTagTextScrubber();
 	private ContentSplitter contentSplitter = new ContentSplitter();
@@ -99,8 +99,8 @@ public class Autocomplete {
 			previousWord = (currentWord != null) ? currentWord : null;
 			currentWord = keywords.get(i);
 
-			PrefixTrieNode.add(prefixTrie, currentWord);
-			SuffixTrieNode.add(suffixTrie, currentWord);
+			prefixTrie.add(currentWord);
+			suffixTrie.add(currentWord);
 
 			UnigramHistogram.add(unigramHistogram, currentWord);
 			if (previousWord != null) {
@@ -140,8 +140,8 @@ public class Autocomplete {
 			UnigramHistogram.remove(unigramHistogram, currentWord);
 			
 			if (!UnigramHistogram.contains(unigramHistogram, currentWord)) {
-				PrefixTrieNode.remove(prefixTrie, currentWord);
-				SuffixTrieNode.remove(suffixTrie, currentWord);
+				prefixTrie.remove(currentWord);
+				suffixTrie.remove(currentWord);
 			}
 			if (previousWord != null) {
 				digramHistogram.remove(previousWord, currentWord);
@@ -288,8 +288,8 @@ public class Autocomplete {
 		Set<String> completions = new TLinkedHashSet<String>();
 
 		if (word != null && word.length() > 0) {
-			for (String wordPlusPrefix : PrefixTrieNode.getCompletions(prefixTrie, word, limit * 2)) {
-				for (String completedWord : SuffixTrieNode.getCompletions(suffixTrie, wordPlusPrefix, limit * 2)) {
+			for (String wordPlusPrefix : prefixTrie.getCompletions(word, limit * 2)) {
+				for (String completedWord : suffixTrie.getCompletions(wordPlusPrefix, limit * 2)) {
 					completions.add(completedWord);
 				}
 			}

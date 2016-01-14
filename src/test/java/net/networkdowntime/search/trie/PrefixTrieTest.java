@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.networkdowntime.search.trie.PrefixTrieNode;
+import net.networkdowntime.search.trie.PrefixTrie;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -53,74 +53,74 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testAddOneWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "qwerty");
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("qwerty");
 	}
 
 	@Test
 	public void testPartialTrieAddOneWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "qwerty");
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("qwerty");
 	}
 
 	@Test
 	public void testAddTwoWords() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "qwerty");
-		PrefixTrieNode.add(prefixTrie, "wombat");
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("qwerty");
+		prefixTrie.add("wombat");
 	}
 
 	@Test
 	public void testPartialTrieAddTwoWords() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "qwerty");
-		PrefixTrieNode.add(prefixTrie, "wombat");
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("qwerty");
+		prefixTrie.add("wombat");
 	}
 
 	@Test
 	public void testGetCompletionsNoMatch() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "cacao");
-		List<String> completions = PrefixTrieNode.getCompletions(prefixTrie, "not_there", 50);
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("cacao");
+		List<String> completions = prefixTrie.getCompletions("not_there", 50);
 		assertTrue(completions != null);
 		assertEquals(0, completions.size());
 	}
 
 	@Test
 	public void testPartialTrieGetCompletionsNoMatch() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "cacao");
-		List<String> completions = PrefixTrieNode.getCompletions(prefixTrie, "not_there", 50);
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("cacao");
+		List<String> completions = prefixTrie.getCompletions("not_there", 50);
 		assertTrue(completions != null);
 		assertEquals(0, completions.size());
 	}
 
 	@Test
 	public void testGetCompletions2() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "cacao");
-		List<String> completions = PrefixTrieNode.getCompletions(prefixTrie, "o", 50);
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("cacao");
+		List<String> completions = prefixTrie.getCompletions("o", 50);
 		assertEquals("cacao", completions.get(0));
 	}
 
 	@Test
 	public void testPartialTrieGetCompletions2() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "cacao");
-		List<String> completions = PrefixTrieNode.getCompletions(prefixTrie, "o", 50);
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("cacao");
+		List<String> completions = prefixTrie.getCompletions("o", 50);
 		assertEquals("cacao", completions.get(0));
 	}
 
 	@Test
 	public void testGetCompletions3() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "cacao");
-		PrefixTrieNode.add(prefixTrie, "ban");
-		PrefixTrieNode.add(prefixTrie, "bad");
-		PrefixTrieNode.add(prefixTrie, "band");
-		PrefixTrieNode.add(prefixTrie, "banana");
-		PrefixTrieNode.add(prefixTrie, "bandy");
-		List<String> completions = PrefixTrieNode.getCompletions(prefixTrie, "a", 50);
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("cacao");
+		prefixTrie.add("ban");
+		prefixTrie.add("bad");
+		prefixTrie.add("band");
+		prefixTrie.add("banana");
+		prefixTrie.add("bandy");
+		List<String> completions = prefixTrie.getCompletions("a", 50);
 		assertEquals(5, completions.size());
 		assertTrue(completions.contains("ca"));
 		assertTrue(completions.contains("caca"));
@@ -131,23 +131,23 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieGetCompletions3() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "cacao");
-		PrefixTrieNode.add(prefixTrie, "ban");
-		PrefixTrieNode.add(prefixTrie, "bad");
-		PrefixTrieNode.add(prefixTrie, "band");
-		PrefixTrieNode.add(prefixTrie, "banana");
-		PrefixTrieNode.add(prefixTrie, "bandy");
-		List<String> completions = PrefixTrieNode.getCompletions(prefixTrie, "a", 50);
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("cacao");
+		prefixTrie.add("ban");
+		prefixTrie.add("bad");
+		prefixTrie.add("band");
+		prefixTrie.add("banana");
+		prefixTrie.add("bandy");
+		List<String> completions = prefixTrie.getCompletions("a", 50);
 		assertEquals(1, completions.size());
 		assertTrue(completions.contains("banana"));
 	}
 
 	@Test
 	public void testExpectedTraceFoo() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "foo");
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("foo");
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTraceFoo.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -157,9 +157,9 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieExpectedTraceFoo() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "foo");
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("foo");
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTracePartialFoo.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -169,10 +169,10 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testExpectedTraceFooTwo() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "foo");
-		PrefixTrieNode.add(prefixTrie, "two");
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("foo");
+		prefixTrie.add("two");
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTraceFooTwo.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -182,10 +182,10 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieExpectedTraceFooTwo() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "foo");
-		PrefixTrieNode.add(prefixTrie, "two");
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("foo");
+		prefixTrie.add("two");
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTracePartialFooTwo.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -195,11 +195,11 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveSingleNodeOffExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "foo");
-		PrefixTrieNode.add(prefixTrie, "bfoo");
-		PrefixTrieNode.remove(prefixTrie, "bfoo");
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("foo");
+		prefixTrie.add("bfoo");
+		prefixTrie.remove("bfoo");
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTraceFoo.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -209,11 +209,11 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveSingleNodeOffExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "foo");
-		PrefixTrieNode.add(prefixTrie, "bfoo");
-		PrefixTrieNode.remove(prefixTrie, "bfoo");
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("foo");
+		prefixTrie.add("bfoo");
+		prefixTrie.remove("bfoo");
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTracePartialFoo.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -223,12 +223,12 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveMultipleNodeOffExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "foo");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "barfoo");
-		PrefixTrieNode.remove(prefixTrie, "barfoo");
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("foo");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("barfoo");
+		prefixTrie.remove("barfoo");
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -238,12 +238,12 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveMultipleNodeOffExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "foo");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "barfoo");
-		PrefixTrieNode.remove(prefixTrie, "barfoo");
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("foo");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("barfoo");
+		prefixTrie.remove("barfoo");
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -253,13 +253,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveSingleCharWordBeginningOfExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "fod");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "f");
-		PrefixTrieNode.remove(prefixTrie, "f");
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("fod");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("f");
+		prefixTrie.remove("f");
 	
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 	
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -269,13 +269,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveSingleCharWordBeginningOfExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "fod");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "f");
-		PrefixTrieNode.remove(prefixTrie, "f");
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("fod");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("f");
+		prefixTrie.remove("f");
 	
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 	
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -285,13 +285,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveSingleCharWordSubsetOfExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "fod");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "o");
-		PrefixTrieNode.remove(prefixTrie, "o");
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("fod");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("o");
+		prefixTrie.remove("o");
 
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -301,13 +301,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveSingleCharWordSubsetOfExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "fod");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "o");
-		PrefixTrieNode.remove(prefixTrie, "o");
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("fod");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("o");
+		prefixTrie.remove("o");
 
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -317,13 +317,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveSingleCharWordEndOfExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "fod");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "d");
-		PrefixTrieNode.remove(prefixTrie, "d");
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("fod");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("d");
+		prefixTrie.remove("d");
 
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -333,13 +333,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveSingleCharWordEndOfExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "fod");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "d");
-		PrefixTrieNode.remove(prefixTrie, "d");
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("fod");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("d");
+		prefixTrie.remove("d");
 
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -349,13 +349,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveMultiCharWordBeginningOfExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "food");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "fo");
-		PrefixTrieNode.remove(prefixTrie, "fo");
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("food");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("fo");
+		prefixTrie.remove("fo");
 
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -365,13 +365,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveMultiCharWordBeginningOfExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "food");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "fo");
-		PrefixTrieNode.remove(prefixTrie, "fo");
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("food");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("fo");
+		prefixTrie.remove("fo");
 
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -381,13 +381,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveMultiCharWordSubsetOfExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "food");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "oo");
-		PrefixTrieNode.remove(prefixTrie, "oo");
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("food");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("oo");
+		prefixTrie.remove("oo");
 
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -397,13 +397,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveMultiCharWordSubsetOfExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "food");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "oo");
-		PrefixTrieNode.remove(prefixTrie, "oo");
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("food");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("oo");
+		prefixTrie.remove("oo");
 
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -413,13 +413,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveMultiCharWordEndOfExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "food");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "od");
-		PrefixTrieNode.remove(prefixTrie, "od");
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("food");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("od");
+		prefixTrie.remove("od");
 
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -429,13 +429,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveMultiCharWordEndOfExistingWord() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "food");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "od");
-		PrefixTrieNode.remove(prefixTrie, "od");
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("food");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("od");
+		prefixTrie.remove("od");
 
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -445,13 +445,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testAddRemove6() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode();
-		PrefixTrieNode.add(prefixTrie, "foo");
-		PrefixTrieNode.add(prefixTrie, "two");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "fo");
-		PrefixTrieNode.remove(prefixTrie, "fo");
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("foo");
+		prefixTrie.add("two");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("fo");
+		prefixTrie.remove("fo");
+		List<String> actualTrace = prefixTrie.getTrace();
 
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
@@ -462,13 +462,13 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieAddRemove6() {
-		PrefixTrieNode prefixTrie = new PrefixTrieNode(false);
-		PrefixTrieNode.add(prefixTrie, "foo");
-		PrefixTrieNode.add(prefixTrie, "two");
-		List<String> expectedTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
-		PrefixTrieNode.add(prefixTrie, "fo");
-		PrefixTrieNode.remove(prefixTrie, "fo");
-		List<String> actualTrace = PrefixTrieNode.getTrace(prefixTrie, 0);
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("foo");
+		prefixTrie.add("two");
+		List<String> expectedTrace = prefixTrie.getTrace();
+		prefixTrie.add("fo");
+		prefixTrie.remove("fo");
+		List<String> actualTrace = prefixTrie.getTrace();
 
 		assertEquals(expectedTrace.size(), actualTrace.size());
 

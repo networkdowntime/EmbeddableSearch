@@ -5,13 +5,13 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.networkdowntime.search.trie.SuffixTrieNode;
+import net.networkdowntime.search.trie.SuffixTrie;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SuffixTrieTest {
-	SuffixTrieNode suffixTrie;
+	SuffixTrie suffixTrie;
 
 	static List<String> expectedTraceOof = new ArrayList<String>();
 	static List<String> expectedTracePartialOof = new ArrayList<String>();
@@ -55,74 +55,74 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testAddOneWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "qwerty");
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("qwerty");
 	}
 
 	@Test
 	public void testPartialTrieAddOneWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "qwerty");
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("qwerty");
 	}
 
 	@Test
 	public void testAddTwoWords() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "qwerty");
-		SuffixTrieNode.add(suffixTrie, "wombat");
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("qwerty");
+		suffixTrie.add("wombat");
 	}
 
 	@Test
 	public void testPartialTrieAddTwoWords() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "qwerty");
-		SuffixTrieNode.add(suffixTrie, "wombat");
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("qwerty");
+		suffixTrie.add("wombat");
 	}
 
 	@Test
 	public void testGetCompletionsNoMatch() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "cacao");
-		List<String> completions = SuffixTrieNode.getCompletions(suffixTrie, "not_there", 50);
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("cacao");
+		List<String> completions = suffixTrie.getCompletions("not_there", 50);
 		assertTrue(completions != null);
 		assertEquals(0, completions.size());
 	}
 
 	@Test
 	public void testPartialTrieGetCompletionsNoMatch() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "cacao");
-		List<String> completions = SuffixTrieNode.getCompletions(suffixTrie, "not_there", 50);
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("cacao");
+		List<String> completions = suffixTrie.getCompletions("not_there", 50);
 		assertTrue(completions != null);
 		assertEquals(0, completions.size());
 	}
 
 	@Test
 	public void testGetCompletions2() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "oacac");
-		List<String> completions = SuffixTrieNode.getCompletions(suffixTrie, "o", 50);
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("oacac");
+		List<String> completions = suffixTrie.getCompletions("o", 50);
 		assertEquals("oacac", completions.get(0));
 	}
 
 	@Test
 	public void testPartialTrieGetCompletions2() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "oacac");
-		List<String> completions = SuffixTrieNode.getCompletions(suffixTrie, "o", 50);
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("oacac");
+		List<String> completions = suffixTrie.getCompletions("o", 50);
 		assertEquals("oacac", completions.get(0));
 	}
 
 	@Test
 	public void testGetCompletions3() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "oacac");
-		SuffixTrieNode.add(suffixTrie, "nab");
-		SuffixTrieNode.add(suffixTrie, "dab");
-		SuffixTrieNode.add(suffixTrie, "dnab");
-		SuffixTrieNode.add(suffixTrie, "ananab");
-		SuffixTrieNode.add(suffixTrie, "ydnab");
-		List<String> completions = SuffixTrieNode.getCompletions(suffixTrie, "a", 50);
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("oacac");
+		suffixTrie.add("nab");
+		suffixTrie.add("dab");
+		suffixTrie.add("dnab");
+		suffixTrie.add("ananab");
+		suffixTrie.add("ydnab");
+		List<String> completions = suffixTrie.getCompletions("a", 50);
 		assertEquals(5, completions.size());
 		assertTrue(completions.contains("ac"));
 		assertTrue(completions.contains("acac"));
@@ -133,23 +133,23 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testPartialTrieGetCompletions3() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "oacac");
-		SuffixTrieNode.add(suffixTrie, "nab");
-		SuffixTrieNode.add(suffixTrie, "dab");
-		SuffixTrieNode.add(suffixTrie, "dnab");
-		SuffixTrieNode.add(suffixTrie, "ananab");
-		SuffixTrieNode.add(suffixTrie, "ydnab");
-		List<String> completions = SuffixTrieNode.getCompletions(suffixTrie, "a", 50);
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("oacac");
+		suffixTrie.add("nab");
+		suffixTrie.add("dab");
+		suffixTrie.add("dnab");
+		suffixTrie.add("ananab");
+		suffixTrie.add("ydnab");
+		List<String> completions = suffixTrie.getCompletions("a", 50);
 		assertEquals(1, completions.size());
 		assertTrue(completions.contains("ananab"));
 	}
 
 	@Test
 	public void testExpectedTraceFoo() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "oof");
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("oof");
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTraceOof.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -159,9 +159,9 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testPartialTrieExpectedTraceFoo() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "oof");
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("oof");
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTracePartialOof.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -171,10 +171,10 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testExpectedTraceFooTwo() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "oof");
-		SuffixTrieNode.add(suffixTrie, "owt");
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("oof");
+		suffixTrie.add("owt");
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTraceOofOwt.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -184,10 +184,10 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testPartialTrieExpectedTraceFooTwo() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "oof");
-		SuffixTrieNode.add(suffixTrie, "owt");
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("oof");
+		suffixTrie.add("owt");
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTracePartialOofOwt.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -197,11 +197,11 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testRemoveSingleNodeOffExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "oof");
-		SuffixTrieNode.add(suffixTrie, "oofb");
-		SuffixTrieNode.remove(suffixTrie, "oofb");
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("oof");
+		suffixTrie.add("oofb");
+		suffixTrie.remove("oofb");
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTraceOof.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -211,11 +211,11 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveSingleNodeOffExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "oof");
-		SuffixTrieNode.add(suffixTrie, "oofb");
-		SuffixTrieNode.remove(suffixTrie, "oofb");
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("oof");
+		suffixTrie.add("oofb");
+		suffixTrie.remove("oofb");
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTracePartialOof.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -225,12 +225,12 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testRemoveMultipleNodeOffExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "oof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "oofrab");
-		SuffixTrieNode.remove(suffixTrie, "oofrab");
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("oof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("oofrab");
+		suffixTrie.remove("oofrab");
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -240,12 +240,12 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveMultipleNodeOffExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "oof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "oofrab");
-		SuffixTrieNode.remove(suffixTrie, "oofrab");
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("oof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("oofrab");
+		suffixTrie.remove("oofrab");
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -255,13 +255,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testRemoveSingleCharWordBeginningOfExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "dof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "f");
-		SuffixTrieNode.remove(suffixTrie, "f");
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("dof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("f");
+		suffixTrie.remove("f");
 
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -271,13 +271,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveSingleCharWordBeginningOfExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "dof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "f");
-		SuffixTrieNode.remove(suffixTrie, "f");
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("dof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("f");
+		suffixTrie.remove("f");
 
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -287,13 +287,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testRemoveSingleCharWordSubsetOfExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "dof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "o");
-		SuffixTrieNode.remove(suffixTrie, "o");
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("dof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("o");
+		suffixTrie.remove("o");
 
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -303,13 +303,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveSingleCharWordSubsetOfExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "dof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "o");
-		SuffixTrieNode.remove(suffixTrie, "o");
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("dof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("o");
+		suffixTrie.remove("o");
 
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -319,13 +319,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testRemoveSingleCharWordEndOfExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "dof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "d");
-		SuffixTrieNode.remove(suffixTrie, "d");
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("dof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("d");
+		suffixTrie.remove("d");
 
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -335,13 +335,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveSingleCharWordEndOfExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "dof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "d");
-		SuffixTrieNode.remove(suffixTrie, "d");
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("dof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("d");
+		suffixTrie.remove("d");
 
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -351,13 +351,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testRemoveMultiCharWordBeginningOfExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "doof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "of");
-		SuffixTrieNode.remove(suffixTrie, "of");
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("doof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("of");
+		suffixTrie.remove("of");
 
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -367,13 +367,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveMultiCharWordBeginningOfExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "doof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "of");
-		SuffixTrieNode.remove(suffixTrie, "of");
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("doof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("of");
+		suffixTrie.remove("of");
 
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -383,13 +383,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testRemoveMultiCharWordSubsetOfExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "doof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "oo");
-		SuffixTrieNode.remove(suffixTrie, "oo");
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("doof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("oo");
+		suffixTrie.remove("oo");
 
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -399,13 +399,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveMultiCharWordSubsetOfExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "doof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "oo");
-		SuffixTrieNode.remove(suffixTrie, "oo");
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("doof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("oo");
+		suffixTrie.remove("oo");
 
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -415,13 +415,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testRemoveMultiCharWordEndOfExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "doof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "do");
-		SuffixTrieNode.remove(suffixTrie, "do");
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("doof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("do");
+		suffixTrie.remove("do");
 
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -431,13 +431,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveMultiCharWordEndOfExistingWord() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "doof");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "do");
-		SuffixTrieNode.remove(suffixTrie, "do");
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("doof");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("do");
+		suffixTrie.remove("do");
 
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		List<String> actualTrace = suffixTrie.getTrace();
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
 		for (int i = 0; i < actualTrace.size(); i++) {
@@ -447,13 +447,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testAddRemove6() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode();
-		SuffixTrieNode.add(suffixTrie, "oof");
-		SuffixTrieNode.add(suffixTrie, "owt");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "of");
-		SuffixTrieNode.remove(suffixTrie, "of");
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("oof");
+		suffixTrie.add("owt");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("of");
+		suffixTrie.remove("of");
+		List<String> actualTrace = suffixTrie.getTrace();
 
 		assertEquals(expectedTrace.size(), actualTrace.size());
 
@@ -464,13 +464,13 @@ public class SuffixTrieTest {
 
 	@Test
 	public void testPartialTrieAddRemove6() {
-		SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-		SuffixTrieNode.add(suffixTrie, "oof");
-		SuffixTrieNode.add(suffixTrie, "owt");
-		List<String> expectedTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
-		SuffixTrieNode.add(suffixTrie, "of");
-		SuffixTrieNode.remove(suffixTrie, "of");
-		List<String> actualTrace = SuffixTrieNode.getTrace(suffixTrie, 0);
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("oof");
+		suffixTrie.add("owt");
+		List<String> expectedTrace = suffixTrie.getTrace();
+		suffixTrie.add("of");
+		suffixTrie.remove("of");
+		List<String> actualTrace = suffixTrie.getTrace();
 
 		assertEquals(expectedTrace.size(), actualTrace.size());
 

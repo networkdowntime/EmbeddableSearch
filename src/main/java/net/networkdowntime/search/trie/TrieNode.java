@@ -3,7 +3,9 @@ package net.networkdowntime.search.trie;
 import gnu.trove.map.hash.TCharObjectHashMap;
 
 /**
- * Common interface implemented by the Prefix and Suffix Tries.
+ * An individual node of a Trie data structure.
+ * Nodes that are a word ending are marked by isEnd = true
+ * If the node is the end of a complete word, it is marked by isFullWordEnd = true
  * 
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
@@ -25,10 +27,16 @@ import gnu.trove.map.hash.TCharObjectHashMap;
  */
 public class TrieNode {
 
-	private TCharObjectHashMap<PrefixTrieNode> children = null;
-
-	char prefix;
+	char c = 0;
 	boolean isEnd = false;
 	boolean isFullWordEnd = false;
+	TCharObjectHashMap<TrieNode> children = null;
+
+	public TrieNode() {
+	}
+
+	public TrieNode(char c) {
+		this.c = c;
+	}
 
 }
