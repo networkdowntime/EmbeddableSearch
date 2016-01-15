@@ -1,11 +1,5 @@
 package net.networkdowntime.search.trie;
 
-import gnu.trove.map.hash.TCharObjectHashMap;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 /**
  * A suffix trie is a data structure that starting with the last letter of a word and iterates forward through all of the 
  * characters building a tree structure. When another word is added it either builds another tree in the data structure, if 
@@ -15,28 +9,29 @@ import java.util.Set;
  * endings of all of the words with a specific beginning while the full prefix trie can tell you all of the endings for any 
  * substrings of the word.
  * 
- * One of the downsides to a trie is memory usage in a performant implementation.  Several attempts were made to improve the memory usage of this class.
- * 	Switching out from the common hashmap implementation to the trove data structures.
- * 	Experimenting with the initial size and load factor of the hashmaps.
- * 	Creating the children hashmap on demand.
- * 	One potential improvement that I haven't tested yet is converting the methods to static to reduce the per Object memory footprint.
+ * One of the downsides to a trie is memory usage in a performant implementation.  Several attempts were made to improve the 
+ * memory usage of this class:
+ * 	- Switching out from the common hashmap implementation to the trove data structures.
+ * 	- Experimenting with the initial size and load factor of the hashmaps.
+ * 	- Creating the children hashmap on demand (children are null if there are not children).
  * 
- * Full Suffix Tree vs Not: I characterize a full suffix tree to include not just the word, but also every suffix of the 
+ * Full Suffix Tree vs Partial: I characterize a full suffix tree to include not just the word, but also every suffix of the 
  * word. The non-full suffix tree does not recursively index all of the words prefixes.  
  * 
  * Example full suffix tree for "foo":
  *	Root Node: 2 children [o, f]
  *		Child Node: o: 1 children [o, ￿]
+ *			Child Node: o: 0 children [￿]
  *		Child Node: f: 1 children [o]
  *			Child Node: o: 1 children [o]
+ *				Child Node: o: 0 children [￿, FWE]
  * 
  * Example non-full suffix tree for "foo":
  *	Root Node: 1 children [f]
  *		Child Node: f: 1 children [o]
  *			Child Node: o: 1 children [o]
+ *				Child Node: o: 1 children [o, FWE]
  *  
- * Using this implementation I was able to successfully implement a full prefix trie across a sample 843,888 word data set.
- * 
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
  * 
@@ -94,56 +89,8 @@ public class SuffixTrie extends Trie {
 	}
 
 	@Override
-	public List<String> getCompletions(String searchString, int limit) {
-		List<String> completions = new ArrayList<String>();
-
-		TrieNode currentNode = rootNode;
-		int i = 0;
-
-		while (i < searchString.length()) {
-			char c = searchString.charAt(i);
-
-			if (currentNode != null && currentNode.children != null) {
-				currentNode = currentNode.children.get(c);
-			} else {
-				currentNode = null;
-			}
-
-			if (currentNode == null) { // no match
-				return completions;
-			}
-
-			i++;
-		}
-
-		getCompletionsInternal(currentNode, completions, searchString, limit);
-
-		return completions;
-	}
-
-	//	 Uncomment the following if you want to play around or do debugging.
-	public static void main(String[] args) {
-		SuffixTrie t = new SuffixTrie(true);
-		t.add("oof");
-		t.add("owt");
-		t.print();
-		//		List<String> expectedTrace = SuffixTrieNode.getTrace(t, 0);
-		//
-		//		SuffixTrieNode.add(t, "fod");
-		//		SuffixTrieNode.remove(t, "fod");
-		//		SuffixTrieNode.print(t);
-		//		List<String> actualTrace = SuffixTrieNode.getTrace(t, 0);
-		//
-		//		boolean matches = true;
-		//		for (int i = 0; i < actualTrace.size(); i++) {
-		//			matches = matches && actualTrace.get(i).equals(expectedTrace.get(i));
-		//		}
-		//		System.out.println("Matches: " + matches);
-
-		//		Set<String> completeWords = new HashSet<String>();
-		//		t.getCompletionsFullWords(completeWords, "");
-		//		System.out.println("complete words: " + t.collectionToString(completeWords));
-
+	protected char[] getCharArr(String word) {
+		return word.toCharArray();
 	}
 
 }

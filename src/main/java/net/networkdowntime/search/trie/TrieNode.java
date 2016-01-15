@@ -7,6 +7,8 @@ import gnu.trove.map.hash.TCharObjectHashMap;
  * Nodes that are a word ending are marked by isEnd = true
  * If the node is the end of a complete word, it is marked by isFullWordEnd = true
  * 
+ * The addition of marking full word ends is necessary to support the remove operation on a full trie.
+ * 
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
  * 

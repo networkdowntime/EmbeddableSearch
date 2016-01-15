@@ -1,11 +1,5 @@
 package net.networkdowntime.search.trie;
 
-import gnu.trove.map.hash.TCharObjectHashMap;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 /**
  * A prefix trie is a data structure that starting with the last letter of a word and iterates backwards through all of the 
  * characters building a tree structure. When another word is added it either builds another tree in the data structure, if 
@@ -15,14 +9,14 @@ import java.util.Set;
  * of all of the words with a specific ending while the full prefix trie can tell you all of the beginnings for any substrings 
  * of the word.
  * 
- * One of the downsides to a trie is memory usage in a performant implementation.  Several attempts were made to improve the memory usage of this class.
- * 	Switching out from the common hashmap implementation to the trove data structures.
- * 	Experimenting with the initial size and load factor of the hashmaps.
- * 	Creating the children hashmap on demand.
- * 	One potential improvement that I haven't tested yet is converting the methods to static to reduce the per Object memory footprint.
+ * One of the downsides to a trie is memory usage in a performant implementation.  Several attempts were made to improve the 
+ * memory usage of this class:
+ * 	- Switching out from the common hashmap implementation to the trove data structures.
+ * 	- Experimenting with the initial size and load factor of the hashmaps.
+ * 	- Creating the children hashmap on demand (children are null if there are not children).
  * 
- * Full Prefix Tree vs Not: I characterize a full prefix tree to include not just the word, but also every prefix of the word. The non-full prefix tree does not 
- * recursively index all of the words prefixes.  
+ * Full Prefix Tree vs Partial: I characterize a full prefix tree to include not just the word, but also every prefix of the 
+ * word. The non-full prefix tree does not recursively index all of the words suffixes.  
  * 
  * Example full prefix tree for "foo":
  * 	Root Node: 2 children [f, o]
@@ -30,16 +24,14 @@ import java.util.Set;
  *		Child Node: o: 2 children [f, o]
  *			Child Node: f: 0 children [￿]
  *			Child Node: o: 1 children [f]
- *				Child Node: f: 0 children [￿]
+ *				Child Node: f: 0 children [￿, FWE]
  * 
  * Example non-full prefix tree for "foo":
  *	Root Node: 1 children [o, ]
  *		Child Node: o: 1 children [o, ]
  *			Child Node: o: 1 children [f, ]
- *				Child Node: f: 0 children [￿]
+ *				Child Node: f: 0 children [￿, FWE]
  *  
- * Using this implementation I was able to successfully implement a full prefix trie across a sample 843,888 word data set.
- * 
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
  * 
@@ -97,51 +89,18 @@ public class PrefixTrie extends Trie {
 	}
 
 	@Override
-	public List<String> getCompletions(String searchString, int limit) {
-		List<String> completions = new ArrayList<String>();
+	protected char[] getCharArr(String word) {
+		char[] retval = word.toCharArray();
 
-		TrieNode currentNode = rootNode;
-		int i = searchString.length() - 1;
+		int endCharIndex = retval.length - 1;
+		int halfLength = retval.length / 2;
 
-		while (i >= 0) {
-			char c = searchString.charAt(i);
+		for (int i = 0; i < halfLength; i++) {
 
-			if (currentNode != null && currentNode.children != null) {
-				currentNode = currentNode.children.get(c);
-			} else {
-				currentNode = null;
-			}
-
-			if (currentNode == null) { // no match
-				return completions;
-			}
-
-			i--;
+			char t = retval[i];
+			retval[i] = retval[endCharIndex - i];
+			retval[endCharIndex - i] = t;
 		}
-
-		getCompletionsInternal(currentNode, completions, searchString, limit);
-
-		return completions;
+		return retval;
 	}
-
-	// Uncomment the following if you want to play around or do debugging.
-	public static void main(String[] args) {
-		PrefixTrie t = new PrefixTrie();
-		t.add("fod");
-		t.print();
-		List<String> expectedTrace = t.getTrace();
-
-		t.add("f");
-		t.print();
-		t.remove("f");
-		t.print();
-		List<String> actualTrace = t.getTrace();
-
-		boolean matches = true;
-		for (int i = 0; i < actualTrace.size(); i++) {
-			matches = matches && actualTrace.get(i).equals(expectedTrace.get(i));
-		}
-		System.out.println("Matches: " + matches);
-	}
-
 }
