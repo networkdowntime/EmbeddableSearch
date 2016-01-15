@@ -172,13 +172,14 @@ public class Autocomplete {
 	 */
 	private Set<String> getSingleWordCompletions(Set<String> currentWordCompletions, String word, int limit) {
 		currentWordCompletions = new TLinkedHashSet<String>(UnigramHistogram.getOrderedResults(unigramHistogram, currentWordCompletions, limit));
-
+		
 		// makes sense that if there is an exact match, it should show up in the results
 		// logic here is that after the histogram ordering, if currentWordCompletions does
 		// contain the word then it fell out in the histogram ordering so add it back at the end.
 		boolean wordExactMatch = UnigramHistogram.contains(unigramHistogram, word);
 		if (wordExactMatch && !currentWordCompletions.contains(word)) {
-			currentWordCompletions.remove(currentWordCompletions.size() - 1);
+			String[] words = (String[]) currentWordCompletions.toArray();
+			currentWordCompletions.remove(words[words.length - 1]);
 			currentWordCompletions.add(word);
 		}
 
