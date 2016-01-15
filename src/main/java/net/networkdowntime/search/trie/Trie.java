@@ -107,7 +107,7 @@ public abstract class Trie {
 	 * 
 	 * @param wordPart Prefix to be added to the trie
 	 */
-	protected void addInternal(TrieNode node, String wordPart, boolean isFullWord) {
+	private void addInternal(TrieNode node, String wordPart, boolean isFullWord) {
 
 		int length = wordPart.length();
 		node.children = (node.children != null) ? node.children : new TCharObjectHashMap<TrieNode>(1, 0.9f);
@@ -141,20 +141,13 @@ public abstract class Trie {
 	 * @param wordToRemove
 	 */
 	public void remove(String wordToRemove) {
-		Set<String> allFullWords = new HashSet<String>();
+		Set<String> wordsToPreserve = new HashSet<String>();
 
 		if (createFullTrie) { // have to account for all words that share a character with wordToRemove
-			getFullWordsForRemoval(rootNode, wordToRemove, allFullWords, "");
+			getFullWordsForRemoval(rootNode, wordToRemove, wordsToPreserve, "");
+			wordsToPreserve.remove(wordToRemove);
 		}
-
-		Set<String> wordsToPreserve = new HashSet<String>();
-		for (String fullWord : allFullWords) {
-			if (fullWord.contains(wordToRemove) && !wordToRemove.equals(fullWord)) {
-				System.out.println(fullWord);
-				wordsToPreserve.add(fullWord);
-			}
-		}
-
+		
 		removeInternal(rootNode, wordToRemove, true, wordsToPreserve);
 
 	}
@@ -167,7 +160,7 @@ public abstract class Trie {
 	 * @param isFullWord
 	 * @param wordsToPreserve
 	 */
-	protected void removeInternal(TrieNode node, String wordPart, boolean isFullWord, Set<String> wordsToPreserve) {
+	private void removeInternal(TrieNode node, String wordPart, boolean isFullWord, Set<String> wordsToPreserve) {
 		int length = wordPart.length();
 
 		char c = getChar(wordPart);
@@ -246,7 +239,7 @@ public abstract class Trie {
 	 * @param limit Max number of results to return
 	 * @return the current number of completions
 	 */
-	protected int getCompletionsInternal(TrieNode node, List<String> completions, String wordPart, int size, int limit) {
+	private int getCompletionsInternal(TrieNode node, List<String> completions, String wordPart, int size, int limit) {
 
 		if (node.isEnd) {
 			completions.add(wordPart);
