@@ -130,8 +130,6 @@ public class KeywordScrubber {
 		boolean changed = false;
 
 		while (keyword.startsWith("\"") //
-				|| keyword.startsWith("�") // 
-				|| keyword.startsWith("�") //
 				|| keyword.startsWith("�") // this is not a hyphen! 
 				|| keyword.startsWith("-") //
 				|| keyword.startsWith("~") //
