@@ -1,6 +1,5 @@
 package net.networkdowntime.search.engine;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -128,7 +127,7 @@ public class Autocomplete {
 	void remove(List<String> keywords) {
 		String previousWord = null;
 		for (String currentWord : keywords) {
-			
+
 			if (UnigramHistogram.contains(unigramHistogram, currentWord)) {
 				prefixTrie.remove(currentWord);
 				suffixTrie.remove(currentWord);
@@ -162,20 +161,30 @@ public class Autocomplete {
 		return getCompletions(keywords, fuzzyMatch, hasTrailingSpace, limit);
 	}
 
+	/**
+	 * For a given set of completions for a search word puts them in histogram rank order.
+	 * Also ensures that if the searched for word was a known word that it will be included in the results.
+	 * 
+	 * @param currentWordCompletions The set of full word completions from the tries
+	 * @param word The word being searched for
+	 * @param limit Max number of results to return
+	 * @return A histogram ordered
+	 */
 	private Set<String> getSingleWordCompletions(Set<String> currentWordCompletions, String word, int limit) {
 		currentWordCompletions = new TLinkedHashSet<String>(UnigramHistogram.getOrderedResults(unigramHistogram, currentWordCompletions, limit));
 
 		// makes sense that if there is an exact match, it should show up in the results
+		// logic here is that after the histogram ordering, if currentWordCompletions does
+		// contain the word then it fell out in the histogram ordering so add it back at the end.
 		boolean wordExactMatch = UnigramHistogram.contains(unigramHistogram, word);
-		if (wordExactMatch) {
-			if (!currentWordCompletions.contains(word)) {
-				currentWordCompletions.remove(currentWordCompletions.size() - 1);
-				currentWordCompletions.add(word);
-			}
+		if (wordExactMatch && !currentWordCompletions.contains(word)) {
+			currentWordCompletions.remove(currentWordCompletions.size() - 1);
+			currentWordCompletions.add(word);
 		}
+
 		return currentWordCompletions;
 	}
-	
+
 	/**
 	 * Get completions for the given input.  This will provide completions for missing prefix or suffix on the words.
 	 * If using histogram word ordering it orders those completions based on their histogram occurrence counts.  This 
@@ -232,7 +241,7 @@ public class Autocomplete {
 							logger.debug("\t" + s);
 						}
 					}
-					
+
 					digramCompletions = digramHistogram.getOrderedResults(previousWordCompletions, currentWordCompletions, limit);
 				}
 
@@ -246,7 +255,7 @@ public class Autocomplete {
 				if (digramCompletions.isEmpty()) {
 					digramCompletions.addAll(getSingleWordCompletions(currentWordCompletions, currentWord, limit));
 				}
-				
+
 				if (keywords.size() == 2 && !hasTrailingSpace) {
 					orderedCompletions.addAll(digramCompletions);
 				} else { // add the beginning back to the results
@@ -256,7 +265,7 @@ public class Autocomplete {
 					} else {
 						beginningOfInput = listToString(keywords, 2);
 					}
-					
+
 					for (String completion : digramCompletions) {
 						orderedCompletions.add(beginningOfInput + " " + completion);
 					}
