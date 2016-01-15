@@ -47,9 +47,9 @@ public class Autocomplete {
 	private PrefixTrie prefixTrie = new PrefixTrie();
 	private SuffixTrie suffixTrie = new SuffixTrie(false);
 
-	private TextScrubber textScrubber = new HtmlTagTextScrubber();
-	private ContentSplitter contentSplitter = new ContentSplitter();
-	private KeywordScrubber keywordScrubber = new KeywordScrubber();
+	private TextScrubber textScrubber = null;
+	private ContentSplitter contentSplitter = null;
+	private KeywordScrubber keywordScrubber = null;
 
 	/**
 	 * Creates an instance of the Autocomplete class that uses the default TextScrubber, ContentSplitter, and KeywordScrubber.
@@ -93,12 +93,8 @@ public class Autocomplete {
 	 * @param keywords The text to add
 	 */
 	void add(List<String> keywords) {
-		String currentWord = null;
 		String previousWord = null;
-		for (int i = 0; i < keywords.size(); i++) {
-			previousWord = (currentWord != null) ? currentWord : null;
-			currentWord = keywords.get(i);
-
+		for (String currentWord : keywords) {
 			prefixTrie.add(currentWord);
 			suffixTrie.add(currentWord);
 
@@ -106,6 +102,7 @@ public class Autocomplete {
 			if (previousWord != null) {
 				digramHistogram.add(previousWord, currentWord);
 			}
+			previousWord = currentWord;
 		}
 	}
 
@@ -129,23 +126,18 @@ public class Autocomplete {
 	 * @param keywords List of strings to remove
 	 */
 	void remove(List<String> keywords) {
-		String currentWord = null;
 		String previousWord = null;
-		for (int i = 0; i < keywords.size(); i++) {
-			previousWord = (currentWord != null) ? currentWord : null;
-			currentWord = keywords.get(i);
-
-			// TODO Implement remove functionality for the Tries, don't have a mechanism to do that right now
-
-			UnigramHistogram.remove(unigramHistogram, currentWord);
+		for (String currentWord : keywords) {
 			
-			if (!UnigramHistogram.contains(unigramHistogram, currentWord)) {
+			if (UnigramHistogram.contains(unigramHistogram, currentWord)) {
 				prefixTrie.remove(currentWord);
 				suffixTrie.remove(currentWord);
+				UnigramHistogram.remove(unigramHistogram, currentWord);
 			}
 			if (previousWord != null) {
 				digramHistogram.remove(previousWord, currentWord);
 			}
+			previousWord = currentWord;
 		}
 	}
 
@@ -171,7 +163,7 @@ public class Autocomplete {
 	}
 
 	private Set<String> getSingleWordCompletions(Set<String> currentWordCompletions, String word, int limit) {
-		currentWordCompletions = new TLinkedHashSet<String>(UnigramHistogram.getOrderedResults(unigramHistogram, new ArrayList<String>(currentWordCompletions), limit));
+		currentWordCompletions = new TLinkedHashSet<String>(UnigramHistogram.getOrderedResults(unigramHistogram, currentWordCompletions, limit));
 
 		// makes sense that if there is an exact match, it should show up in the results
 		boolean wordExactMatch = UnigramHistogram.contains(unigramHistogram, word);

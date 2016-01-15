@@ -3,6 +3,7 @@ package net.networkdowntime.search.histogram;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import gnu.trove.map.hash.TIntIntHashMap;
@@ -129,7 +130,7 @@ public class UnigramHistogram {
 	 * @param limit Max number of results to return 
 	 * @return
 	 */
-	public static List<String> getOrderedResults(UnigramHistogram unigram, List<String> words, int limit) {
+	public static List<String> getOrderedResults(UnigramHistogram unigram, Set<String> words, int limit) {
 
 		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
 
