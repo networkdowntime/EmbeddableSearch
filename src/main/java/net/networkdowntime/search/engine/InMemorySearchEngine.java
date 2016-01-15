@@ -54,7 +54,7 @@ public class InMemorySearchEngine implements SearchEngine {
 	private DigramLongSearchHistogram digramLongSearchHistogram = new DigramLongSearchHistogram();
 	private DigramStringSearchHistogram digramStringSearchHistogram = new DigramStringSearchHistogram();
 
-	private Autocomplete autocomplete = new Autocomplete();
+	private Autocomplete autocomplete = null;
 
 	private TextScrubber textScrubber = new HtmlTagTextScrubber();
 	private ContentSplitter splitter = new ContentSplitter();
@@ -69,6 +69,13 @@ public class InMemorySearchEngine implements SearchEngine {
 	private long searchCount = 0;
 	// end timing variables
 
+	/**
+	 * Default constructor
+	 */
+	public InMemorySearchEngine() {
+		autocomplete = new Autocomplete(textScrubber, splitter, keywordScrubber);
+	}
+	
 	/**
 	 * Resets the timing variables
 	 */
