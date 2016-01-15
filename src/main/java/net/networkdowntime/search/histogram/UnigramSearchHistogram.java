@@ -226,20 +226,6 @@ class UnigramSearchHistogram {
 	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.
 	 * 
 	 * @param UnigramSearchHistogram The histogram to perform the action on
-	 * @param words The set of words to get the search results for.
-	 * @param limit Max number of results to return
-	 *  
-	 * @return A set containing the matched search results up to the specified limit
-	 */
-//	@SuppressWarnings("rawtypes")
-//	public static FixedSizeSortedSet<SearchResult> getSearchResults(UnigramSearchHistogram histogram, Set<String> words, int limit) {
-//		return SearchHistogramUtil.resultsMapToSet(getSearchResults(histogram, words), limit);
-//	}
-
-	/**
-	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.
-	 * 
-	 * @param UnigramSearchHistogram The histogram to perform the action on
 	 * @param searchTerm The set of words to get the search results for
 	 * @param weightMultiplier Adjusts the weight by a scalar multiplier
 	 * @param limit Max number of results to return
