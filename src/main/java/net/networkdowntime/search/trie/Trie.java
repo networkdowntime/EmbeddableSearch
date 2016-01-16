@@ -1,9 +1,13 @@
 package net.networkdowntime.search.trie;
 
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import gnu.trove.map.hash.TCharObjectHashMap;
 
@@ -30,6 +34,7 @@ import gnu.trove.map.hash.TCharObjectHashMap;
  *
  */
 public abstract class Trie {
+	private static final Logger LOGGER = LogManager.getLogger(Trie.class.getName());
 
 	protected boolean createFullTrie = true;
 	protected TrieNode rootNode = new TrieNode();
@@ -190,7 +195,7 @@ public abstract class Trie {
 				removeInternal(node, subString, false, wordsToPreserve);
 			}
 
-			if (child.children.size() == 0 && !child.isEnd) {
+			if (child.children.isEmpty() && !child.isEnd) {
 				node.children.remove(child.c);
 			}
 
@@ -240,22 +245,22 @@ public abstract class Trie {
 	 * @return the current number of completions
 	 */
 	private int getCompletionsInternal(TrieNode node, List<String> completions, String wordPart, int size, int limit) {
-
+		int newSize = size;
 		if (node.isEnd) {
 			completions.add(wordPart);
-			size++;
+			newSize++;
 		}
 
 		if (node.children != null && size <= limit) {
 			for (Object obj : node.children.values()) {
 				TrieNode child = (TrieNode) obj;
-				size = getCompletionsInternal(child, completions, addCharToWordPart(child.c, wordPart), size, limit);
-				if (size == limit) {
+				newSize = getCompletionsInternal(child, completions, addCharToWordPart(child.c, wordPart), newSize, limit);
+				if (newSize == limit) {
 					break;
 				}
 			}
 		}
-		return size;
+		return newSize;
 	}
 
 	/**
@@ -307,7 +312,7 @@ public abstract class Trie {
 	public void print() {
 		List<String> trace = getTrace();
 		for (String s : trace)
-			System.out.println(s);
+			LOGGER.info(s);
 	}
 
 	/**
@@ -331,39 +336,31 @@ public abstract class Trie {
 
 		if (node.c == 0) {
 			boolean isFirst = true;
-			StringBuffer buff = new StringBuffer(tabs + "Root Node: " + node.children.size() + " children [");
+			StringBuilder buff = new StringBuilder(tabs + "Root Node: " + node.children.size() + " children [");
 			for (Object obj : node.children.values()) {
-				if (!isFirst) {
-					buff.append(", ");
-				}
+				buff.append(addCommaIfNeeded(isFirst));
 				buff.append(((TrieNode) obj).c);
 				isFirst = false;
 			}
 			buff.append("]");
 			trace.add(buff.toString());
 		} else {
-			StringBuffer buff = new StringBuffer(tabs + "Child Node: " + node.c + ": " + ((node.children == null) ? "0" : node.children.size()) + " children [");
+			StringBuilder buff = new StringBuilder(tabs + "Child Node: " + node.c + ": " + ((node.children == null) ? "0" : node.children.size()) + " children [");
 			boolean isFirst = true;
 			if (node.children != null) {
 				for (Object obj : node.children.values()) {
-					if (!isFirst) {
-						buff.append(", ");
-					}
+					buff.append(addCommaIfNeeded(isFirst));
 					buff.append(((TrieNode) obj).c);
 					isFirst = false;
 				}
 			}
 			if (node.isEnd) {
-				if (!isFirst) {
-					buff.append(", ");
-				}
+				buff.append(addCommaIfNeeded(isFirst));
 				buff.append(Character.MAX_VALUE);
 				isFirst = false;
 			}
 			if (node.isFullWordEnd) {
-				if (!isFirst) {
-					buff.append(", ");
-				}
+				buff.append(addCommaIfNeeded(isFirst));
 				buff.append("FWE");
 				isFirst = false;
 			}
@@ -379,4 +376,7 @@ public abstract class Trie {
 		return trace;
 	}
 
+	private String addCommaIfNeeded(boolean isFirst) {
+		return (isFirst) ? "" : ", ";
+	}
 }
