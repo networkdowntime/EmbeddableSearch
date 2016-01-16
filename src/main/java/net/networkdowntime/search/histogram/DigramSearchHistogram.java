@@ -30,7 +30,7 @@ import gnu.trove.map.hash.TLongIntHashMap;
  *
  */
 class DigramSearchHistogram {
-	static final Logger logger = LogManager.getLogger(DigramSearchHistogram.class.getName());
+	private static final Logger LOGGER = LogManager.getLogger(DigramSearchHistogram.class.getName());
 
 	TIntObjectHashMap<UnigramSearchHistogram> histogram = new TIntObjectHashMap<UnigramSearchHistogram>();
 
@@ -70,23 +70,6 @@ class DigramSearchHistogram {
 		}
 	}
 
-	//	@SuppressWarnings("rawtypes")
-	//	protected FixedSizeSortedSet<SearchResult> getSearchResults(Set<String> firstWords, Set<String> secondWords, int limit) {
-	//
-	//		FixedSizeSortedSet<SearchResult> orderedResults = new FixedSizeSortedSet<SearchResult>(new SearchResultComparator(), limit);
-	//
-	//		for (String firstWord : firstWords) {
-	////			orderedResults.addAll(getResults(firstWord, secondWords, limit));
-	//		}
-	//
-	//		// swap the word order
-	//		for (String secondWord : secondWords) {
-	////			orderedResults.addAll(getResults(secondWord, firstWords, limit));
-	//		}
-	//
-	//		return orderedResults;
-	//	}
-
 	/**
 	 * For a given set of search terms, returns the results in order of most common occurrence.
 	 * A swapped order of first and second words are also taken into consideration.
@@ -106,28 +89,18 @@ class DigramSearchHistogram {
 				keywords = new String[] { term };
 			}
 
-			String currentWord = null;
 			String previousWord = null;
 
-			for (int i = 0; i < keywords.length; i++) {
-				previousWord = (currentWord != null) ? currentWord : null;
-				currentWord = keywords[i];
-
+			for (String currentWord : keywords) {
 				if (previousWord != null) {
-					logger.debug("Looking for " + previousWord + " " + currentWord);
-					UnigramSearchHistogram unigram = histogram.get(previousWord.hashCode());
+					LOGGER.debug("Looking for " + previousWord + " " + currentWord);
+					UnigramSearchHistogram.getSearchResults(histogram.get(previousWord.hashCode()), results, currentWord, weightMultiplier);
 
-					if (unigram != null) {
-						UnigramSearchHistogram.getSearchResults(unigram, results, currentWord, weightMultiplier);
-					}
-
-					logger.debug("Looking for " + currentWord + " " + previousWord);
-					unigram = histogram.get(currentWord.hashCode());
-
-					if (unigram != null) {
-						UnigramSearchHistogram.getSearchResults(unigram, results, previousWord, weightMultiplier);
-					}
+					LOGGER.debug("Looking for " + currentWord + " " + previousWord);
+					UnigramSearchHistogram.getSearchResults(histogram.get(currentWord.hashCode()), results, previousWord, weightMultiplier);
 				}
+
+				previousWord = currentWord;
 			}
 		}
 		return results;
