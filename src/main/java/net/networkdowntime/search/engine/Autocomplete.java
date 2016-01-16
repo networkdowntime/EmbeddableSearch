@@ -39,7 +39,7 @@ import net.networkdowntime.search.trie.SuffixTrie;
  *
  */
 public class Autocomplete {
-	static final Logger logger = LogManager.getLogger(Autocomplete.class.getName());
+	private static final Logger LOGGER = LogManager.getLogger(Autocomplete.class.getName());
 
 	private UnigramHistogram unigramHistogram = new UnigramHistogram();
 	private DigramHistogram digramHistogram = new DigramHistogram();
@@ -79,8 +79,8 @@ public class Autocomplete {
 	 * @param text The text to add
 	 */
 	public void add(String text) {
-		text = textScrubber.scrubText(text);
-		String[] words = contentSplitter.splitContent(text);
+		String scrubbedText = textScrubber.scrubText(text);
+		String[] words = contentSplitter.splitContent(scrubbedText);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
 
 		this.add(keywords);
@@ -112,8 +112,8 @@ public class Autocomplete {
 	 * @param text A string containing the text to remove
 	 */
 	public void remove(String text) {
-		text = textScrubber.scrubText(text);
-		String[] words = contentSplitter.splitContent(text);
+		String scrubbedText = textScrubber.scrubText(text);
+		String[] words = contentSplitter.splitContent(scrubbedText);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
 
 		this.remove(keywords);
@@ -154,8 +154,8 @@ public class Autocomplete {
 	public Set<String> getCompletions(String autocompleteInput, boolean fuzzyMatch, int limit) {
 		boolean hasTrailingSpace = autocompleteInput.endsWith(" ");
 
-		autocompleteInput = textScrubber.scrubText(autocompleteInput);
-		String[] words = contentSplitter.splitContent(autocompleteInput);
+		String scrubbedInput = textScrubber.scrubText(autocompleteInput);
+		String[] words = contentSplitter.splitContent(scrubbedInput);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
 
 		return getCompletions(keywords, fuzzyMatch, hasTrailingSpace, limit);
@@ -171,19 +171,19 @@ public class Autocomplete {
 	 * @return A histogram ordered
 	 */
 	private Set<String> getSingleWordCompletions(Set<String> currentWordCompletions, String word, int limit) {
-		currentWordCompletions = new TLinkedHashSet<String>(UnigramHistogram.getOrderedResults(unigramHistogram, currentWordCompletions, limit));
+		Set<String> orderedWordCompletions = new TLinkedHashSet<String>(UnigramHistogram.getOrderedResults(unigramHistogram, currentWordCompletions, limit));
 		
 		// makes sense that if there is an exact match, it should show up in the results
 		// logic here is that after the histogram ordering, if currentWordCompletions does
 		// contain the word then it fell out in the histogram ordering so add it back at the end.
 		boolean wordExactMatch = UnigramHistogram.contains(unigramHistogram, word);
-		if (wordExactMatch && !currentWordCompletions.contains(word)) {
-			String[] words = (String[]) currentWordCompletions.toArray();
-			currentWordCompletions.remove(words[words.length - 1]);
-			currentWordCompletions.add(word);
+		if (wordExactMatch && !orderedWordCompletions.contains(word)) {
+			String[] words = (String[]) orderedWordCompletions.toArray();
+			orderedWordCompletions.remove(words[words.length - 1]);
+			orderedWordCompletions.add(word);
 		}
 
-		return currentWordCompletions;
+		return orderedWordCompletions;
 	}
 
 	/**
@@ -198,26 +198,26 @@ public class Autocomplete {
 	 * @return Not-null set of the suggested completions
 	 */
 	Set<String> getCompletions(List<String> keywords, boolean fuzzyMatch, boolean hasTrailingSpace, int limit) {
-		logger.debug("getCompletions() Begin: keywords.size(): " + keywords.size() + "; fuzzyMatch: " + fuzzyMatch + "; hasTrailingSpace: " + hasTrailingSpace + "; limit: " + limit);
+		LOGGER.debug("getCompletions() Begin: keywords.size(): " + keywords.size() + "; fuzzyMatch: " + fuzzyMatch + "; hasTrailingSpace: " + hasTrailingSpace + "; limit: " + limit);
 
 		Set<String> orderedCompletions = new TLinkedHashSet<String>();
 
-		if (keywords.size() == 0) {
+		if (keywords.isEmpty()) {
 			return orderedCompletions; // no-op - nothing to do
 		} else {
 			String currentWord = keywords.get(keywords.size() - 1);
 			Set<String> currentWordCompletions = getCompletionsSingleWordUnordered(currentWord, fuzzyMatch, limit * 3);
 
-			if (logger.isDebugEnabled()) {
-				logger.debug("currentWord:" + currentWord);
-				logger.debug("currentWordCompletions:");
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("currentWord:" + currentWord);
+				LOGGER.debug("currentWordCompletions:");
 				for (String string : currentWordCompletions) {
-					logger.debug("\t" + string);
+					LOGGER.debug("\t" + string);
 				}
 			}
 
 			if (keywords.size() == 1 && !hasTrailingSpace) { // one word
-				logger.debug("one keyword, no trailing space");
+				LOGGER.debug("one keyword, no trailing space");
 
 				orderedCompletions = getSingleWordCompletions(currentWordCompletions, currentWord, limit);
 			} else { // either two words or looking for two words
@@ -225,31 +225,31 @@ public class Autocomplete {
 				List<String> digramCompletions;
 
 				if (hasTrailingSpace) {
-					logger.debug("has trailing space, look for digram completions based on the previous words completions");
+					LOGGER.debug("has trailing space, look for digram completions based on the previous words completions");
 
 					digramCompletions = digramHistogram.getOrderedResults(currentWordCompletions, null, limit);
 
 				} else {
-					logger.debug("no trailing space, look for digram completions based on the previous words completions");
+					LOGGER.debug("no trailing space, look for digram completions based on the previous words completions");
 
 					String previousWord = keywords.get(keywords.size() - 2);
 					Set<String> previousWordCompletions = getCompletionsSingleWordUnordered(previousWord, fuzzyMatch, limit * 3);
 
-					if (logger.isDebugEnabled()) {
-						logger.debug("previousWord: " + previousWord);
-						logger.debug("previousWordCompletions");
+					if (LOGGER.isDebugEnabled()) {
+						LOGGER.debug("previousWord: " + previousWord);
+						LOGGER.debug("previousWordCompletions");
 						for (String s : previousWordCompletions) {
-							logger.debug("\t" + s);
+							LOGGER.debug("\t" + s);
 						}
 					}
 
 					digramCompletions = digramHistogram.getOrderedResults(previousWordCompletions, currentWordCompletions, limit);
 				}
 
-				if (logger.isDebugEnabled()) {
-					logger.debug("digramCompletions for:" + currentWord);
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("digramCompletions for:" + currentWord);
 					for (String s : digramCompletions) {
-						logger.debug("\t" + s);
+						LOGGER.debug("\t" + s);
 					}
 				}
 
@@ -260,12 +260,7 @@ public class Autocomplete {
 				if (keywords.size() == 2 && !hasTrailingSpace) {
 					orderedCompletions.addAll(digramCompletions);
 				} else { // add the beginning back to the results
-					String beginningOfInput;
-					if (hasTrailingSpace) {
-						beginningOfInput = listToString(keywords, 1);
-					} else {
-						beginningOfInput = listToString(keywords, 2);
-					}
+					String beginningOfInput = (hasTrailingSpace) ? listToString(keywords, 1) : listToString(keywords, 2); 
 
 					for (String completion : digramCompletions) {
 						orderedCompletions.add(beginningOfInput + " " + completion);
@@ -274,7 +269,7 @@ public class Autocomplete {
 			}
 		}
 
-		logger.debug("getCompletions() End");
+		LOGGER.debug("getCompletions() End");
 		return orderedCompletions;
 	}
 
