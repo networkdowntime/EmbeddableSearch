@@ -6,6 +6,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import gnu.trove.set.TCharSet;
+import gnu.trove.set.hash.TCharHashSet;
+
 /**
  * Attempts to sanitize input text.  Strips out common words, provides for min and max length of keywords, removes special 
  * characters from the beginning/end of words, ignores numbers less than 5 characters.  See scrubKeywords() for exact details.
@@ -36,41 +39,50 @@ public class KeywordScrubber {
 
 	private int minKeywordLength = 1;
 	private int maxKeywordLength = 40;
-	
+
+	private static TCharSet invalidCharWordBeginnings = new TCharHashSet();
+	private static TCharSet invalidCharWordEndings = new TCharHashSet();
+
 	private static Pattern dateMatcher = Pattern.compile("(^[0-9]+/[0-9]+/[0-9]+$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$)"); // dates 08/20/2001, 08/20/01, or 2001-08-20
 	private static Pattern timeMatcher1 = Pattern.compile("^[0-9]+:[0-9]+:[0-9]+$"); // a common time format 07:12:20 or 7:12:20
 	private static Pattern timeMatcher2 = Pattern.compile("^[0-9]+:[0-9]+:[0-9]+\\.[0-9]+$"); // a common time format 07:12:20.0123 or 7:12:20.01234
 	private static Pattern timeMatcher3 = Pattern.compile("^[0-9]+:[0-9]+$"); // a common time format 07:12 or 7:12
 
-	public static void main(String... args) {
-		String[] words = { "08/20/2001", "08/20/01", "2001-08-20" };
+	static {
+		invalidCharWordBeginnings.add('\"');
+		invalidCharWordBeginnings.add('�'); // this is not a hyphen! but sometimes shows up as one
+		invalidCharWordBeginnings.add('-');
+		invalidCharWordBeginnings.add('~');
+		invalidCharWordBeginnings.add('(');
+		invalidCharWordBeginnings.add('\'');
+		invalidCharWordBeginnings.add('>');
+		invalidCharWordBeginnings.add(':');
+		invalidCharWordBeginnings.add(',');
+		invalidCharWordBeginnings.add('.');
+		invalidCharWordBeginnings.add('!');
+		invalidCharWordBeginnings.add('`');
+		invalidCharWordBeginnings.add('*');
+		invalidCharWordBeginnings.add('|');
+		invalidCharWordBeginnings.add('[');
+		invalidCharWordBeginnings.add(';');
 		
-		for (String keyword : words)
-			if (dateMatcher.matcher(keyword).matches()) 
-				System.out.println("matches");
-
-//		if (keyword.matches("^[0-9]+\\.[0-9]+$")) // simple numbers with decimals
-//			return null;
-//
-//		if (keyword.length() < 5 && keyword.matches("^[0-9]+$")) // numbers with less than 5 numbers
-//			return null;
-//
-//		if (keyword.matches("^[\\-]+$")) // common separator -------------------
-//			return null;
-//
-//		if (keyword.matches("^[#]+$")) // common separator ==================
-//			return null;
-//
-//		if (keyword.matches("^[=]+$")) // common separator ==================
-//			return null;
-//
-//		if (keyword.matches("^[_]+$")) // common separator _________________
-//			return null;
-//
-//		if (keyword.matches("^[*]+$")) // common separator *****************
-//			return null;
-
+		invalidCharWordEndings.add('\"');
+		invalidCharWordEndings.add(')');
+		invalidCharWordEndings.add('(');
+		invalidCharWordEndings.add('/');
+		invalidCharWordEndings.add('\'');
+		invalidCharWordEndings.add(':');
+		invalidCharWordEndings.add(',');
+		invalidCharWordEndings.add('.');
+		invalidCharWordEndings.add('-');
+		invalidCharWordEndings.add('!');
+		invalidCharWordEndings.add('?');
+		invalidCharWordEndings.add('`');
+		invalidCharWordEndings.add('*');
+		invalidCharWordEndings.add(']');
+		invalidCharWordEndings.add(';');
 	}
+
 	/**
 	 * Default constructor, 2-40 min/max length, ignores ["and", "the"]
 	 */
@@ -123,109 +135,83 @@ public class KeywordScrubber {
 
 	/**
 	 * Scrubs a single word
-	 * @param keyword String to be sanitized 
+	 * @param scrubbedKeyword String to be sanitized 
 	 * @return Sanitized string or null
 	 */
 	public String scrubKeyword(String keyword) {
-		boolean changed = false;
+		String scrubbedKeyword = keyword;
+		boolean hasChanged = false;
 
-		while (keyword.startsWith("\"") //
-				|| keyword.startsWith("�") // this is not a hyphen! 
-				|| keyword.startsWith("-") //
-				|| keyword.startsWith("~") //
-				|| keyword.startsWith("(") //
-				|| keyword.startsWith("'") //
-				|| keyword.startsWith(">") //
-				|| keyword.startsWith(":") //
-				|| keyword.startsWith(",") //
-				|| keyword.startsWith(".") //
-				|| keyword.startsWith("!") //
-				|| keyword.startsWith("`") //
-				|| keyword.startsWith("*") //
-				|| keyword.startsWith("|") //
-				|| keyword.startsWith("[") //
-				|| keyword.startsWith(";")) {
-			keyword = keyword.substring(1);
-			changed = true;
+		while (!scrubbedKeyword.isEmpty() && invalidCharWordBeginnings.contains(scrubbedKeyword.charAt(0))) {
+			scrubbedKeyword = scrubbedKeyword.substring(1);
+			hasChanged = true;
 		}
 
-		while (keyword.endsWith("\"") //
-				|| keyword.endsWith(")") //
-				|| keyword.endsWith("(") //
-				|| keyword.endsWith("/") //
-				|| keyword.endsWith("'") //
-				|| keyword.endsWith(":") //
-				|| keyword.endsWith(",") //
-				|| keyword.endsWith(".") //
-				|| keyword.endsWith("-") //
-				|| keyword.endsWith("!") //
-				|| keyword.endsWith("?") //
-				|| keyword.endsWith("`") //
-				|| keyword.endsWith("*") //
-				|| keyword.endsWith("]") //
-				|| keyword.endsWith(";")) {
-			keyword = keyword.substring(0, keyword.length() - 1);
-			changed = true;
+		int lastCharIndex = scrubbedKeyword.length() - 1;
+		while (!scrubbedKeyword.isEmpty() && invalidCharWordBeginnings.contains(scrubbedKeyword.charAt(lastCharIndex))) {
+			scrubbedKeyword = scrubbedKeyword.substring(0, lastCharIndex);
+			hasChanged = true;
+			lastCharIndex--;
 		}
-
-		if (keyword.startsWith("mailto:") && keyword.length() > 7) {
-			keyword = keyword.substring(7);
-			changed = true;
-		}
-
-		if (keyword.startsWith("http://") && keyword.length() > 7) {
-			keyword = keyword.substring(7);
-			changed = true;
-		}
-
-		if (keyword.startsWith("https://") && keyword.length() > 8) {
-			keyword = keyword.substring(8);
-			changed = true;
-		}
-
-		if (keyword.length() < minKeywordLength || keyword.length() > maxKeywordLength) // nothing two characters or less 
-			return null;
-
-		if ((keyword.length() == 7 || keyword.length() == 8) && timeMatcher1.matcher(keyword).matches()) // a common time format 07:12:20 or 7:12:20
-			return null;
-
-		if (timeMatcher2.matcher(keyword).matches()) // a common time format 07:12:20.0123 or 7:12:20.01234
-			return null;
-
-		if ((keyword.length() == 4 || keyword.length() == 5) && timeMatcher3.matcher(keyword).matches()) // a common time format 07:12 or 7:12
-			return null;
-
-		if (dateMatcher.matcher(keyword).matches()) // dates 08/20/2001, 08/20/01, or 2001-08-20
-			return null;
 		
-		if (keyword.matches("^[0-9]+\\.[0-9]+$")) // simple numbers with decimals
+		if (scrubbedKeyword.startsWith("mailto:") && scrubbedKeyword.length() > 7) {
+			scrubbedKeyword = scrubbedKeyword.substring(7);
+			hasChanged = true;
+		}
+
+		if (scrubbedKeyword.startsWith("http://") && scrubbedKeyword.length() > 7) {
+			scrubbedKeyword = scrubbedKeyword.substring(7);
+			hasChanged = true;
+		}
+
+		if (scrubbedKeyword.startsWith("https://") && scrubbedKeyword.length() > 8) {
+			scrubbedKeyword = scrubbedKeyword.substring(8);
+			hasChanged = true;
+		}
+
+		if (scrubbedKeyword.length() < minKeywordLength || scrubbedKeyword.length() > maxKeywordLength) // nothing two characters or less 
 			return null;
 
-		if (keyword.length() < 5 && keyword.matches("^[0-9]+$")) // numbers with less than 5 numbers
+		if ((scrubbedKeyword.length() == 7 || scrubbedKeyword.length() == 8) && timeMatcher1.matcher(scrubbedKeyword).matches()) // a common time format 07:12:20 or 7:12:20
 			return null;
 
-		if (keyword.matches("^[\\-]+$")) // common separator -------------------
+		if (timeMatcher2.matcher(scrubbedKeyword).matches()) // a common time format 07:12:20.0123 or 7:12:20.01234
 			return null;
 
-		if (keyword.matches("^[#]+$")) // common separator ==================
+		if ((scrubbedKeyword.length() == 4 || scrubbedKeyword.length() == 5) && timeMatcher3.matcher(scrubbedKeyword).matches()) // a common time format 07:12 or 7:12
 			return null;
 
-		if (keyword.matches("^[=]+$")) // common separator ==================
+		if (dateMatcher.matcher(scrubbedKeyword).matches()) // dates 08/20/2001, 08/20/01, or 2001-08-20
 			return null;
 
-		if (keyword.matches("^[_]+$")) // common separator _________________
+		if (scrubbedKeyword.matches("^[0-9]+\\.[0-9]+$")) // simple numbers with decimals
 			return null;
 
-		if (keyword.matches("^[*]+$")) // common separator *****************
+		if (scrubbedKeyword.length() < 5 && scrubbedKeyword.matches("^[0-9]+$")) // numbers with less than 5 numbers
 			return null;
 
-		if (doNotIndexWords.contains(keyword)) // too common words
+		if (scrubbedKeyword.matches("^[\\-]+$")) // common separator -------------------
 			return null;
 
-		if (changed) // repeat until the minimum keyword is reached
-			keyword = scrubKeyword(keyword);
+		if (scrubbedKeyword.matches("^[#]+$")) // common separator ==================
+			return null;
 
-		return keyword;
+		if (scrubbedKeyword.matches("^[=]+$")) // common separator ==================
+			return null;
+
+		if (scrubbedKeyword.matches("^[_]+$")) // common separator _________________
+			return null;
+
+		if (scrubbedKeyword.matches("^[*]+$")) // common separator *****************
+			return null;
+
+		if (doNotIndexWords.contains(scrubbedKeyword)) // too common words
+			return null;
+
+		if (hasChanged) // repeat until the minimum keyword is reached
+			scrubbedKeyword = scrubKeyword(scrubbedKeyword);
+
+		return scrubbedKeyword;
 	}
 
 	/**
