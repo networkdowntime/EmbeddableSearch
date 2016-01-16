@@ -2,9 +2,6 @@ package net.networkdowntime.search.histogram;
 
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import gnu.trove.map.hash.TLongIntHashMap;
 
 /**
@@ -29,7 +26,6 @@ import gnu.trove.map.hash.TLongIntHashMap;
  *
  */
 public class DigramLongSearchHistogram extends DigramSearchHistogram {
-	static final Logger logger = LogManager.getLogger(DigramLongSearchHistogram.class.getName());
 
 	/**
 	 * Adds a word along with it's result to the search histogram

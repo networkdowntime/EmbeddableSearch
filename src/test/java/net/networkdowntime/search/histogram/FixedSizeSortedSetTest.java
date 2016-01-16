@@ -1,13 +1,8 @@
 package net.networkdowntime.search.histogram;
 
 import static org.junit.Assert.*;
-import gnu.trove.map.hash.TIntLongHashMap;
 
-import java.util.Iterator;
 import java.util.Set;
-import java.util.TreeSet;
-
-import net.networkdowntime.search.histogram.Tuple.TupleComparator;
 
 import org.junit.Before;
 import org.junit.Test;

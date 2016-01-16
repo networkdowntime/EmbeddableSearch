@@ -181,7 +181,7 @@ public class InMemorySearchEngineTest {
 //	@Test
 //	public void testCapacity() {
 //		searchEngine.resetTimes();
-//		long numOfElementsToTest = 10000000; // can handle 20,000,000 on my 16GB MacBook Pro using 12G of heap 
+//		long numOfElementsToTest = 20000000; // can handle 20,000,000 on my 16GB MacBook Pro using 12G of heap 
 //		long baseNumber = 100000000; // yields a 9 digit string
 //		double percentageToDisplay = 1;
 //		long percentage = Math.round(numOfElementsToTest / (100 / percentageToDisplay));
