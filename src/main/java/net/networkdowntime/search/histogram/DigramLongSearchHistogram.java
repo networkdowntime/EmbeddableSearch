@@ -38,6 +38,7 @@ public class DigramLongSearchHistogram extends DigramSearchHistogram {
 	 * @param secondWord Word to be added
 	 * @param result The search result to associate with the word
 	 */
+	@Override
 	public void add(String firstWord, String secondWord, long result) {
 		super.add(firstWord, secondWord, result);
 	}
@@ -49,6 +50,7 @@ public class DigramLongSearchHistogram extends DigramSearchHistogram {
 	 * @param secondWord The second word to remove the result for.
 	 * @param result The result to be removed.
 	 */
+	@Override
 	public void remove(String firstWord, String secondWord, long result) {
 		super.remove(firstWord, secondWord, result);
 	}
