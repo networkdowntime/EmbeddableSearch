@@ -55,7 +55,7 @@ public class ContentSplitter {
 
 		splittingRegex += "|\\s{0,}<\\s{0,}"; // < led or followed by a whitespace
 		splittingRegex += "|\\s{0,}>\\s{0,}"; // > led or followed by a whitespace
-		
+
 		pattern = Pattern.compile(splittingRegex);
 	}
 
