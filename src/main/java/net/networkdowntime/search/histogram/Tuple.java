@@ -50,6 +50,11 @@ class Tuple<T extends Comparable<T>> {
 		this.count = count;
 	}
 
+	@Override
+	public int hashCode() {
+		return word.hashCode();
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object obj) {
