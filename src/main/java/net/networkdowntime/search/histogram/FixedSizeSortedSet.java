@@ -31,7 +31,7 @@ import java.util.TreeSet;
 public class FixedSizeSortedSet<E> extends TreeSet<E> {
 	private static final long serialVersionUID = 1L;
 
-	private final Comparator<? super E> _comparator;
+	private final transient Comparator<? super E> _comparator;
 	private final int maxSize;
 
 	/**
