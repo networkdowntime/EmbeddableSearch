@@ -46,7 +46,7 @@ import net.networkdowntime.search.textProcessing.TextScrubber;
  *
  */
 public class InMemorySearchEngine implements SearchEngine {
-	static final Logger logger = LogManager.getLogger(InMemorySearchEngine.class.getName());
+	private static final Logger LOGGER = LogManager.getLogger(InMemorySearchEngine.class.getName());
 
 	private UnigramLongSearchHistogram unigramLongSearchHistogram = new UnigramLongSearchHistogram();
 	private UnigramStringSearchHistogram unigramStringSearchHistogram = new UnigramStringSearchHistogram();
@@ -91,14 +91,14 @@ public class InMemorySearchEngine implements SearchEngine {
 	 * Print the timing variables out to logger.info()
 	 */
 	public void printTimes() {
-		logger.info("\ttimeForAdding: " + (timeForAdding / 1000d) + " secs");
-		logger.info("\ttimeForScrubbing: " + (timeForScrubbing / 1000d) + " secs");
-		logger.info("\ttimeForCompletions: " + (timeForCompletions / 1000d) + " secs");
-		logger.info("\ttimeForSearchResults: " + (timeForSearchResults / 1000d) + " secs");
+		LOGGER.info("\ttimeForAdding: " + (timeForAdding / 1000d) + " secs");
+		LOGGER.info("\ttimeForScrubbing: " + (timeForScrubbing / 1000d) + " secs");
+		LOGGER.info("\ttimeForCompletions: " + (timeForCompletions / 1000d) + " secs");
+		LOGGER.info("\ttimeForSearchResults: " + (timeForSearchResults / 1000d) + " secs");
 
-		logger.info("\ttotal time: " + ((timeForAdding + timeForScrubbing + timeForCompletions + timeForSearchResults) / 1000d) + "secs");
-		logger.info("\tavg time to add: " + ((timeForAdding / (float) addCount)) + " ms");
-		logger.info("\tavg time to search: " + (((timeForScrubbing + timeForCompletions + timeForSearchResults) / (float) searchCount)) + " ms");
+		LOGGER.info("\ttotal time: " + ((timeForAdding + timeForScrubbing + timeForCompletions + timeForSearchResults) / 1000d) + "secs");
+		LOGGER.info("\tavg time to add: " + (timeForAdding / (float) addCount) + " ms");
+		LOGGER.info("\tavg time to search: " + ((timeForScrubbing + timeForCompletions + timeForSearchResults) / (float) searchCount) + " ms");
 	}
 
 	/**
@@ -136,8 +136,8 @@ public class InMemorySearchEngine implements SearchEngine {
 	 * @param text String to scrub, split, and index to the search result
 	 */
 	private void add(Object searchResult, String text) {
-		text = textScrubber.scrubText(text);
-		String[] words = splitter.splitContent(text);
+		String scrubbedText = textScrubber.scrubText(text);
+		String[] words = splitter.splitContent(scrubbedText);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
 
 		autocomplete.add(keywords);
@@ -185,8 +185,8 @@ public class InMemorySearchEngine implements SearchEngine {
 	 * @param text String to scrub, split, and de-index to the search result
 	 */
 	public void remove(Object searchResult, String text) {
-		text = textScrubber.scrubText(text);
-		String[] words = splitter.splitContent(text);
+		String scrubbedText = textScrubber.scrubText(text);
+		String[] words = splitter.splitContent(scrubbedText);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
 
 		autocomplete.remove(keywords);
@@ -230,8 +230,8 @@ public class InMemorySearchEngine implements SearchEngine {
 
 		boolean hasTrailingSpace = searchTerm.endsWith(" ");
 
-		searchTerm = textScrubber.scrubText(searchTerm);
-		String[] words = splitter.splitContent(searchTerm);
+		String scrubbedSearchTerm = textScrubber.scrubText(searchTerm);
+		String[] words = splitter.splitContent(scrubbedSearchTerm);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
 
 		timeForScrubbing += System.currentTimeMillis() - t1;
@@ -239,7 +239,7 @@ public class InMemorySearchEngine implements SearchEngine {
 
 		Set<String> uniqCompletions = autocomplete.getCompletions(keywords, true, hasTrailingSpace, limit * 2);
 		for (String s : uniqCompletions) {
-			logger.debug("\tuniq completion: " + s);
+			LOGGER.debug("\tuniq completion: " + s);
 		}
 		
 		timeForCompletions += System.currentTimeMillis() - t1;
@@ -259,8 +259,8 @@ public class InMemorySearchEngine implements SearchEngine {
 		FixedSizeSortedSet<SearchResult> results = SearchHistogramUtil.resultsMapToLongSet(SearchResultType.Long, longResults, limit);
 		FixedSizeSortedSet<SearchResult> resultsString = SearchHistogramUtil.resultsMapToStringSet(SearchResultType.String, stringResults, limit);
 
-		logger.debug("Long results: " + results.size());
-		logger.debug("String results: " + resultsString.size());
+		LOGGER.debug("Long results: " + results.size());
+		LOGGER.debug("String results: " + resultsString.size());
 
 		for (SearchResult searchResult : resultsString) { // combine and sort the results from each type
 			results.add(searchResult);
