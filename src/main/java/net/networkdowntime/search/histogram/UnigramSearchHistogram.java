@@ -6,11 +6,9 @@ import gnu.trove.map.hash.TLongByteHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
