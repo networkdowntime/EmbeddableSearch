@@ -3,7 +3,7 @@ package net.networkdowntime.search.histogram;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.SortedSet;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
@@ -94,10 +94,8 @@ public class DigramHistogram {
 	 */
 	public List<String> getOrderedResults(String firstWord, Set<String> secondWords, int limit) {
 
-		TreeSet<Tuple<String>> orderedResults = getResults(firstWord, secondWords);
-		List<String> retval = toList(orderedResults, limit);
-
-		return retval;
+		SortedSet<Tuple<String>> orderedResults = getResults(firstWord, secondWords);
+		return toList(orderedResults, limit);
 	}
 
 	/**
@@ -111,7 +109,7 @@ public class DigramHistogram {
 	 */
 	public List<String> getOrderedResults(Set<String> firstWords, Set<String> secondWords, int limit) {
 
-		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
+		SortedSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
 
 		if (secondWords == null) {
 			for (String firstWord : firstWords) {
@@ -136,8 +134,8 @@ public class DigramHistogram {
 	 * @param secondWords A set of second words for consideration
 	 * @param orderedResults Not-null TreeSet of Tuples
 	 */
-	private TreeSet<Tuple<String>> getResults(String firstWord, Set<String> secondWords) {
-		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
+	private SortedSet<Tuple<String>> getResults(String firstWord, Set<String> secondWords) {
+		SortedSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
 
 		for (String secondWord : secondWords) {
 			Tuple<String> t = new Tuple<String>();
@@ -172,8 +170,8 @@ public class DigramHistogram {
 		return orderedResults;
 	}
 
-	private TreeSet<Tuple<String>> getResults(String firstWord) {
-		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
+	private SortedSet<Tuple<String>> getResults(String firstWord) {
+		SortedSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
 
 		UnigramHistogram unigramHistogram = histogram.get(firstWord.hashCode());
 
@@ -185,7 +183,7 @@ public class DigramHistogram {
 				}
 			}
 		}
-		
+
 		return orderedResults;
 	}
 
@@ -196,7 +194,7 @@ public class DigramHistogram {
 	 * @param limit
 	 * @return
 	 */
-	private static List<String> toList(TreeSet<Tuple<String>> orderedResults, int limit) {
+	private static List<String> toList(SortedSet<Tuple<String>> orderedResults, int limit) {
 		List<String> retval = new ArrayList<String>();
 
 		int count = 0;
