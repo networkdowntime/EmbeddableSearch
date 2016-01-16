@@ -273,11 +273,20 @@ class UnigramSearchHistogram {
 		return results;
 	}
 
+	/**
+	 * For a given word, checks the histogram and if the word is in the histogram adds it's counts to the results
+	 * 
+	 * @param histogram The histogram to search within or null
+	 * @param results The map to add the results to
+	 * @param word The word to search the histogram for
+	 * @param weightMultiplier How much additional weight to apply to the match rank
+	 * @return The modified results map
+	 */
 	static TLongIntHashMap getSearchResults(UnigramSearchHistogram histogram, TLongIntHashMap results, String word, int weightMultiplier) {
 
 		LOGGER.debug("Looking for word: " + word);
 
-		if (word != null) {
+		if (histogram != null && word != null) {
 			int wordKey = word.hashCode();
 			TLongByteHashMap hashMap = histogram.multiResultMap.get(wordKey);
 
