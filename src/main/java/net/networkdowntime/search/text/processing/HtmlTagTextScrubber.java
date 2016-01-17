@@ -1,4 +1,4 @@
-package net.networkdowntime.search.textProcessing;
+package net.networkdowntime.search.text.processing;
 
 /**
  * The HtmlTagTextScrubber is a preprocessor that does scrubbing of multi-word input text removing HTML tags prior to splitting 

@@ -18,10 +18,10 @@ import net.networkdowntime.search.histogram.FixedSizeSortedSet;
 import net.networkdowntime.search.histogram.SearchHistogramUtil;
 import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
 import net.networkdowntime.search.histogram.UnigramStringSearchHistogram;
-import net.networkdowntime.search.textProcessing.ContentSplitter;
-import net.networkdowntime.search.textProcessing.KeywordScrubber;
-import net.networkdowntime.search.textProcessing.HtmlTagTextScrubber;
-import net.networkdowntime.search.textProcessing.TextScrubber;
+import net.networkdowntime.search.text.processing.ContentSplitter;
+import net.networkdowntime.search.text.processing.HtmlTagTextScrubber;
+import net.networkdowntime.search.text.processing.KeywordScrubber;
+import net.networkdowntime.search.text.processing.TextScrubber;
 
 /**
  * Implementation of an in-memory search engine with robust auto-complete capabilities and ordering of the results based on their

@@ -1,9 +1,11 @@
-package net.networkdowntime.search.textProcessing;
+package net.networkdowntime.search.text.processing;
 
 import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import net.networkdowntime.search.text.processing.ContentSplitter;
 
 public class ContentSplitterTest {
 

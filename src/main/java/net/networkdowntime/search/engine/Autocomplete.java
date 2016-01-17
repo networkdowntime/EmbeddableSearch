@@ -9,10 +9,10 @@ import org.apache.logging.log4j.Logger;
 import gnu.trove.set.hash.TLinkedHashSet;
 import net.networkdowntime.search.histogram.DigramHistogram;
 import net.networkdowntime.search.histogram.UnigramHistogram;
-import net.networkdowntime.search.textProcessing.ContentSplitter;
-import net.networkdowntime.search.textProcessing.HtmlTagTextScrubber;
-import net.networkdowntime.search.textProcessing.KeywordScrubber;
-import net.networkdowntime.search.textProcessing.TextScrubber;
+import net.networkdowntime.search.text.processing.ContentSplitter;
+import net.networkdowntime.search.text.processing.HtmlTagTextScrubber;
+import net.networkdowntime.search.text.processing.KeywordScrubber;
+import net.networkdowntime.search.text.processing.TextScrubber;
 import net.networkdowntime.search.trie.PrefixTrie;
 import net.networkdowntime.search.trie.SuffixTrie;
 

@@ -1,4 +1,4 @@
-package net.networkdowntime.search.textProcessing;
+package net.networkdowntime.search.text.processing;
 
 import java.util.ArrayList;
 import java.util.List;

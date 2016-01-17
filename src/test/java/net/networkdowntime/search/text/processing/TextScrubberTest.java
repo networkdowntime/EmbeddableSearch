@@ -1,9 +1,12 @@
-package net.networkdowntime.search.textProcessing;
+package net.networkdowntime.search.text.processing;
 
 import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import net.networkdowntime.search.text.processing.HtmlTagTextScrubber;
+import net.networkdowntime.search.text.processing.TextScrubber;
 
 public class TextScrubberTest {
 

@@ -1,4 +1,4 @@
-package net.networkdowntime.search.textProcessing;
+package net.networkdowntime.search.text.processing;
 
 /**
  * Interface for implementing various text scrubbers that can clean an input string.  An example is the HtmlTagTextScrubber 
