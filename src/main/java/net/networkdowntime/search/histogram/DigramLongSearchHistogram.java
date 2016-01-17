@@ -51,6 +51,12 @@ public class DigramLongSearchHistogram extends DigramSearchHistogram {
 		super.remove(firstWord, secondWord, result);
 	}
 
+	/**
+	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.
+	 * 
+	 * @param searchTerms The set of words to get the search results for
+	 * @return A set containing the matched search results up to the specified limit
+	 */
 	public TLongIntHashMap getSearchResults(Set<String> searchTerms, int weightMultiplier) {
 		return super.getResultsRaw(searchTerms, weightMultiplier);
 	}

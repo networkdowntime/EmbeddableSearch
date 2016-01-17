@@ -68,10 +68,7 @@ public class DigramStringSearchHistogram extends DigramSearchHistogram {
 	/**
 	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.
 	 * 
-	 * @param firstWords The set of first words to get the search results for.
-	 * @param secondWords The set of second words to get the search results for.
-	 * @param limit Max number of results to return
-	 *  
+	 * @param searchTerms The set of words to get the search results for
 	 * @return A set containing the matched search results up to the specified limit
 	 */
 	public TObjectIntHashMap<String> getSearchResults(Set<String> searchTerms, int weightMultiplier) {
