@@ -73,7 +73,6 @@ public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
 	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.
 	 * 
 	 * @param words The set of words to get the search results for.
-	 * @param limit Max number of results to return
 	 *  
 	 * @return A set containing the matched search results up to the specified limit
 	 */

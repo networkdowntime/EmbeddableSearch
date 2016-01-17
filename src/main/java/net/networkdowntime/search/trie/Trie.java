@@ -179,7 +179,7 @@ public abstract class Trie {
 
 		if (length == 1) {
 			child.isFullWordEnd = child.isFullWordEnd && !isFullWord;
-
+			
 			if (!isPartOfWordToPreserve || !createFullTrie) {
 				child.isEnd = false;
 			}
@@ -370,7 +370,7 @@ public abstract class Trie {
 
 		if (node.children != null) {
 			for (Object obj : node.children.values()) {
-				trace.addAll(getTrace(((TrieNode) obj), tabSpaces + 1));
+				trace.addAll(getTrace((TrieNode) obj, tabSpaces + 1));
 			}
 		}
 		return trace;
