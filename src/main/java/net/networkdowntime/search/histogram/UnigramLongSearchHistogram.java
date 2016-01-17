@@ -1,8 +1,5 @@
 package net.networkdowntime.search.histogram;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
  * Extends the UnigramSearchHistogram and provides public methods for add and remove.
  * 
@@ -25,7 +22,6 @@ import org.apache.logging.log4j.Logger;
  *
  */
 public class UnigramLongSearchHistogram extends UnigramSearchHistogram {
-	static final Logger logger = LogManager.getLogger(UnigramLongSearchHistogram.class.getName());
 
 	/**
 	 * Adds a word along with it's result to the search histogram

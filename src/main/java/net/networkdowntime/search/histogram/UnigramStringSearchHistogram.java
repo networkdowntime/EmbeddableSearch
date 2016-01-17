@@ -2,9 +2,6 @@ package net.networkdowntime.search.histogram;
 
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
@@ -31,7 +28,6 @@ import gnu.trove.map.hash.TObjectIntHashMap;
  *
  */
 public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
-	static final Logger logger = LogManager.getLogger(UnigramStringSearchHistogram.class.getName());
 
 	private TIntObjectHashMap<String> stringLookupMap = new TIntObjectHashMap<String>();
 
@@ -83,7 +79,7 @@ public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
 
 		long[] longResultKeys = longResults.keys();
 		int[] longResultValues = longResults.values();
-		
+
 		for (int i = 0; i < longResultKeys.length; i++) {
 			stringResults.put(stringLookupMap.get(((Long) longResultKeys[i]).intValue()), longResultValues[i]);
 		}
