@@ -76,7 +76,7 @@ class Tuple<T extends Comparable<T>> {
 	 * @return TreeSet ordered by their Tuples
 	 */
 	public static <E extends Comparable<E>> TreeSet<Tuple<E>> createOrderedResultsTree(E obj) {
-		return new TreeSet<Tuple<E>>((new Tuple<E>()).new TupleComparator<E>());
+		return new TreeSet<Tuple<E>>(new Tuple<E>().new TupleComparator<E>());
 	}
 
 	/**
@@ -106,7 +106,7 @@ class Tuple<T extends Comparable<T>> {
 			list.add(t);
 		}
 
-		list.sort((new Tuple<E>()).new TupleComparator<E>());
+		list.sort(new Tuple<E>().new TupleComparator<E>());
 
 		while (list.size() > limit) {
 			list.remove(list.size() - 1);
