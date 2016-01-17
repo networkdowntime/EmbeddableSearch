@@ -121,9 +121,7 @@ public class DigramHistogram {
 			}
 		}
 
-		List<String> retval = toList(orderedResults, limit);
-
-		return retval;
+		return toList(orderedResults, limit);
 	}
 
 	/**
