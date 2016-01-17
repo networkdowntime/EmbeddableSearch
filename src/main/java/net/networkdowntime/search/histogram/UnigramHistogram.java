@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import gnu.trove.map.hash.TIntIntHashMap;
 
@@ -101,7 +100,7 @@ public class UnigramHistogram {
 	 */
 	public static boolean contains(UnigramHistogram unigram, String word) {
 		int wordKey = word.hashCode();
-		return (unigram.histogram.containsKey(wordKey));
+		return unigram.histogram.containsKey(wordKey);
 	}
 
 	/**
