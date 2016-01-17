@@ -31,7 +31,7 @@ import java.util.TreeSet;
 public class FixedSizeSortedSet<E> extends TreeSet<E> {
 	private static final long serialVersionUID = 1L;
 
-	private final transient Comparator<? super E> _comparator;
+	private final transient Comparator<? super E> comparator;
 	private final int maxSize;
 
 	/**
@@ -42,7 +42,7 @@ public class FixedSizeSortedSet<E> extends TreeSet<E> {
 	 */
 	public FixedSizeSortedSet(Comparator<? super E> comparator, int maxSize) {
 		super(comparator);
-		_comparator = comparator;
+		this.comparator = comparator;
 		this.maxSize = maxSize;
 	}
 
@@ -52,10 +52,10 @@ public class FixedSizeSortedSet<E> extends TreeSet<E> {
 		if (size() >= maxSize) {
 			E smallest = last();
 			int comparison;
-			if (_comparator == null)
+			if (comparator == null)
 				comparison = ((Comparable<E>) e).compareTo(smallest);
 			else
-				comparison = _comparator.compare(e, smallest);
+				comparison = comparator.compare(e, smallest);
 			if (comparison < 0) {
 				remove(smallest);
 				return super.add(e);
@@ -76,7 +76,7 @@ public class FixedSizeSortedSet<E> extends TreeSet<E> {
 		Set<E> retval = new LinkedHashSet<E>();
 		int count = 0;
 
-		Iterator<E> iter = (Iterator<E>) this.iterator();
+		Iterator<E> iter = this.iterator();
 		while (iter.hasNext()) {
 			E val = iter.next();
 			retval.add(val);
