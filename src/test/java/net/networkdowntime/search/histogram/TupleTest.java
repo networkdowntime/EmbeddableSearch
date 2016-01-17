@@ -3,6 +3,7 @@ package net.networkdowntime.search.histogram;
 import static org.junit.Assert.*;
 
 import java.util.Iterator;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.junit.Before;
@@ -10,7 +11,7 @@ import org.junit.Test;
 
 public class TupleTest {
 
-	TreeSet<Tuple<String>> tree = Tuple.createOrderedResultsTree(new String());
+	SortedSet<Tuple<String>> tree = Tuple.createOrderedResultsTree(new String());
 	
 	@Before
 	public void setUp() throws Exception {
@@ -65,7 +66,7 @@ public class TupleTest {
 	
 	@Test
 	public void testTreeOrder2() {
-		TreeSet<Tuple<Long>> tree = Tuple.createOrderedResultsTree(new Long(0));
+		SortedSet<Tuple<Long>> tree = Tuple.createOrderedResultsTree(new Long(0));
 
 		Tuple<Long> t;
 		

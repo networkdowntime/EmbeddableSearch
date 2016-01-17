@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
@@ -75,7 +76,7 @@ class Tuple<T extends Comparable<T>> {
 	 * @param obj Instance of the comparable object contained in the tuples being sorted.
 	 * @return TreeSet ordered by their Tuples
 	 */
-	public static <E extends Comparable<E>> TreeSet<Tuple<E>> createOrderedResultsTree(E obj) {
+	public static <E extends Comparable<E>> SortedSet<Tuple<E>> createOrderedResultsTree(E obj) {
 		return new TreeSet<Tuple<E>>(new Tuple<E>().new TupleComparator<E>());
 	}
 

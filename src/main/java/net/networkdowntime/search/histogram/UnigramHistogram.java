@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import gnu.trove.map.hash.TIntIntHashMap;
@@ -132,7 +133,7 @@ public class UnigramHistogram {
 	 */
 	public static List<String> getOrderedResults(UnigramHistogram unigram, Set<String> words, int limit) {
 
-		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
+		SortedSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
 
 		for (String word : words) {
 			Tuple<String> t = new Tuple<String>();
