@@ -39,9 +39,9 @@ public class SearchResultComparator implements Comparator<SearchResult> {
 			Integer i2 = o2.weight;
 			return i2.compareTo(i1);
 		} else {
-			if (SearchResultType.Long.equals(o1.type)) {
+			if (SearchResultType.LONG.equals(o1.type)) {
 				
-				if (SearchResultType.Long.equals(o2.type)) {
+				if (SearchResultType.LONG.equals(o2.type)) {
 					return ((Long) o1.result).compareTo((Long) o2.result);
 				} else { // SearchResultType.String.equals(o2.type)
 					return ((Long) o1.result).toString().compareTo((String) o2.result);
@@ -49,7 +49,7 @@ public class SearchResultComparator implements Comparator<SearchResult> {
 				
 			} else { // SearchResultType.String.equals(o1.type)
 				
-				if (SearchResultType.Long.equals(o2.type)) {
+				if (SearchResultType.LONG.equals(o2.type)) {
 					return ((String) o1.result).compareTo(((Long) o2.result).toString());
 				} else { // SearchResultType.String.equals(o2.type)
 					return ((String) o1.result).compareTo((String) o2.result);

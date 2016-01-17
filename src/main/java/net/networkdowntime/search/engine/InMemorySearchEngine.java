@@ -256,8 +256,8 @@ public class InMemorySearchEngine implements SearchEngine {
 		SearchHistogramUtil.addResultToMap(longResults, UnigramLongSearchHistogram.getSearchResults(unigramLongSearchHistogram, uniqCompletions));
 		SearchHistogramUtil.addResultToMap(stringResults, unigramStringSearchHistogram.getSearchResults(uniqCompletions));
 
-		FixedSizeSortedSet<SearchResult> results = SearchHistogramUtil.resultsMapToLongSet(SearchResultType.Long, longResults, limit);
-		FixedSizeSortedSet<SearchResult> resultsString = SearchHistogramUtil.resultsMapToStringSet(SearchResultType.String, stringResults, limit);
+		FixedSizeSortedSet<SearchResult> results = SearchHistogramUtil.resultsMapToLongSet(SearchResultType.LONG, longResults, limit);
+		FixedSizeSortedSet<SearchResult> resultsString = SearchHistogramUtil.resultsMapToStringSet(SearchResultType.STRING, stringResults, limit);
 
 		LOGGER.debug("Long results: " + results.size());
 		LOGGER.debug("String results: " + resultsString.size());

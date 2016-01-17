@@ -22,5 +22,5 @@ package net.networkdowntime.search;
  *
  */
 public enum SearchResultType {
-	String, Long
+	STRING, LONG
 }
