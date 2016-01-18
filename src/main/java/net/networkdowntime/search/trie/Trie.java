@@ -126,7 +126,7 @@ public abstract class Trie {
 
 		if (length == 1) { // This is the end of the string and not on the root node, add a child marker to denote end of suffix
 			child.isEnd = true;
-			child.isFullWordEnd = isFullWord;
+			child.isFullWordEnd = child.isFullWordEnd || isFullWord;
 		} else {
 			String subString = getSubstring(wordPart);
 
@@ -294,13 +294,13 @@ public abstract class Trie {
 	/**
 	 * Checks if the parameter is a known full word in the trie.
 	 * 
-	 * @param word The word to check if it is a known full word in the trie
+	 * @param wordCharArr The word to check if it is a known full word in the trie in getCharArr() ordering
 	 * @return true if the word is a known full word otherwise false
 	 */
-	public boolean containsFullWord(String word) {
+	public boolean containsFullWord(char[] wordCharArr) {
 		TrieNode currentNode = rootNode;
 
-		for (char c : getCharArr(word)) {
+		for (char c : wordCharArr) {
 			if (currentNode != null && currentNode.children != null) {
 				currentNode = currentNode.children.get(c);
 			} else {
