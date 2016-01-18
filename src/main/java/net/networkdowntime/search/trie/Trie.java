@@ -1,6 +1,5 @@
 package net.networkdowntime.search.trie;
 
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -152,7 +151,7 @@ public abstract class Trie {
 			getFullWordsForRemoval(rootNode, wordToRemove, wordsToPreserve, "");
 			wordsToPreserve.remove(wordToRemove);
 		}
-		
+
 		removeInternal(rootNode, wordToRemove, true, wordsToPreserve);
 
 	}
@@ -179,7 +178,7 @@ public abstract class Trie {
 
 		if (length == 1) {
 			child.isFullWordEnd = child.isFullWordEnd && !isFullWord;
-			
+
 			if (!isPartOfWordToPreserve || !createFullTrie) {
 				child.isEnd = false;
 			}
@@ -290,6 +289,30 @@ public abstract class Trie {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Checks if the parameter is a known full word in the trie.
+	 * 
+	 * @param word The word to check if it is a known full word in the trie
+	 * @return true if the word is a known full word otherwise false
+	 */
+	public boolean containsFullWord(String word) {
+		TrieNode currentNode = rootNode;
+
+		for (char c : getCharArr(word)) {
+			if (currentNode != null && currentNode.children != null) {
+				currentNode = currentNode.children.get(c);
+			} else {
+				currentNode = null;
+			}
+
+			if (currentNode == null) { // no match
+				return false;
+			}
+		}
+
+		return currentNode.isFullWordEnd;
 	}
 
 	/**
