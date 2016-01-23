@@ -297,7 +297,7 @@ public abstract class Trie {
 	 * @param wordCharArr The word to check if it is a known full word in the trie in getCharArr() ordering
 	 * @return true if the word is a known full word otherwise false
 	 */
-	public boolean containsFullWord(char[] wordCharArr) {
+	public boolean containsWord(char[] wordCharArr, boolean fullWordMatch) {
 		TrieNode currentNode = rootNode;
 
 		for (char c : wordCharArr) {
@@ -312,9 +312,170 @@ public abstract class Trie {
 			}
 		}
 
-		return currentNode.isFullWordEnd;
+		// true,  true  = true
+		// true,  false = false;
+		// false, true  = true;
+		// false, false = true;
+		return !fullWordMatch || currentNode.isFullWordEnd;
+//		if (fullWordMatch) {
+//			return currentNode.isFullWordEnd;
+//		} else {
+//		}
 	}
 
+	/**
+	 * Implements a spelling check for words with a Damerau-Levenshtein distance of 1
+	 * 
+	 * @param word
+	 * @return
+	 */
+	public Set<String> getFuzzyCompletions(String word) {
+		Set<String> completions = new HashSet<String>();
+		completions.addAll(getMissingInsertions(word));
+		completions.addAll(getMissingDeletions(word));
+		completions.addAll(getMissingSubstitutions(word));
+		completions.addAll(getMissingTranspositions(word));
+		return completions;
+	}
+
+	private Set<String> getMissingInsertions(String word) {
+		Set<String> completions = new HashSet<String>();
+
+		char[] charArr = getCharArr(word);
+		char[] newCharArr = new char[charArr.length + 1];
+
+		newCharArr[0] = Character.MAX_VALUE;
+		for (int i = 1; i < newCharArr.length; i++) {
+			newCharArr[i] = charArr[i - 1];
+		}
+
+		int i = 0;
+		do {
+			for (char c : getChildrenForKnownPartOfWord(newCharArr)) {
+				newCharArr[i] = c;
+				String currentWord = new String(getCharArr(new String(newCharArr)));
+
+//				System.out.println("checking for insertion: " + currentWord);
+				if (containsWord(newCharArr, true)) {
+					completions.add(currentWord);
+				}
+			}
+			newCharArr[i] = Character.MAX_VALUE;
+
+			if (i < newCharArr.length - 1) {
+				char tmp = newCharArr[i];
+				newCharArr[i] = newCharArr[i + 1];
+				newCharArr[i + 1] = tmp;
+			}
+			i++;
+		} while (i < newCharArr.length);
+
+		return completions;
+	}
+
+	private Set<String> getMissingDeletions(String word) {
+		Set<String> completions = new HashSet<String>();
+		char[] charArr = word.toCharArray();
+		char[] delCharArr = new char[charArr.length - 1];
+
+		int i = 0;
+		do {
+			int charIndex = 0;
+			for (int j = 0; j < charArr.length; j++) { // j represents the char to skip
+				if (j == i) { // skip this character
+				} else {
+					delCharArr[charIndex] = charArr[j];
+					charIndex++;
+				}
+			}
+			String currentWord = new String(delCharArr);
+//			System.out.println("checking for deletion: " + currentWord);
+			if (containsWord(getCharArr(currentWord), true)) {
+				completions.add(currentWord);
+			}
+
+			i++;
+		} while (i < charArr.length);
+
+		return completions;
+	}
+
+	private Set<String> getMissingSubstitutions(String word) {
+		Set<String> completions = new HashSet<String>();
+
+		char[] charArr = getCharArr(word);
+		char[] newCharArr = new char[charArr.length];
+
+		for (int i = 0; i < newCharArr.length; i++) {
+			newCharArr[i] = charArr[i];
+		}
+
+		int i = 0;
+		do {
+			char tmp = newCharArr[i];
+			newCharArr[i] = Character.MAX_VALUE;
+
+			for (char c : getChildrenForKnownPartOfWord(newCharArr)) {
+				newCharArr[i] = c;
+				String currentWord = new String(getCharArr(new String(newCharArr)));
+
+				if (containsWord(newCharArr, true)) {
+					completions.add(currentWord);
+				}
+			}
+
+			newCharArr[i] = tmp;
+			i++;
+		} while (i < newCharArr.length);
+
+		return completions;
+	}
+
+	private Set<String> getMissingTranspositions(String word) {
+		Set<String> completions = new HashSet<String>();
+
+		char[] charArr = getCharArr(word);
+
+		int i = 1;
+		do {
+			// transpose
+			char tmp = charArr[i - 1];
+			charArr[i - 1] = charArr[i];
+			charArr[i] = tmp;
+
+			if (containsWord(charArr, true)) {
+				String currentWord = new String(getCharArr(new String(charArr)));
+				completions.add(currentWord);
+			}
+
+			// undo transpose
+			charArr[i] = charArr[i - 1];
+			charArr[i - 1] = tmp;
+			i++;
+		} while (i < charArr.length);
+
+		return completions;
+	}
+
+	private char[] getChildrenForKnownPartOfWord(char[] wordCharArr) {
+		TrieNode currentNode = rootNode;
+
+		int i = 0;
+		do {
+			char c = wordCharArr[i];
+			//			System.out.println("node: " + currentNode.c + "; # of children: " + currentNode.children.size() + "; char: " + c);
+
+			if (currentNode.children.contains(c)) {
+				currentNode = currentNode.children.get(c);
+			} else {
+				return currentNode.children.keys();
+			}
+			i++;
+		} while (currentNode != null && currentNode.children != null && i < wordCharArr.length);
+
+		return new char[0];
+	}
+	
 	/**
 	 * Gets the specified number of tabs as a string.
 	 * 
