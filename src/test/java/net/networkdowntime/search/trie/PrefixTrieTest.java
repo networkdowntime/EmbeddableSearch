@@ -3,7 +3,9 @@ package net.networkdowntime.search.trie;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import net.networkdowntime.search.trie.PrefixTrie;
 
@@ -477,4 +479,131 @@ public class PrefixTrieTest {
 		}
 	}
 
+	@Test
+	public void testFuzzyMatchInsertions() {
+		PrefixTrie prefixTrie = new PrefixTrie(true);
+		String[] distanceOneInsertion = new String[] { "awhat", "whata", "whaat" }; // beginning, ending, middle
+
+		List<String> words = new ArrayList<String>();
+		words.addAll(Arrays.asList(distanceOneInsertion));
+		for (String s : words)
+			prefixTrie.add(s);
+
+		Set<String> completions = prefixTrie.getFuzzyCompletions("what");
+		for (String s : words) {
+			assertTrue(completions.contains(s));
+		}
+	}
+
+	@Test
+	public void testPartialFuzzyMatchInsertions() {
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		String[] distanceOneInsertion = new String[] { "awhat", "whata", "whaat" }; // beginning, ending, middle
+
+		List<String> words = new ArrayList<String>();
+		words.addAll(Arrays.asList(distanceOneInsertion));
+		for (String s : words)
+			prefixTrie.add(s);
+
+		Set<String> completions = prefixTrie.getFuzzyCompletions("what");
+		for (String s : words) {
+			assertTrue(completions.contains(s));
+		}
+	}
+
+	@Test
+	public void testFuzzyMatchDeletions() {
+		PrefixTrie prefixTrie = new PrefixTrie(true);
+		String[] distanceOneDeletion = new String[] { "hat", "wha", "wat" }; // beginning, ending, middle
+
+		List<String> words = new ArrayList<String>();
+		words.addAll(Arrays.asList(distanceOneDeletion));
+		for (String s : words)
+			prefixTrie.add(s);
+
+		Set<String> completions = prefixTrie.getFuzzyCompletions("what");
+		for (String s : words) {
+			assertTrue(completions.contains(s));
+		}
+	}
+
+	@Test
+	public void testPartialFuzzyMatchDeletions() {
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		String[] distanceOneDeletion = new String[] { "hat", "wha", "wat" }; // beginning, ending, middle
+
+		List<String> words = new ArrayList<String>();
+		words.addAll(Arrays.asList(distanceOneDeletion));
+		for (String s : words)
+			prefixTrie.add(s);
+
+		Set<String> completions = prefixTrie.getFuzzyCompletions("what");
+		for (String s : words) {
+			assertTrue(completions.contains(s));
+		}
+	}
+
+	@Test
+	public void testFuzzyMatchSubstitutions() {
+		PrefixTrie prefixTrie = new PrefixTrie(true);
+		String[] distanceOneSubstitution = new String[] { "that", "whac", "wbat" }; // beginning, ending, middle
+
+		List<String> words = new ArrayList<String>();
+		words.addAll(Arrays.asList(distanceOneSubstitution));
+		for (String s : words)
+			prefixTrie.add(s);
+
+		Set<String> completions = prefixTrie.getFuzzyCompletions("what");
+		for (String s : words) {
+			assertTrue(completions.contains(s));
+		}
+	}
+
+	@Test
+	public void testPartialFuzzyMatchSubstitutions() {
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		String[] distanceOneSubstitution = new String[] { "that", "whac", "wbat" }; // beginning, ending, middle
+
+		List<String> words = new ArrayList<String>();
+		words.addAll(Arrays.asList(distanceOneSubstitution));
+		for (String s : words)
+			prefixTrie.add(s);
+
+		Set<String> completions = prefixTrie.getFuzzyCompletions("what");
+		for (String s : words) {
+			assertTrue(completions.contains(s));
+		}
+	}
+
+	@Test
+	public void testFuzzyMatchTranspositions() {
+		PrefixTrie prefixTrie = new PrefixTrie(true);
+		String[] distanceOneTransposition = new String[] { "hwat", "whta", "waht" }; // beginning, ending, middle
+
+		List<String> words = new ArrayList<String>();
+		words.addAll(Arrays.asList(distanceOneTransposition));
+		for (String s : words)
+			prefixTrie.add(s);
+
+		Set<String> completions = prefixTrie.getFuzzyCompletions("what");
+		for (String s : words) {
+			assertTrue(completions.contains(s));
+		}
+	}
+
+	@Test
+	public void testPartialFuzzyMatchTranspositions() {
+		PrefixTrie suffixTrie = new PrefixTrie(false);
+		String[] distanceOneTransposition = new String[] { "hwat", "whta", "waht" }; // beginning, ending, middle
+
+		List<String> words = new ArrayList<String>();
+		words.addAll(Arrays.asList(distanceOneTransposition));
+		for (String s : words)
+			suffixTrie.add(s);
+
+		Set<String> completions = suffixTrie.getFuzzyCompletions("what");
+		for (String s : words) {
+			assertTrue(completions.contains(s));
+		}
+	}
 }
