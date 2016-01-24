@@ -312,15 +312,7 @@ public abstract class Trie {
 			}
 		}
 
-		// true,  true  = true
-		// true,  false = false;
-		// false, true  = true;
-		// false, false = true;
 		return !fullWordMatch || currentNode.isFullWordEnd;
-//		if (fullWordMatch) {
-//			return currentNode.isFullWordEnd;
-//		} else {
-//		}
 	}
 
 	/**
@@ -355,7 +347,6 @@ public abstract class Trie {
 				newCharArr[i] = c;
 				String currentWord = new String(getCharArr(new String(newCharArr)));
 
-//				System.out.println("checking for insertion: " + currentWord);
 				if (containsWord(newCharArr, true)) {
 					completions.add(currentWord);
 				}
@@ -389,7 +380,6 @@ public abstract class Trie {
 				}
 			}
 			String currentWord = new String(delCharArr);
-//			System.out.println("checking for deletion: " + currentWord);
 			if (containsWord(getCharArr(currentWord), true)) {
 				completions.add(currentWord);
 			}
@@ -433,27 +423,27 @@ public abstract class Trie {
 
 	private Set<String> getMissingTranspositions(String word) {
 		Set<String> completions = new HashSet<String>();
+		if (word.length() > 1) {
+			char[] charArr = getCharArr(word);
 
-		char[] charArr = getCharArr(word);
+			int i = 1;
+			do {
+				// transpose
+				char tmp = charArr[i - 1];
+				charArr[i - 1] = charArr[i];
+				charArr[i] = tmp;
 
-		int i = 1;
-		do {
-			// transpose
-			char tmp = charArr[i - 1];
-			charArr[i - 1] = charArr[i];
-			charArr[i] = tmp;
+				if (containsWord(charArr, true)) {
+					String currentWord = new String(getCharArr(new String(charArr)));
+					completions.add(currentWord);
+				}
 
-			if (containsWord(charArr, true)) {
-				String currentWord = new String(getCharArr(new String(charArr)));
-				completions.add(currentWord);
-			}
-
-			// undo transpose
-			charArr[i] = charArr[i - 1];
-			charArr[i - 1] = tmp;
-			i++;
-		} while (i < charArr.length);
-
+				// undo transpose
+				charArr[i] = charArr[i - 1];
+				charArr[i - 1] = tmp;
+				i++;
+			} while (i < charArr.length);
+		}
 		return completions;
 	}
 
@@ -463,7 +453,6 @@ public abstract class Trie {
 		int i = 0;
 		do {
 			char c = wordCharArr[i];
-			//			System.out.println("node: " + currentNode.c + "; # of children: " + currentNode.children.size() + "; char: " + c);
 
 			if (currentNode.children.contains(c)) {
 				currentNode = currentNode.children.get(c);
@@ -475,7 +464,7 @@ public abstract class Trie {
 
 		return new char[0];
 	}
-	
+
 	/**
 	 * Gets the specified number of tabs as a string.
 	 * 
