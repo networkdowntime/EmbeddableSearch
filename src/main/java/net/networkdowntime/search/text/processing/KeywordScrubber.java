@@ -65,6 +65,7 @@ public class KeywordScrubber {
 		invalidCharWordBeginnings.add('|');
 		invalidCharWordBeginnings.add('[');
 		invalidCharWordBeginnings.add(';');
+		invalidCharWordBeginnings.add('/');
 		
 		invalidCharWordEndings.add('\"');
 		invalidCharWordEndings.add(')');
@@ -81,6 +82,7 @@ public class KeywordScrubber {
 		invalidCharWordEndings.add('*');
 		invalidCharWordEndings.add(']');
 		invalidCharWordEndings.add(';');
+		invalidCharWordEndings.add('/');
 	}
 
 	/**
@@ -148,7 +150,7 @@ public class KeywordScrubber {
 		}
 
 		int lastCharIndex = scrubbedKeyword.length() - 1;
-		while (!scrubbedKeyword.isEmpty() && invalidCharWordBeginnings.contains(scrubbedKeyword.charAt(lastCharIndex))) {
+		while (!scrubbedKeyword.isEmpty() && invalidCharWordEndings.contains(scrubbedKeyword.charAt(lastCharIndex))) {
 			scrubbedKeyword = scrubbedKeyword.substring(0, lastCharIndex);
 			hasChanged = true;
 			lastCharIndex--;
