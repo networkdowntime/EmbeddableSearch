@@ -82,6 +82,22 @@ public class SuffixTrieTest {
 	}
 
 	@Test
+	public void testGetCompletionsFullMatch() {
+		SuffixTrie suffixTrie = new SuffixTrie();
+		suffixTrie.add("cacao");
+		List<String> completions = suffixTrie.getCompletions("cacao", 50);
+		assertEquals("cacao", completions.get(0));
+	}
+
+	@Test
+	public void testPartialGetCompletionsFullMatch() {
+		SuffixTrie suffixTrie = new SuffixTrie(false);
+		suffixTrie.add("cacao");
+		List<String> completions = suffixTrie.getCompletions("cacao", 50);
+		assertEquals("cacao", completions.get(0));
+	}
+
+	@Test
 	public void testGetCompletionsNoMatch() {
 		SuffixTrie suffixTrie = new SuffixTrie();
 		suffixTrie.add("cacao");

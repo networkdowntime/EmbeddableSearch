@@ -2,12 +2,14 @@ package net.networkdowntime.search.engine;
 
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import gnu.trove.set.hash.TLinkedHashSet;
 import net.networkdowntime.search.histogram.DigramHistogram;
+import net.networkdowntime.search.histogram.Tuple;
 import net.networkdowntime.search.histogram.UnigramHistogram;
 import net.networkdowntime.search.text.processing.ContentSplitter;
 import net.networkdowntime.search.text.processing.HtmlTagTextScrubber;
@@ -41,7 +43,7 @@ import net.networkdowntime.search.trie.SuffixTrie;
 public class Autocomplete {
 	private static final Logger LOGGER = LogManager.getLogger(Autocomplete.class.getName());
 
-	private UnigramHistogram unigramHistogram = new UnigramHistogram();
+	UnigramHistogram unigramHistogram = new UnigramHistogram();
 	private DigramHistogram digramHistogram = new DigramHistogram();
 	private PrefixTrie prefixTrie = new PrefixTrie();
 	private SuffixTrie suffixTrie = new SuffixTrie(false);
@@ -291,14 +293,37 @@ public class Autocomplete {
 				}
 			}
 
-			if (fuzzyMatch && completions.isEmpty()) {
-				completions.addAll(getCompletionsSingleWordUnordered(word.substring(0, word.length() - 1), fuzzyMatch, limit));
+			if (fuzzyMatch) {
+				LOGGER.debug("Getting fuzzy completions for: " + word);
+				completions.addAll(suffixTrie.getFuzzyCompletions(word));
 			}
+//			if (fuzzyMatch && completions.isEmpty()) {
+//				LOGGER.debug("Getting fuzzy completions for: " + word);
+//				completions.addAll(suffixTrie.getFuzzyCompletions(word));
+////				completions.addAll(getCompletionsSingleWordUnordered(word.substring(0, word.length() - 1), fuzzyMatch, limit));
+//			}
 		}
 
 		return completions;
 	}
 
+	public Set<String> getFuzzyCompletionsSingleWord(String word) {
+		return suffixTrie.getFuzzyCompletions(word);
+	}
+	
+	public SortedSet<Tuple<String>> getHistogram() {
+		SortedSet<Tuple<String>> tree = Tuple.createOrderedResultsTree(new String());
+
+		for (String word : suffixTrie.getCompletions("", UnigramHistogram.size(unigramHistogram))) {
+			tree.add(new Tuple<String>(word, UnigramHistogram.getOccurrenceCount(unigramHistogram, word)));
+		}
+		return tree;
+	}
+	
+	public boolean contains(String word) {
+		return suffixTrie.containsWord(word.toCharArray(), true);
+	}
+	
 	/**
 	 * Internal method to convert a string list back to a string.  Skips the last X number of words at the end.
 	 * 

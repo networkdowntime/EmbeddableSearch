@@ -72,9 +72,9 @@ public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
 	 *  
 	 * @return A set containing the matched search results up to the specified limit
 	 */
-	public TObjectIntHashMap<String> getSearchResults(Set<String> words) {
+	public TObjectIntHashMap<String> getSearchResults(Set<String> words, int collectionSize) {
 
-		TLongIntHashMap longResults = super.getSearchResults(this, words);
+		TLongIntHashMap longResults = super.getSearchResults(this, words, collectionSize);
 		TObjectIntHashMap<String> stringResults = new TObjectIntHashMap<String>();
 
 		long[] longResultKeys = longResults.keys();

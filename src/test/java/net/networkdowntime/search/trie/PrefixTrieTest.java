@@ -80,6 +80,22 @@ public class PrefixTrieTest {
 	}
 
 	@Test
+	public void testGetCompletionsFullMatch() {
+		PrefixTrie prefixTrie = new PrefixTrie();
+		prefixTrie.add("cacao");
+		List<String> completions = prefixTrie.getCompletions("cacao", 50);
+		assertEquals("cacao", completions.get(0));
+	}
+
+	@Test
+	public void testPartialGetCompletionsFullMatch() {
+		PrefixTrie prefixTrie = new PrefixTrie(false);
+		prefixTrie.add("cacao");
+		List<String> completions = prefixTrie.getCompletions("cacao", 50);
+		assertEquals("cacao", completions.get(0));
+	}
+
+	@Test
 	public void testGetCompletionsNoMatch() {
 		PrefixTrie prefixTrie = new PrefixTrie();
 		prefixTrie.add("cacao");

@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import gnu.trove.map.hash.TIntIntHashMap;
+import net.networkdowntime.search.SearchResult;
+import net.networkdowntime.search.SearchResultComparator;
 
 /**
  * Single word/string histogram.
@@ -39,6 +41,10 @@ public class UnigramHistogram {
 	private Tuple<String>[] mostCommonWords = new Tuple[15];
 
 	private TIntIntHashMap histogram = new TIntIntHashMap();
+
+	public static int size(UnigramHistogram unigram) {
+		return unigram.histogram.size();
+	}
 
 	/**
 	 * Returns the most common words stored in the histogram.
@@ -156,7 +162,7 @@ public class UnigramHistogram {
 				break;
 			}
 		}
-		
+
 		return retval;
 	}
 

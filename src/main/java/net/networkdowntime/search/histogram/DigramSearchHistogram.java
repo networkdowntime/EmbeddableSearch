@@ -93,10 +93,10 @@ class DigramSearchHistogram {
 
 			for (String currentWord : keywords) {
 				if (previousWord != null) {
-					LOGGER.debug("Looking for " + previousWord + " " + currentWord);
+					LOGGER.debug("Looking for: " + previousWord + " " + currentWord);
 					UnigramSearchHistogram.getSearchResults(histogram.get(previousWord.hashCode()), results, currentWord, weightMultiplier);
 
-					LOGGER.debug("Looking for " + currentWord + " " + previousWord);
+					LOGGER.debug("Looking for: " + currentWord + " " + previousWord);
 					UnigramSearchHistogram.getSearchResults(histogram.get(currentWord.hashCode()), results, previousWord, weightMultiplier);
 				}
 

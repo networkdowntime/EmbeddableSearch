@@ -4,11 +4,17 @@ import gnu.trove.map.hash.TLongIntHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tartarus.martin.Stemmer;
 
 import net.networkdowntime.search.SearchResult;
 import net.networkdowntime.search.SearchResultType;
@@ -16,6 +22,8 @@ import net.networkdowntime.search.histogram.DigramLongSearchHistogram;
 import net.networkdowntime.search.histogram.DigramStringSearchHistogram;
 import net.networkdowntime.search.histogram.FixedSizeSortedSet;
 import net.networkdowntime.search.histogram.SearchHistogramUtil;
+import net.networkdowntime.search.histogram.Tuple;
+import net.networkdowntime.search.histogram.UnigramHistogram;
 import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
 import net.networkdowntime.search.histogram.UnigramStringSearchHistogram;
 import net.networkdowntime.search.text.processing.ContentSplitter;
@@ -45,8 +53,8 @@ import net.networkdowntime.search.text.processing.TextScrubber;
  * @author rwiles
  *
  */
-public class InMemorySearchEngine implements SearchEngine {
-	private static final Logger LOGGER = LogManager.getLogger(InMemorySearchEngine.class.getName());
+public class InMemorySearchEngine2 implements SearchEngine {
+	private static final Logger LOGGER = LogManager.getLogger(InMemorySearchEngine2.class.getName());
 
 	private UnigramLongSearchHistogram unigramLongSearchHistogram = new UnigramLongSearchHistogram();
 	private UnigramStringSearchHistogram unigramStringSearchHistogram = new UnigramStringSearchHistogram();
@@ -69,13 +77,15 @@ public class InMemorySearchEngine implements SearchEngine {
 	private long searchCount = 0;
 	// end timing variables
 
+	Set<Long> documents = new HashSet<Long>();
+
 	/**
 	 * Default constructor
 	 */
-	public InMemorySearchEngine() {
+	public InMemorySearchEngine2() {
 		autocomplete = new Autocomplete(textScrubber, splitter, keywordScrubber);
 	}
-	
+
 	/**
 	 * Resets the timing variables
 	 */
@@ -114,6 +124,7 @@ public class InMemorySearchEngine implements SearchEngine {
 		addCount++;
 		long t1 = System.currentTimeMillis();
 
+		documents.add((long) searchResult.hashCode());
 		this.add((Object) searchResult, text);
 
 		timeForAdding += System.currentTimeMillis() - t1;
@@ -124,17 +135,18 @@ public class InMemorySearchEngine implements SearchEngine {
 		addCount++;
 		long t1 = System.currentTimeMillis();
 
+		documents.add((long) searchResult.hashCode());
 		this.add((Object) searchResult, text);
 
 		timeForAdding += System.currentTimeMillis() - t1;
 	}
 
 	/**
-	 * Indexes the supplied text and associates it with the search result.
-	 * 
-	 * @param searchResult Search result to associate to the keywords in the text
-	 * @param text String to scrub, split, and index to the search result
-	 */
+		 * Indexes the supplied text and associates it with the search result.
+		 * 
+		 * @param searchResult Search result to associate to the keywords in the text
+		 * @param text String to scrub, split, and index to the search result
+		 */
 	private void add(Object searchResult, String text) {
 		String scrubbedText = textScrubber.scrubText(text);
 		String[] words = splitter.splitContent(scrubbedText);
@@ -142,28 +154,26 @@ public class InMemorySearchEngine implements SearchEngine {
 
 		autocomplete.add(keywords);
 
-		String currentWord = null;
 		String previousWord = null;
 
 		if (searchResult instanceof Long) {
-			for (int i = 0; i < keywords.size(); i++) {
-				previousWord = (currentWord != null) ? currentWord : null;
-				currentWord = keywords.get(i);
-
+			for (String currentWord : keywords) {
+				unigramLongSearchHistogram.add(Stemmer.stem(currentWord), (Long) searchResult);
 				unigramLongSearchHistogram.add(currentWord, (Long) searchResult);
+
 				if (previousWord != null) {
 					digramLongSearchHistogram.add(previousWord, currentWord, (Long) searchResult);
 				}
+				previousWord = currentWord;
 			}
 		} else if (searchResult instanceof String) {
-			for (int i = 0; i < keywords.size(); i++) {
-				previousWord = (currentWord != null) ? currentWord : null;
-				currentWord = keywords.get(i);
-
+			for (String currentWord : keywords) {
+				unigramStringSearchHistogram.add(Stemmer.stem(currentWord), (String) searchResult);
 				unigramStringSearchHistogram.add(currentWord, (String) searchResult);
 				if (previousWord != null) {
 					digramStringSearchHistogram.add(previousWord, currentWord, (String) searchResult);
 				}
+				previousWord = currentWord;
 			}
 		}
 	}
@@ -222,13 +232,29 @@ public class InMemorySearchEngine implements SearchEngine {
 		return new ArrayList<String>(autocomplete.getCompletions(searchTerm, fuzzyMatch, limit));
 	}
 
+	private void log(String label, Collection<String> col) {
+		if (LOGGER.isDebugEnabled()) {
+			boolean first = true;
+
+			String str = "";
+			for (String s : col) {
+				if (!first) {
+					str = str + " ";
+				}
+				str = str + s;
+				first = false;
+			}
+			LOGGER.debug(label + ": " + str);
+		}
+	}
+
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Set<SearchResult> search(String searchTerm, int limit) {
 		searchCount++;
 		long t1 = System.currentTimeMillis();
 
-		boolean hasTrailingSpace = searchTerm.endsWith(" ");
+		//		boolean hasTrailingSpace = searchTerm.endsWith(" ");
 
 		String scrubbedSearchTerm = textScrubber.scrubText(searchTerm);
 		String[] words = splitter.splitContent(scrubbedSearchTerm);
@@ -237,24 +263,49 @@ public class InMemorySearchEngine implements SearchEngine {
 		timeForScrubbing += System.currentTimeMillis() - t1;
 		t1 = System.currentTimeMillis();
 
-		Set<String> uniqCompletions = autocomplete.getCompletions(keywords, true, hasTrailingSpace, limit * 2);
-		for (String s : uniqCompletions) {
-			LOGGER.debug("\tuniq completion: " + s);
+		log("actual search query", keywords);
+
+		Set<String> uniqCompletions = new LinkedHashSet<String>();
+		for (String keyword : keywords) {
+			// add known keywords from autocomplete
+			if (keyword.length() > 2 && autocomplete.contains(keyword)) {
+				uniqCompletions.add(keyword);
+			}
 		}
-		
+
+		// remove common words.  would like to replace with a statistical cut-off
+		for (Tuple<String> commonWord : UnigramHistogram.getMostCommonWords(autocomplete.unigramHistogram)) {
+			uniqCompletions.remove(commonWord.word);
+		}
+
+		Set<String> stems = new HashSet<String>();
+		for (String completion : uniqCompletions) {
+			stems.add(Stemmer.stem(completion));
+		}
+		uniqCompletions.addAll(stems);
+
+		log("refined search query", uniqCompletions);
+
 		timeForCompletions += System.currentTimeMillis() - t1;
 		t1 = System.currentTimeMillis();
 
 		TLongIntHashMap longResults = new TLongIntHashMap();
 		TObjectIntHashMap<String> stringResults = new TObjectIntHashMap<String>();
-		
-		if (keywords.size() > 1) {
-			longResults = digramLongSearchHistogram.getSearchResults(uniqCompletions, 10);
-			stringResults = digramStringSearchHistogram.getSearchResults(uniqCompletions, 10);
+
+		if (uniqCompletions.size() > 1) {
+			if (LOGGER.isDebugEnabled()) {
+				for (String keyword : uniqCompletions) {
+					LOGGER.debug("For keyword: " + keyword + "; histogram count: " + UnigramLongSearchHistogram.getOccuranceCount(unigramLongSearchHistogram, keyword.hashCode()) + "; documentCount: "
+							+ UnigramLongSearchHistogram.getDocumentCount(unigramLongSearchHistogram, keyword.hashCode()));
+				}
+			}
+
+			longResults = digramLongSearchHistogram.getSearchResults(uniqCompletions, limit);
+			stringResults = digramStringSearchHistogram.getSearchResults(uniqCompletions, limit);
 		}
-		
-		SearchHistogramUtil.addResultToMap(longResults, UnigramLongSearchHistogram.getSearchResults(unigramLongSearchHistogram, uniqCompletions, 1000));
-		SearchHistogramUtil.addResultToMap(stringResults, unigramStringSearchHistogram.getSearchResults(uniqCompletions, 1000));
+
+		SearchHistogramUtil.addResultToMap(longResults, UnigramLongSearchHistogram.getSearchResults(unigramLongSearchHistogram, uniqCompletions, documents.size()));
+		SearchHistogramUtil.addResultToMap(stringResults, unigramStringSearchHistogram.getSearchResults(uniqCompletions, documents.size()));
 
 		FixedSizeSortedSet<SearchResult> results = SearchHistogramUtil.resultsMapToLongSet(SearchResultType.LONG, longResults, limit);
 		FixedSizeSortedSet<SearchResult> resultsString = SearchHistogramUtil.resultsMapToStringSet(SearchResultType.STRING, stringResults, limit);
@@ -270,4 +321,8 @@ public class InMemorySearchEngine implements SearchEngine {
 		return results;
 	}
 
+	public SortedSet<Tuple<String>> getHistogram() {
+		return autocomplete.getHistogram();
+	}
+	
 }

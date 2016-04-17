@@ -30,7 +30,7 @@ import java.util.TreeSet;
  *
  * @param <T>
  */
-class Tuple<T extends Comparable<T>> {
+public class Tuple<T extends Comparable<T>> {
 	public T word;
 	public int count;
 

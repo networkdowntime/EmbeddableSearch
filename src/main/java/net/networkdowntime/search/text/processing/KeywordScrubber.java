@@ -32,6 +32,8 @@ import gnu.trove.set.hash.TCharHashSet;
  *
  */
 public class KeywordScrubber {
+	int foo = 0x0A9a;
+	
 	// by default ignore the most common three letter words in English
 	private static String[] defaultIgnoreWords = new String[] { "and", "the" };
 

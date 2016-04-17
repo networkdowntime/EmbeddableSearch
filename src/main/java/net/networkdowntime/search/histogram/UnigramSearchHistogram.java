@@ -75,6 +75,23 @@ class UnigramSearchHistogram {
 	}
 
 	/**
+	 * Get the total number of documents from the multi-result hashmap.
+	 * 
+	 * @param UnigramSearchHistogram The histogram to perform the action on
+	 * @param word Key Hash key of the word
+	 * @return The number of documents from the multi-result hashmap
+	 */
+	protected static int getMultiResultDocumentCount(UnigramSearchHistogram histogram, int wordKey) {
+		TLongByteHashMap hashMap = histogram.multiResultMap.get(wordKey);
+		int count = 0;
+
+		if (hashMap != null) {
+			count = hashMap.size();
+		}
+		return count;
+	}
+
+	/**
 	 * Adds a word along with it's result to the search histogram
 	 * 
 	 * @param UnigramSearchHistogram The histogram to perform the action on
@@ -172,9 +189,20 @@ class UnigramSearchHistogram {
 	 * @param word Key Hash key of the word 
 	 * @return The total occurrence count of the word or 0 if not found
 	 */
-	protected static int getOccuranceCount(UnigramSearchHistogram histogram, int wordKey) {
+	public static int getOccuranceCount(UnigramSearchHistogram histogram, int wordKey) {
 
 		int count = UnigramSearchHistogram.getMultiResultCount(histogram, wordKey);
+
+		if (count == 0 && histogram.singleResultMap.contains(wordKey)) { // not in the multi-result map and one result
+			count = 1;
+		}
+
+		return count;
+	}
+
+	public static int getDocumentCount(UnigramSearchHistogram histogram, int wordKey) {
+
+		int count = UnigramSearchHistogram.getMultiResultDocumentCount(histogram, wordKey);
 
 		if (count == 0 && histogram.singleResultMap.contains(wordKey)) { // not in the multi-result map and one result
 			count = 1;
@@ -229,39 +257,44 @@ class UnigramSearchHistogram {
 	 *  
 	 * @return A set containing the matched search results up to the specified limit
 	 */
-	public static TLongIntHashMap getSearchResults(UnigramSearchHistogram histogram, Set<String> searchTerm) {
+	public static TLongIntHashMap getSearchResults(UnigramSearchHistogram histogram, Set<String> searchTerm, int collectionSize) {
 
 		TLongIntHashMap results = new TLongIntHashMap();
 
 		for (String term : searchTerm) {
-			String[] words;
-			if (term.contains(" ")) {
-				words = term.split(" ");
-			} else {
-				words = new String[] { term };
-			}
+			int documentsContainingTerm = getDocumentCount(histogram, term.hashCode());
+			double idfTerm = Math.log(collectionSize / (double) documentsContainingTerm);
 
-			for (String word : words) {
-				LOGGER.debug("Looking for word: " + word);
+			if (term != null) {
+				int wordKey = term.hashCode();
+				TLongByteHashMap hashMap = histogram.multiResultMap.get(wordKey);
 
-				if (word != null) {
-					int wordKey = word.hashCode();
-					TLongByteHashMap hashMap = histogram.multiResultMap.get(wordKey);
+				if (hashMap == null) { // 0 or 1 result
 
-					if (hashMap == null) { // 0 or 1 result
+					if (histogram.singleResultMap.contains(wordKey)) { // 1 result
+						long result = histogram.singleResultMap.get(wordKey);
 
-						if (histogram.singleResultMap.contains(wordKey)) { // 1 result
-							long result = histogram.singleResultMap.get(wordKey);
-
-							SearchHistogramUtil.addResultToMap(results, result, 1);
+						int termFrequency = 1;
+						int termWeight = (int) Math.round(termFrequency * idfTerm);
+						if (termWeight > 0) {
+							SearchHistogramUtil.addResultToMap(results, result, termWeight);
+							LOGGER.debug("Looking for word: " + term + "; result: " + result + "; termFrequency: " + termFrequency + "; documentsContainingTerm: " + documentsContainingTerm +
+									"; collectionSize: " + collectionSize + "; idfTerm: " + idfTerm + "; termWeight: " + termWeight);
 						}
-					} else { // more than one result
-						long[] hashMapResults = hashMap.keys();
-						byte[] hashMapCounts = hashMap.values();
+					}
+				} else { // more than one result
+					long[] hashMapResults = hashMap.keys();
+					byte[] hashMapCounts = hashMap.values();
 
-						for (int i = 0; i < hashMapResults.length; i++) {
-							long result = hashMapResults[i];
-							SearchHistogramUtil.addResultToMap(results, result, hashMapCounts[i]);
+					for (int i = 0; i < hashMapResults.length; i++) {
+						long result = hashMapResults[i];
+
+						int termFrequency = hashMapCounts[i];
+						int termWeight = (int) Math.round(termFrequency * idfTerm);
+						if (termWeight > 0) {
+							SearchHistogramUtil.addResultToMap(results, result, termWeight);
+							LOGGER.debug("Looking for word: " + term + "; result: " + result + "; termFrequency: " + termFrequency + "; documentsContainingTerm: " + documentsContainingTerm +
+									"; collectionSize: " + collectionSize + "; idfTerm: " + idfTerm + "; termWeight: " + termWeight);
 						}
 					}
 				}
