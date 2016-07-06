@@ -2,11 +2,14 @@ package net.networkdowntime.search.engine;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import net.networkdowntime.search.SearchResult;
 
 public class InMemorySearchEngineTest {
 
@@ -103,10 +106,10 @@ public class InMemorySearchEngineTest {
 	@Test
 	public void testSearchSingleElementMatch() {
 		se.add(null, 1l, "singleElement");
-		Set<Long> results = se.search("singleElement", 1);
+		Set<SearchResult> results = se.search("singleElement", 1);
 		assertEquals(1, results.size());
-		for (long result : results) {
-			assertEquals(1, result);
+		for (SearchResult result : results) {
+			assertEquals(1, ((Long) result.getResult()).longValue());
 		}
 	}
 
@@ -114,10 +117,10 @@ public class InMemorySearchEngineTest {
 	public void testSearchMultiResultMatch1() {
 		se.add(null, 1l, "multiResult1");
 		se.add(null, 1l, "multiResult1");
-		Set<Long> results = se.search("multiResult1", 1);
+		Set<SearchResult> results = se.search("multiResult1", 1);
 		assertEquals(1, results.size());
-		for (long result : results) {
-			assertEquals(1, result);
+		for (SearchResult result : results) {
+			assertEquals(1, ((Long) result.getResult()).longValue());
 		}
 	}
 
@@ -129,13 +132,30 @@ public class InMemorySearchEngineTest {
 		se.add(null, 2l, "multiResultMatchOrdering1");
 		se.add(null, 2l, "multiResultMatchOrdering1");
 		se.add(null, 3l, "multiResultMatchOrdering1");
-		Set<Long> results = se.search("multiResultMatchOrdering1", 3);
+		Set<SearchResult> results = se.search("multiResultMatchOrdering1", 3);
 		assertEquals(3, results.size());
 		
-		Long[] arr = results.toArray(new Long[0]);
-		assertEquals(2, (long) arr[0]);
-		assertEquals(1, (long) arr[1]);
-		assertEquals(3, (long) arr[2]);
+		List<SearchResult> list = new ArrayList<SearchResult>(results);
+		assertEquals(2, (long) list.get(0).getResult());
+		assertEquals(1, (long) list.get(1).getResult());
+		assertEquals(3, (long) list.get(2).getResult());
+	}
+
+	@Test
+	public void testStringSearchMultiResultMatchOrdering() {
+		se.add(null, "one", "multiResultMatchOrdering1");
+		se.add(null, "one", "multiResultMatchOrdering1");
+		se.add(null, "two", "multiResultMatchOrdering1");
+		se.add(null, "two", "multiResultMatchOrdering1");
+		se.add(null, "two", "multiResultMatchOrdering1");
+		se.add(null, "three", "multiResultMatchOrdering1");
+		Set<SearchResult> results = se.search("multiResultMatchOrdering1", 3);
+		assertEquals(3, results.size());
+		
+		List<SearchResult> list = new ArrayList<SearchResult>(results);
+		assertEquals("two", (String) list.get(0).getResult());
+		assertEquals("one", (String) list.get(1).getResult());
+		assertEquals("three", (String) list.get(2).getResult());
 	}
 
 	// Leaving this commented out right now because it takes a while to run

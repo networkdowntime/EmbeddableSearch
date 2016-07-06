@@ -41,11 +41,12 @@ import net.networkdowntime.search.engine.InMemorySearchEngine;
  * @author rwiles
  *
  */
-public class UnigramLongSearchHistogram {
-	static final Logger logger = LogManager.getLogger(UnigramLongSearchHistogram.class.getName());
+public class UnigramStringSearchHistogram {
+	static final Logger logger = LogManager.getLogger(UnigramStringSearchHistogram.class.getName());
 
 	private Map<Integer, TLongByteHashMap> multiResultMap = new HashMap<Integer, TLongByteHashMap>();
 	private TIntLongHashMap singleResultMap = new TIntLongHashMap();
+	private Map<Long, String> hashcodeToStringMap = new HashMap<Long, String>();
 
 	/**
 	 * Adds a word along with it's result to the search histogram
@@ -53,7 +54,7 @@ public class UnigramLongSearchHistogram {
 	 * @param word Word to be added
 	 * @param result The search result to associate with the word
 	 */
-	public void add(String word, Long result) {
+	public void add(String word, String result) {
 		word = word.toLowerCase();
 		int wordKey = word.hashCode();
 
@@ -62,28 +63,32 @@ public class UnigramLongSearchHistogram {
 		if (hashMap == null) { // not more than 1 result already
 
 			if (!singleResultMap.contains((wordKey))) { // no matches, put result into the single result map
-				singleResultMap.put((wordKey), result);
+				singleResultMap.put((wordKey), result.hashCode());
+				hashcodeToStringMap.put((long) result.hashCode(), result);
 			} else { // one result already
 				hashMap = new TLongByteHashMap();
 				multiResultMap.put(wordKey, hashMap);
+				hashcodeToStringMap.put((long) result.hashCode(), result);
 
 				// move match from the single result map to the multi result map
 				long originalResult = singleResultMap.remove(wordKey);
 
-				if (originalResult == result) { // we now have a count of two for the original result
+				if (originalResult == result.hashCode()) { // we now have a count of two for the original result
 					hashMap.put(originalResult, (byte) 2);
 				} else {
 					hashMap.put(originalResult, (byte) 1);
-					hashMap.put(result, (byte) 1);
+					hashMap.put(result.hashCode(), (byte) 1);
 				}
 			}
 
 		} else { // more than 1 result already
 			hashMap = multiResultMap.get(wordKey);
-			if (hashMap.contains(result)) {
-				hashMap.put(result, (byte) (hashMap.get(result) + 1));
+			hashcodeToStringMap.put((long) result.hashCode(), result);
+
+			if (hashMap.contains(result.hashCode())) {
+				hashMap.put(result.hashCode(), (byte) (hashMap.get(result.hashCode()) + 1));
 			} else {
-				hashMap.put(result, (byte) 1);
+				hashMap.put(result.hashCode(), (byte) 1);
 			}
 		}
 	}
@@ -112,7 +117,9 @@ public class UnigramLongSearchHistogram {
 	 * @param word The word to remove the result for.
 	 * @param result The result to be removed.
 	 */
-	public void remove(String word, Long result) {
+	public void remove(String word, String result) {
+		long resultHashCode = result.hashCode();
+		
 		word = word.toLowerCase();
 		int wordKey = word.hashCode();
 		int count = 0;
@@ -122,16 +129,17 @@ public class UnigramLongSearchHistogram {
 		if (hashMap == null) { // not more than 1 result already
 			if (singleResultMap.contains(wordKey)) { // one result
 				singleResultMap.remove(wordKey); // now no results
+				hashcodeToStringMap.remove(resultHashCode);
 			}
 		} else { // more than 1 result already
-			if (hashMap.contains(result)) {
-				hashMap.remove(result);
+			if (hashMap.contains(resultHashCode)) {
+				hashMap.remove(resultHashCode);
 			}
 
 			count = getMultiResultCount(word);
 
 			if (count == 1) {
-				singleResultMap.put((wordKey), result);
+				singleResultMap.put((wordKey), resultHashCode);
 				count = 1;
 			}
 		}
@@ -139,7 +147,7 @@ public class UnigramLongSearchHistogram {
 		count = getOccuranceCount(word);
 
 		if (count == 1) {
-			singleResultMap.put(wordKey, result); // now one result
+			singleResultMap.put(wordKey, resultHashCode); // now one result
 			multiResultMap.remove(wordKey);
 		}
 	}
@@ -271,8 +279,8 @@ public class UnigramLongSearchHistogram {
 		TreeSet<SearchResult> retval = new TreeSet<SearchResult>();
 		for (Long result : results.keys()) {
 			SearchResult searchResult = new SearchResult();
-			searchResult.setType("Long");
-			searchResult.setResult(result);
+			searchResult.setType("String");
+			searchResult.setResult(hashcodeToStringMap.get(result));
 			searchResult.setWeight(results.get(result));
 			retval.add(searchResult);
 		}

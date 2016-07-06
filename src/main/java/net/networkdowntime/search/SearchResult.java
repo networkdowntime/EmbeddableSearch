@@ -1,8 +1,9 @@
 package net.networkdowntime.search;
 
-public class SearchResult {
+public class SearchResult implements Comparable<SearchResult> {
 	String type;
-	String id;
+	Object result;
+	int weight;
 
 	public String getType() {
 		return type;
@@ -12,12 +13,24 @@ public class SearchResult {
 		this.type = type;
 	}
 
-	public String getId() {
-		return id;
+	public Object getResult() {
+		return result;
 	}
 
-	public void setId(String id) {
-		this.id = id;
+	public void setResult(Object result) {
+		this.result = result;
 	}
 
+	public int getWeight() {
+		return weight;
+	}
+
+	public void setWeight(int weight) {
+		this.weight = weight;
+	}
+
+	@Override
+	public int compareTo(SearchResult o) {
+		return (this.weight < o.weight) ? -1: (this.weight > o.weight) ? 1:0 ;
+	}
 }
