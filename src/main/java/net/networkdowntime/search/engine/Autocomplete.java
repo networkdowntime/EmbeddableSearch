@@ -178,7 +178,7 @@ public class Autocomplete {
 		// contain the word then it fell out in the histogram ordering so add it back at the end.
 		boolean wordExactMatch = UnigramHistogram.contains(unigramHistogram, word);
 		if (wordExactMatch && !orderedWordCompletions.contains(word)) {
-			String[] words = (String[]) orderedWordCompletions.toArray();
+			String[] words = orderedWordCompletions.toArray(new String[0]);
 			orderedWordCompletions.remove(words[words.length - 1]);
 			orderedWordCompletions.add(word);
 		}
@@ -206,7 +206,7 @@ public class Autocomplete {
 			return orderedCompletions; // no-op - nothing to do
 		} else {
 			String currentWord = keywords.get(keywords.size() - 1);
-			Set<String> currentWordCompletions = getCompletionsSingleWordUnordered(currentWord, fuzzyMatch, limit * 3);
+			Set<String> currentWordCompletions = getCompletionsSingleWordUnordered(currentWord, fuzzyMatch, limit * 10);
 
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug("currentWord:" + currentWord);
