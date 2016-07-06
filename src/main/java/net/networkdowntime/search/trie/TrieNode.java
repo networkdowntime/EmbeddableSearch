@@ -1,7 +1,13 @@
-package net.networkdowntime.search;
+package net.networkdowntime.search.trie;
+
+import gnu.trove.map.hash.TCharObjectHashMap;
 
 /**
- * Contains the details about the result of a search.  Including the SearchResultType, the actual result, and its search weight. 
+ * An individual node of a Trie data structure.
+ * Nodes that are a word ending are marked by isEnd = true
+ * If the node is the end of a complete word, it is marked by isFullWordEnd = true
+ * 
+ * The addition of marking full word ends is necessary to support the remove operation on a full trie.
  * 
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
@@ -20,56 +26,19 @@ package net.networkdowntime.search;
  * 
  * @author rwiles
  *
- * @param <T>
  */
-public class SearchResult<T> implements Comparable<SearchResult<T>> {
-	SearchResultType type;
-	T result;
-	int weight;
+public class TrieNode {
 
-	/**
-	 * Creates a Search Result with the specified values
-	 * 
-	 * @param type The data type that is being returned in result
-	 * @param result The search result
-	 * @param weight The weight of that search result
-	 */
-	public SearchResult(SearchResultType type, T result, int weight) {
-		super();
-		this.type = type;
-		this.result = result;
-		this.weight = weight;
+	char c = 0;
+	boolean isEnd = false;
+	boolean isFullWordEnd = false;
+	TCharObjectHashMap<TrieNode> children = null;
+
+	public TrieNode() {
 	}
 
-	/**
-	 * Gets the data type of the search result
-	 * 
-	 * @return The search result type
-	 */
-	public SearchResultType getType() {
-		return type;
+	public TrieNode(char c) {
+		this.c = c;
 	}
 
-	/**
-	 * Gets the search result value
-	 * 
-	 * @return The value for the search result
-	 */
-	public T getResult() {
-		return result;
-	}
-
-	/**
-	 * Gets the weight of the search result
-	 * 
-	 * @return
-	 */
-	public int getWeight() {
-		return weight;
-	}
-
-	@Override
-	public int compareTo(SearchResult o) {
-		return (this.weight < o.weight) ? -1: (this.weight > o.weight) ? 1:0 ;
-	}
 }

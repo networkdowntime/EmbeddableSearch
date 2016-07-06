@@ -1,7 +1,8 @@
-package net.networkdowntime.search;
+package net.networkdowntime.search.text.processing;
 
 /**
- * Contains the details about the result of a search.  Including the SearchResultType, the actual result, and its search weight. 
+ * Interface for implementing various text scrubbers that can clean an input string.  An example is the HtmlTagTextScrubber 
+ * which will strip the HTML tag elements from a string.
  * 
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
@@ -20,56 +21,14 @@ package net.networkdowntime.search;
  * 
  * @author rwiles
  *
- * @param <T>
  */
-public class SearchResult<T> implements Comparable<SearchResult<T>> {
-	SearchResultType type;
-	T result;
-	int weight;
+public interface TextScrubber {
 
 	/**
-	 * Creates a Search Result with the specified values
-	 * 
-	 * @param type The data type that is being returned in result
-	 * @param result The search result
-	 * @param weight The weight of that search result
+	 * Runs the scrubText on the input returning a sanitized string.
+	 * @param textToScrub Text to sanitize
+	 * @return Sanitized text
 	 */
-	public SearchResult(SearchResultType type, T result, int weight) {
-		super();
-		this.type = type;
-		this.result = result;
-		this.weight = weight;
-	}
+	public abstract String scrubText(String textToScrub);
 
-	/**
-	 * Gets the data type of the search result
-	 * 
-	 * @return The search result type
-	 */
-	public SearchResultType getType() {
-		return type;
-	}
-
-	/**
-	 * Gets the search result value
-	 * 
-	 * @return The value for the search result
-	 */
-	public T getResult() {
-		return result;
-	}
-
-	/**
-	 * Gets the weight of the search result
-	 * 
-	 * @return
-	 */
-	public int getWeight() {
-		return weight;
-	}
-
-	@Override
-	public int compareTo(SearchResult o) {
-		return (this.weight < o.weight) ? -1: (this.weight > o.weight) ? 1:0 ;
-	}
 }

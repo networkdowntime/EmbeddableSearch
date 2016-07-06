@@ -2,12 +2,10 @@ package net.networkdowntime.search.histogram;
 
 import java.util.Set;
 
-import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
 
 /**
- * Wrapper around UnigramSearchHistogram to provide String lookups for search results.
+ * Wrapper around DigramSearchHistogram to provide String lookups for search results.
  * 
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
@@ -27,62 +25,39 @@ import gnu.trove.map.hash.TObjectIntHashMap;
  * @author rwiles
  *
  */
-public class UnigramStringSearchHistogram extends UnigramSearchHistogram {
-
-	private TIntObjectHashMap<String> stringLookupMap = new TIntObjectHashMap<String>();
+public class DigramLongSearchHistogram extends DigramSearchHistogram {
 
 	/**
 	 * Adds a word along with it's result to the search histogram
 	 * 
-	 * @param word Word to be added
+	 * @param firstWord Word to be added
+	 * @param secondWord Word to be added
 	 * @param result The search result to associate with the word
 	 */
-	public void add(String word, String result) {
-		int wordKey = word.hashCode();
-		int resultKey = result.hashCode();
-
-		if (!stringLookupMap.containsKey(resultKey)) {
-			stringLookupMap.put(resultKey, result);
-		}
-
-		addInternal(this, wordKey, (long) resultKey);
+	@Override
+	public void add(String firstWord, String secondWord, long result) {
+		super.add(firstWord, secondWord, result);
 	}
 
 	/**
 	 * Removes a word/result from the search histogram.  If the word is associated with multiple results, they will be left alone.
 	 * 
-	 * @param word The word to remove the result for.
+	 * @param firstWord The first word to remove the result for.
+	 * @param secondWord The second word to remove the result for.
 	 * @param result The result to be removed.
 	 */
-	public void remove(String word, String result) {
-		int wordKey = word.hashCode();
-		int resultKey = result.hashCode();
-
-		if (!multiResultMap.containsKey(wordKey)) {
-			stringLookupMap.remove(resultKey);
-		}
-
-		removeInternal(this, wordKey, (long) resultKey);
+	@Override
+	public void remove(String firstWord, String secondWord, long result) {
+		super.remove(firstWord, secondWord, result);
 	}
 
 	/**
 	 * Get the search results by the words submitted, aggregating each word's resulting ids and ordering those resulting id's by result weight.
 	 * 
-	 * @param words The set of words to get the search results for.
-	 *  
+	 * @param searchTerms The set of words to get the search results for
 	 * @return A set containing the matched search results up to the specified limit
 	 */
-	public TObjectIntHashMap<String> getSearchResults(Set<String> words) {
-
-		TLongIntHashMap longResults = super.getSearchResults(this, words);
-		TObjectIntHashMap<String> stringResults = new TObjectIntHashMap<String>();
-
-		long[] longResultKeys = longResults.keys();
-		int[] longResultValues = longResults.values();
-
-		for (int i = 0; i < longResultKeys.length; i++) {
-			stringResults.put(stringLookupMap.get(((Long) longResultKeys[i]).intValue()), longResultValues[i]);
-		}
-		return stringResults;
+	public TLongIntHashMap getSearchResults(Set<String> searchTerms, int weightMultiplier) {
+		return super.getResultsRaw(searchTerms, weightMultiplier);
 	}
 }

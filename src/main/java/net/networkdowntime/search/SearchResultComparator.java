@@ -1,7 +1,9 @@
 package net.networkdowntime.search;
 
+import java.util.Comparator;
+
 /**
- * Contains the details about the result of a search.  Including the SearchResultType, the actual result, and its search weight. 
+ * The Search Result Comparator compares search results based first by their counts and secondly by comparing their objects.
  * 
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
@@ -20,56 +22,40 @@ package net.networkdowntime.search;
  * 
  * @author rwiles
  *
- * @param <T>
+ * @param <E>
  */
-public class SearchResult<T> implements Comparable<SearchResult<T>> {
-	SearchResultType type;
-	T result;
-	int weight;
-
-	/**
-	 * Creates a Search Result with the specified values
-	 * 
-	 * @param type The data type that is being returned in result
-	 * @param result The search result
-	 * @param weight The weight of that search result
-	 */
-	public SearchResult(SearchResultType type, T result, int weight) {
-		super();
-		this.type = type;
-		this.result = result;
-		this.weight = weight;
-	}
-
-	/**
-	 * Gets the data type of the search result
-	 * 
-	 * @return The search result type
-	 */
-	public SearchResultType getType() {
-		return type;
-	}
-
-	/**
-	 * Gets the search result value
-	 * 
-	 * @return The value for the search result
-	 */
-	public T getResult() {
-		return result;
-	}
-
-	/**
-	 * Gets the weight of the search result
-	 * 
-	 * @return
-	 */
-	public int getWeight() {
-		return weight;
-	}
-
+@SuppressWarnings("rawtypes")
+public class SearchResultComparator implements Comparator<SearchResult> {
 	@Override
-	public int compareTo(SearchResult o) {
-		return (this.weight < o.weight) ? -1: (this.weight > o.weight) ? 1:0 ;
+	public int compare(SearchResult o1, SearchResult o2) {
+		if (o1 == null && o2 == null)
+			return 0;
+		else if (o1 != null && o2 == null)
+			return -1;
+		else if (o1 == null && o2 != null)
+			return 1;
+		else if (o1.weight != o2.weight) {
+			Integer i1 = o1.weight;
+			Integer i2 = o2.weight;
+			return i2.compareTo(i1);
+		} else {
+			if (SearchResultType.LONG.equals(o1.type)) {
+				
+				if (SearchResultType.LONG.equals(o2.type)) {
+					return ((Long) o1.result).compareTo((Long) o2.result);
+				} else { // SearchResultType.String.equals(o2.type)
+					return ((Long) o1.result).toString().compareTo((String) o2.result);
+				}
+				
+			} else { // SearchResultType.String.equals(o1.type)
+				
+				if (SearchResultType.LONG.equals(o2.type)) {
+					return ((String) o1.result).compareTo(((Long) o2.result).toString());
+				} else { // SearchResultType.String.equals(o2.type)
+					return ((String) o1.result).compareTo((String) o2.result);
+				}
+				
+			}
+		}
 	}
 }

@@ -1,77 +1,104 @@
 package net.networkdowntime.search.engine;
 
-import gnu.trove.set.hash.TLinkedHashSet;
+import gnu.trove.map.hash.TLongIntHashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.networkdowntime.search.SearchResult;
-import net.networkdowntime.search.histogram.DigramHistogram;
+import net.networkdowntime.search.SearchResultType;
+import net.networkdowntime.search.histogram.DigramLongSearchHistogram;
+import net.networkdowntime.search.histogram.DigramStringSearchHistogram;
+import net.networkdowntime.search.histogram.FixedSizeSortedSet;
+import net.networkdowntime.search.histogram.SearchHistogramUtil;
 import net.networkdowntime.search.histogram.UnigramLongSearchHistogram;
 import net.networkdowntime.search.histogram.UnigramStringSearchHistogram;
-import net.networkdowntime.search.textProcessing.ContentSplitter;
-import net.networkdowntime.search.textProcessing.KeywordScrubber;
-import net.networkdowntime.search.textProcessing.HtmlTagTextScrubber;
-import net.networkdowntime.search.textProcessing.TextScrubber;
-import net.networkdowntime.search.trie.PrefixTrieNode;
-import net.networkdowntime.search.trie.SuffixTrieNode;
-import net.networkdowntime.search.trie.Trei;
+import net.networkdowntime.search.text.processing.ContentSplitter;
+import net.networkdowntime.search.text.processing.HtmlTagTextScrubber;
+import net.networkdowntime.search.text.processing.KeywordScrubber;
+import net.networkdowntime.search.text.processing.TextScrubber;
 
+/**
+ * Implementation of an in-memory search engine with robust auto-complete capabilities and ordering of the results based on their
+ * search rankings.
+ *  
+ * This software is licensed under the MIT license
+ * Copyright (c) 2015 Ryan Wiles
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
+ * files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
+ * modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+ * is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR 
+ * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ * @author rwiles
+ *
+ */
 public class InMemorySearchEngine implements SearchEngine {
-	static final Logger logger = LogManager.getLogger(InMemorySearchEngine.class.getName());
+	private static final Logger LOGGER = LogManager.getLogger(InMemorySearchEngine.class.getName());
 
-	Trei prefixTrie = new PrefixTrieNode();
-	SuffixTrieNode suffixTrie = new SuffixTrieNode(false);
-	UnigramLongSearchHistogram unigramLongSearchHistogram = new UnigramLongSearchHistogram();
-	UnigramStringSearchHistogram unigramStringSearchHistogram = new UnigramStringSearchHistogram();
-	DigramHistogram digramHistogram = new DigramHistogram();
-	TextScrubber textScrubber = new HtmlTagTextScrubber();
-	ContentSplitter splitter = new ContentSplitter();
-	KeywordScrubber keywordScrubber = new KeywordScrubber();
+	private UnigramLongSearchHistogram unigramLongSearchHistogram = new UnigramLongSearchHistogram();
+	private UnigramStringSearchHistogram unigramStringSearchHistogram = new UnigramStringSearchHistogram();
+
+	private DigramLongSearchHistogram digramLongSearchHistogram = new DigramLongSearchHistogram();
+	private DigramStringSearchHistogram digramStringSearchHistogram = new DigramStringSearchHistogram();
+
+	private Autocomplete autocomplete = null;
+
+	private TextScrubber textScrubber = new HtmlTagTextScrubber();
+	private ContentSplitter splitter = new ContentSplitter();
+	private KeywordScrubber keywordScrubber = new KeywordScrubber();
 
 	// The following variables are used for tracking the times of various parts of the search operations
-	long timeForScrubbing = 0;
-	long timeForCompletions = 0;
-	long timeForUniqCompletions = 0;
-	long timeForSearchResults = 0;
-	public static long timeToBuildSearchResultsMap = 0;
-	public static long timeToBuildSearchResultsOrdered = 0;
+	private long timeForAdding = 0;
+	private long timeForScrubbing = 0;
+	private long timeForCompletions = 0;
+	private long timeForSearchResults = 0;
+	private long addCount = 0;
+	private long searchCount = 0;
 	// end timing variables
+
+	/**
+	 * Default constructor
+	 */
+	public InMemorySearchEngine() {
+		autocomplete = new Autocomplete(textScrubber, splitter, keywordScrubber);
+	}
 
 	/**
 	 * Resets the timing variables
 	 */
 	public void resetTimes() {
+		timeForAdding = 0;
 		timeForScrubbing = 0;
 		timeForCompletions = 0;
-		timeForUniqCompletions = 0;
 		timeForSearchResults = 0;
-		timeToBuildSearchResultsMap = 0;
-		timeToBuildSearchResultsOrdered = 0;
+		searchCount = 0;
 	}
 
 	/**
 	 * Print the timing variables out to logger.info()
 	 */
 	public void printTimes() {
-		logger.info("\ttimeForScrubbing: " + (timeForScrubbing / 1000d) + " secs");
-		logger.info("\ttimeForCompletions: " + (timeForCompletions / 1000d) + " secs");
-		logger.info("\ttimeForUniqCompletions: " + (timeForUniqCompletions / 1000d) + " secs");
-		logger.info("\ttimeForSearchResults: " + (timeForSearchResults / 1000d) + " secs");
-		logger.info("\t\tgetSearchResults(): Time to build results hashmap: " + (timeToBuildSearchResultsMap / 1000d) + " secs");
-		logger.info("\t\tgetSearchResults(): Time to build results orderedResults: " + (timeToBuildSearchResultsOrdered / 1000d) + " secs");
+		LOGGER.info("\ttimeForAdding: " + (timeForAdding / 1000d) + " secs");
+		LOGGER.info("\ttimeForScrubbing: " + (timeForScrubbing / 1000d) + " secs");
+		LOGGER.info("\ttimeForCompletions: " + (timeForCompletions / 1000d) + " secs");
+		LOGGER.info("\ttimeForSearchResults: " + (timeForSearchResults / 1000d) + " secs");
 
-		logger.info("\ttotal time: " + ((timeForScrubbing + timeForCompletions + timeForUniqCompletions + timeForSearchResults) / 1000d) + "secs");
+		LOGGER.info("\ttotal time: " + ((timeForAdding + timeForScrubbing + timeForCompletions + timeForSearchResults) / 1000d) + "secs");
+		LOGGER.info("\tavg time to add: " + (timeForAdding / (float) addCount) + " ms");
+		LOGGER.info("\tavg time to search: " + ((timeForScrubbing + timeForCompletions + timeForSearchResults) / (float) searchCount) + " ms");
 	}
 
 	/**
@@ -82,245 +109,165 @@ public class InMemorySearchEngine implements SearchEngine {
 		resetTimes();
 	}
 
-	/**
-	 * Internal get completions implementation.
-	 * 
-	 * @param singleWord Not-null single word to search for
-	 * @param resultLimit Max number of results to return
-	 * @return A list of the completions for the word ordered by their search ranking
-	 */
-	private List<String> getCompletions(String singleWord, int resultLimit) {
-		Set<String> completions = new TLinkedHashSet<String>();
-
-		if (singleWord.length() > 0) {
-			for (String wordPlusPrefix : prefixTrie.getCompletions(singleWord)) {
-				for (String completeWord : suffixTrie.getCompletions(wordPlusPrefix)) {
-					completions.add(completeWord);
-				}
-			}
-		}
-		logger.debug("Unordered Completions for " + singleWord + ":", completions);
-
-		boolean wordExactMatch = unigramLongSearchHistogram.contains(singleWord);
-		if (!wordExactMatch) {
-			wordExactMatch = unigramStringSearchHistogram.contains(singleWord);
-		}
-		List<String> orderedCompletions = new ArrayList<String>();
-
-		orderedCompletions = unigramLongSearchHistogram.getOrderedResults(completions, resultLimit);
-		orderedCompletions.addAll(unigramStringSearchHistogram.getOrderedResults(completions, resultLimit));
-
-		if (wordExactMatch) {
-			if (!orderedCompletions.contains(singleWord)) {
-				orderedCompletions.remove(orderedCompletions.size() - 1);
-				orderedCompletions.add(singleWord);
-			}
-		}
-
-		logger.debug("Ordered Completions for " + singleWord + ":", orderedCompletions);
-		return orderedCompletions;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.networkdowntime.search.engine.SearchEngine#getCompletions(java.lang.String, boolean)
-	 */
 	@Override
-	public List<String> getCompletions(String searchTerm, boolean fuzzyMatch) {
-		List<String> completions = new ArrayList<String>();
-		
-		boolean endsWithSpace = searchTerm.endsWith(" ");
-		searchTerm = textScrubber.scrubText(searchTerm);
-		String[] words = splitter.splitContent(searchTerm);
-
-		if (words.length == 0) {
-			return completions; // no-op - nothing to do
-		} else if (words.length == 1 && !endsWithSpace) {
-
-			completions = getCompletions(searchTerm, 10);
-
-		} else {
-			System.out.println(words.length);
-			String wordOne = "";
-			String wordTwo = "";
-			
-			if (words.length == 1) {
-				wordOne = words[words.length - 1].trim();
-			} else if (words.length > 1) {
-				wordOne = words[words.length - 2].trim();
-				wordTwo = words[words.length - 1].trim();
-			}
-
-			Set<String> wordOneCompletions = new HashSet<String>(getCompletions(wordOne, 50));
-			Set<String> wordTwoCompletions = new HashSet<String>(getCompletions(wordTwo, 150));
-
-			if (wordTwoCompletions.isEmpty()) {
-				for (String completeWord : suffixTrie.getCompletions(wordTwo)) {
-					wordTwoCompletions.add(completeWord);
-				}
-			}
-
-			completions = digramHistogram.getOrderedResults(wordOneCompletions, wordTwoCompletions, 10);
-
-		}
-		return completions;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.networkdowntime.search.engine.SearchEngine#search(java.lang.String, int)
-	 */
-	@Override
-	public Set<SearchResult> search(String searchTerm, int limit) {
+	public void add(Long searchResult, String text) {
+		addCount++;
 		long t1 = System.currentTimeMillis();
-		logger.debug("Searching for text \"" + searchTerm + "\"");
 
-		searchTerm = textScrubber.scrubText(searchTerm);
-		logger.debug("Scrubbed Test \"" + searchTerm + "\"");
+		this.add((Object) searchResult, text);
 
-		String[] words = splitter.splitContent(searchTerm);
-		logger.debug("Split content:", words);
+		timeForAdding += System.currentTimeMillis() - t1;
+	}
 
+	@Override
+	public void add(String searchResult, String text) {
+		addCount++;
+		long t1 = System.currentTimeMillis();
+
+		this.add((Object) searchResult, text);
+
+		timeForAdding += System.currentTimeMillis() - t1;
+	}
+
+	/**
+	 * Indexes the supplied text and associates it with the search result.
+	 * 
+	 * @param searchResult Search result to associate to the keywords in the text
+	 * @param text String to scrub, split, and index to the search result
+	 */
+	private void add(Object searchResult, String text) {
+		String scrubbedText = textScrubber.scrubText(text);
+		String[] words = splitter.splitContent(scrubbedText);
 		List<String> keywords = keywordScrubber.scrubKeywords(words);
-		logger.debug("Keywords:", keywords);
+
+		autocomplete.add(keywords);
+
+		String currentWord = null;
+		String previousWord = null;
+
+		if (searchResult instanceof Long) {
+			for (int i = 0; i < keywords.size(); i++) {
+				previousWord = (currentWord != null) ? currentWord : null;
+				currentWord = keywords.get(i);
+
+				unigramLongSearchHistogram.add(currentWord, (Long) searchResult);
+				if (previousWord != null) {
+					digramLongSearchHistogram.add(previousWord, currentWord, (Long) searchResult);
+				}
+			}
+		} else if (searchResult instanceof String) {
+			for (int i = 0; i < keywords.size(); i++) {
+				previousWord = (currentWord != null) ? currentWord : null;
+				currentWord = keywords.get(i);
+
+				unigramStringSearchHistogram.add(currentWord, (String) searchResult);
+				if (previousWord != null) {
+					digramStringSearchHistogram.add(previousWord, currentWord, (String) searchResult);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void remove(Long searchResult, String text) {
+		this.remove((Object) searchResult, text);
+	}
+
+	@Override
+	public void remove(String searchResult, String text) {
+		this.remove((Object) searchResult, text);
+	}
+
+	/**
+	 * De-indexes the supplied text from the search result.
+	 * 
+	 * @param searchResult Search result to de-index from the keywords in the text
+	 * @param text String to scrub, split, and de-index to the search result
+	 */
+	public void remove(Object searchResult, String text) {
+		String scrubbedText = textScrubber.scrubText(text);
+		String[] words = splitter.splitContent(scrubbedText);
+		List<String> keywords = keywordScrubber.scrubKeywords(words);
+
+		autocomplete.remove(keywords);
+
+		String currentWord = null;
+		String previousWord = null;
+
+		if (searchResult instanceof Long) {
+			for (int i = 0; i < keywords.size(); i++) {
+				previousWord = (currentWord != null) ? currentWord : null;
+				currentWord = keywords.get(i);
+
+				unigramLongSearchHistogram.remove(currentWord, (Long) searchResult);
+				if (previousWord != null) {
+					digramLongSearchHistogram.remove(previousWord, currentWord, (Long) searchResult);
+				}
+			}
+		} else if (searchResult instanceof String) {
+			for (int i = 0; i < keywords.size(); i++) {
+				previousWord = (currentWord != null) ? currentWord : null;
+				currentWord = keywords.get(i);
+
+				unigramStringSearchHistogram.remove(currentWord, (String) searchResult);
+				if (previousWord != null) {
+					digramStringSearchHistogram.remove(previousWord, currentWord, (String) searchResult);
+				}
+			}
+		}
+	}
+
+	@Override
+	public List<String> getCompletions(String searchTerm, boolean fuzzyMatch, int limit) {
+		return new ArrayList<String>(autocomplete.getCompletions(searchTerm, fuzzyMatch, limit));
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+
+	public Set<SearchResult> search(String searchTerm, int limit) {
+		searchCount++;
+		long t1 = System.currentTimeMillis();
+
+		boolean hasTrailingSpace = searchTerm.endsWith(" ");
+
+		String scrubbedSearchTerm = textScrubber.scrubText(searchTerm);
+		String[] words = splitter.splitContent(scrubbedSearchTerm);
+		List<String> keywords = keywordScrubber.scrubKeywords(words);
 
 		timeForScrubbing += System.currentTimeMillis() - t1;
 		t1 = System.currentTimeMillis();
 
-		List<String> completions = new ArrayList<String>();
-		for (String word : keywords) {
-			completions.addAll(getCompletions(word, true));
+		Set<String> uniqCompletions = autocomplete.getCompletions(keywords, true, hasTrailingSpace, limit * 2);
+		for (String s : uniqCompletions) {
 		}
 
 		timeForCompletions += System.currentTimeMillis() - t1;
 		t1 = System.currentTimeMillis();
 
-		TLinkedHashSet<String> uniqCompletions = new TLinkedHashSet<String>();
-
-		for (String completion : completions) {
-			logger.debug("Completion: " + completion);
-
-			words = splitter.splitContent(completion);
-
-			for (String word : words) {
-				uniqCompletions.add(word);
-			}
+		TLongIntHashMap longResults = new TLongIntHashMap();
+		TObjectIntHashMap<String> stringResults = new TObjectIntHashMap<String>();
+		
+		if (keywords.size() > 1) {
+			longResults = digramLongSearchHistogram.getSearchResults(uniqCompletions, 10);
+			stringResults = digramStringSearchHistogram.getSearchResults(uniqCompletions, 10);
 		}
 
-		timeForUniqCompletions += System.currentTimeMillis() - t1;
-		logger.debug("Uniq Completions:", uniqCompletions);
-		logger.debug("\tgot uniq completions; size = " + uniqCompletions.size());
-		t1 = System.currentTimeMillis();
+		SearchHistogramUtil.addResultToMap(longResults, UnigramLongSearchHistogram.getSearchResults(unigramLongSearchHistogram, uniqCompletions));
+		SearchHistogramUtil.addResultToMap(stringResults, unigramStringSearchHistogram.getSearchResults(uniqCompletions));
 
-		SortedSet<SearchResult> unifiedResults = new TreeSet<>(
-				Comparator.reverseOrder());
+		FixedSizeSortedSet<SearchResult> results = SearchHistogramUtil.resultsMapToLongSet(SearchResultType.LONG, longResults, limit);
+		FixedSizeSortedSet<SearchResult> resultsString = SearchHistogramUtil.resultsMapToStringSet(SearchResultType.STRING, stringResults, limit);
 
-		unifiedResults.addAll(unigramLongSearchHistogram.getSearchResults(uniqCompletions, limit));
-		unifiedResults.addAll(unigramStringSearchHistogram.getSearchResults(uniqCompletions, limit));
+		LOGGER.debug("Long results: " + results.size());
+		LOGGER.debug("String results: " + resultsString.size());
 
-		Set<SearchResult> retval = new LinkedHashSet<SearchResult>();
-		int i = 1;
-		for (SearchResult result : unifiedResults) {
-			retval.add(result);
-			if (i++ == limit)
-				break;
+		for (SearchResult searchResult : resultsString) { // combine and sort the results from each type
+			results.add(searchResult);
 		}
+
 		timeForSearchResults += System.currentTimeMillis() - t1;
-		return retval;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.networkdowntime.search.engine.SearchEngine#add(java.lang.String, long, java.lang.String)
-	 */
-	@Override
-	public void add(String type, Long id, String text) {
-		text = textScrubber.scrubText(text);
-		String[] words = splitter.splitContent(text);
-		List<String> keywords = keywordScrubber.scrubKeywords(words);
-
-		for (int i = 0; i < keywords.size(); i++) {
-			String word = keywords.get(i);
-			prefixTrie.add(word);
-			suffixTrie.add(word);
-			unigramLongSearchHistogram.add(word, id);
-			if (i > 0) {
-				String prevWord = keywords.get(i - 1);
-				digramHistogram.add(prevWord, word);
-			}
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.networkdowntime.search.engine.SearchEngine#add(java.lang.String, long, java.lang.String)
-	 */
-	@Override
-	public void add(String type, String id, String text) {
-		text = textScrubber.scrubText(text);
-		String[] words = splitter.splitContent(text);
-		List<String> keywords = keywordScrubber.scrubKeywords(words);
-
-		for (int i = 0; i < keywords.size(); i++) {
-			String word = keywords.get(i);
-			prefixTrie.add(word);
-			suffixTrie.add(word);
-			unigramStringSearchHistogram.add(word, id);
-			if (i > 0) {
-				String prevWord = keywords.get(i - 1);
-				digramHistogram.add(prevWord, word);
-			}
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.networkdowntime.search.engine.SearchEngine#remove(java.lang.String, long, java.lang.String)
-	 */
-	@Override
-	public void remove(String type, Long id, String text) {
-		text = textScrubber.scrubText(text);
-		String[] words = splitter.splitContent(text);
-		List<String> keywords = keywordScrubber.scrubKeywords(words);
-
-		for (int i = 0; i < keywords.size(); i++) {
-			String word = keywords.get(i);
-			// no good way to remove from prefixTrie right now
-			// no good way to remove from suffixTrie right now
-			unigramLongSearchHistogram.remove(word, id);
-			if (i > 0) {
-				String prevWord = keywords.get(i - 1);
-				digramHistogram.remove(prevWord, word);
-			}
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.networkdowntime.search.engine.SearchEngine#remove(java.lang.String, long, java.lang.String)
-	 */
-	@Override
-	public void remove(String type, String id, String text) {
-		text = textScrubber.scrubText(text);
-		String[] words = splitter.splitContent(text);
-		List<String> keywords = keywordScrubber.scrubKeywords(words);
-
-		for (int i = 0; i < keywords.size(); i++) {
-			String word = keywords.get(i);
-			// no good way to remove from prefixTrie right now
-			// no good way to remove from suffixTrie right now
-			unigramStringSearchHistogram.remove(word, id);
-			if (i > 0) {
-				String prevWord = keywords.get(i - 1);
-				digramHistogram.remove(prevWord, word);
-			}
-		}
+		return results;
 	}
 
 }

@@ -1,8 +1,12 @@
-package net.networkdowntime.search;
+package net.networkdowntime.search.text.processing;
 
 /**
- * Contains the details about the result of a search.  Including the SearchResultType, the actual result, and its search weight. 
- * 
+ * The HtmlTagTextScrubber is a preprocessor that does scrubbing of multi-word input text removing HTML tags prior to splitting 
+ * the content and scrubbing the keywords.
+ * HTML tags can contain additional fields that would lose context after splitting:
+ * 	i.e. <div type="text">Foo<div/>
+ *  would evaluate to "Foo" 
+ *  
  * This software is licensed under the MIT license
  * Copyright (c) 2015 Ryan Wiles
  * 
@@ -20,56 +24,24 @@ package net.networkdowntime.search;
  * 
  * @author rwiles
  *
- * @param <T>
  */
-public class SearchResult<T> implements Comparable<SearchResult<T>> {
-	SearchResultType type;
-	T result;
-	int weight;
+public class HtmlTagTextScrubber implements TextScrubber {
+
+	private String htmlTagRegex = "</?\\w+((\\s+\\w+(\\s*=\\s*(?:\".*?\"|'.*?'|[^'\">\\s]+))?)+\\s*|\\s*)/?>";
 
 	/**
-	 * Creates a Search Result with the specified values
-	 * 
-	 * @param type The data type that is being returned in result
-	 * @param result The search result
-	 * @param weight The weight of that search result
+	 * Default constructor
 	 */
-	public SearchResult(SearchResultType type, T result, int weight) {
-		super();
-		this.type = type;
-		this.result = result;
-		this.weight = weight;
-	}
+	public HtmlTagTextScrubber() {
 
-	/**
-	 * Gets the data type of the search result
-	 * 
-	 * @return The search result type
-	 */
-	public SearchResultType getType() {
-		return type;
-	}
-
-	/**
-	 * Gets the search result value
-	 * 
-	 * @return The value for the search result
-	 */
-	public T getResult() {
-		return result;
-	}
-
-	/**
-	 * Gets the weight of the search result
-	 * 
-	 * @return
-	 */
-	public int getWeight() {
-		return weight;
 	}
 
 	@Override
-	public int compareTo(SearchResult o) {
-		return (this.weight < o.weight) ? -1: (this.weight > o.weight) ? 1:0 ;
+	public String scrubText(String textToScrub) {
+		String retval;
+
+		retval = textToScrub.replaceAll(htmlTagRegex, " ");
+
+		return retval;
 	}
 }

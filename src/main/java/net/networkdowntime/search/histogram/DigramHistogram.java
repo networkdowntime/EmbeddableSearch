@@ -1,34 +1,46 @@
 package net.networkdowntime.search.histogram;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.SortedSet;
+
+import gnu.trove.map.hash.TIntObjectHashMap;
 
 /**
  * Implements a digram histogram.  For any two word pairs it tracks the frequency that those words were added.
+ * 
+ * This software is licensed under the MIT license
+ * Copyright (c) 2015 Ryan Wiles
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
+ * files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
+ * modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+ * is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR 
+ * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * @author rwiles
  *
  */
 public class DigramHistogram {
 
-	Map<Integer, UnigramHistogram> histogram = new HashMap<Integer, UnigramHistogram>();
+	TIntObjectHashMap<UnigramHistogram> histogram = new TIntObjectHashMap<UnigramHistogram>();
 
 	/**
 	 * Adds a word pair to the digram histogram
 	 * 
-	 * @param digram
 	 * @param firstWord
 	 * @param secondWord
 	 */
 	public void add(String firstWord, String secondWord) {
-		firstWord = firstWord.toLowerCase();
-		secondWord = secondWord.toLowerCase();
-
 		UnigramHistogram unigram = histogram.get(firstWord.hashCode());
+
 		if (unigram == null) {
 			unigram = new UnigramHistogram();
 			histogram.put(firstWord.hashCode(), unigram);
@@ -38,7 +50,6 @@ public class DigramHistogram {
 
 	}
 
-	
 	/**
 	 * Removes a word pair from the digram histogram.  If the first word no longer has a matching second word, then the first word is also removed.
 	 * 
@@ -46,9 +57,6 @@ public class DigramHistogram {
 	 * @param secondWord The second word to remove
 	 */
 	public void remove(String firstWord, String secondWord) {
-		firstWord = firstWord.toLowerCase();
-		secondWord = secondWord.toLowerCase();
-
 		UnigramHistogram unigram = histogram.get(firstWord.hashCode());
 		if (unigram != null) {
 			int count = UnigramHistogram.remove(unigram, secondWord);
@@ -57,7 +65,6 @@ public class DigramHistogram {
 		}
 	}
 
-	
 	/**
 	 * Returns the occurrence count for the word pair.
 	 * 
@@ -66,9 +73,6 @@ public class DigramHistogram {
 	 * @return The occurrence count of the word pair
 	 */
 	public int getOccuranceCount(String firstWord, String secondWord) {
-		firstWord = firstWord.toLowerCase();
-		secondWord = secondWord.toLowerCase();
-
 		int count = 0;
 
 		UnigramHistogram unigram = histogram.get(firstWord.hashCode());
@@ -79,7 +83,6 @@ public class DigramHistogram {
 		return count;
 	}
 
-	
 	/**
 	 * For a given first word and a set of second words, returns the results in order of most common occurrence. 
 	 * A swapped order of first and second words are also taken into consideration.
@@ -91,12 +94,9 @@ public class DigramHistogram {
 	 */
 	public List<String> getOrderedResults(String firstWord, Set<String> secondWords, int limit) {
 
-		TreeSet<Tuple<String>> orderedResults = getResults(firstWord, secondWords);
-		List<String> retval = toList(orderedResults, limit);
-
-		return retval;
+		SortedSet<Tuple<String>> orderedResults = getResults(firstWord, secondWords);
+		return toList(orderedResults, limit);
 	}
-
 
 	/**
 	 * For a given set of first words and a set of second words, returns the results in order of most common occurrence. 
@@ -109,15 +109,19 @@ public class DigramHistogram {
 	 */
 	public List<String> getOrderedResults(Set<String> firstWords, Set<String> secondWords, int limit) {
 
-		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
+		SortedSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
 
-		for (String firstWord : firstWords) {
-			orderedResults = getResults(firstWord, secondWords);
+		if (secondWords == null) {
+			for (String firstWord : firstWords) {
+				orderedResults.addAll(getResults(firstWord));
+			}
+		} else {
+			for (String firstWord : firstWords) {
+				orderedResults.addAll(getResults(firstWord, secondWords));
+			}
 		}
 
-		List<String> retval = toList(orderedResults, limit);
-
-		return retval;
+		return toList(orderedResults, limit);
 	}
 
 	/**
@@ -128,30 +132,30 @@ public class DigramHistogram {
 	 * @param secondWords A set of second words for consideration
 	 * @param orderedResults Not-null TreeSet of Tuples
 	 */
-	private TreeSet<Tuple<String>> getResults(String firstWord, Set<String> secondWords) {
-		TreeSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
-		
+	private SortedSet<Tuple<String>> getResults(String firstWord, Set<String> secondWords) {
+		SortedSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
+
 		for (String secondWord : secondWords) {
 			Tuple<String> t = new Tuple<String>();
 			t.count = getOccuranceCount(firstWord, secondWord);
 			if (t.count > 0) {
-	
+
 				t.word = firstWord + " " + secondWord;
 				orderedResults.add(t);
-	
+
 			}
-	
+
 			t = new Tuple<String>();
 			t.count = getOccuranceCount(secondWord, firstWord);
 			if (t.count > 0) {
-	
+
 				t.word = secondWord + " " + firstWord;
 				orderedResults.add(t);
-	
+
 			}
-	
+
 		}
-	
+
 		if (secondWords.isEmpty()) {
 			UnigramHistogram unigram = histogram.get(firstWord.hashCode());
 			if (unigram != null) {
@@ -160,11 +164,27 @@ public class DigramHistogram {
 				}
 			}
 		}
-		
+
 		return orderedResults;
 	}
 
-	
+	private SortedSet<Tuple<String>> getResults(String firstWord) {
+		SortedSet<Tuple<String>> orderedResults = Tuple.createOrderedResultsTree(new String());
+
+		UnigramHistogram unigramHistogram = histogram.get(firstWord.hashCode());
+
+		if (unigramHistogram != null) {
+			for (Tuple<String> t : UnigramHistogram.getMostCommonWords(unigramHistogram)) {
+				if (t != null) {
+					Tuple<String> tuple = new Tuple<String>(firstWord + " " + t.word, t.count);
+					orderedResults.add(tuple);
+				}
+			}
+		}
+
+		return orderedResults;
+	}
+
 	/**
 	 * An internal method that Takes a TreeSet and returns it as a list of strings
 	 * 
@@ -172,22 +192,22 @@ public class DigramHistogram {
 	 * @param limit
 	 * @return
 	 */
-	private static List<String> toList(TreeSet<Tuple<String>> orderedResults, int limit) {
+	private static List<String> toList(SortedSet<Tuple<String>> orderedResults, int limit) {
 		List<String> retval = new ArrayList<String>();
-	
+
 		int count = 0;
-	
+
 		for (Tuple<String> tuple : orderedResults) {
 			if (tuple != null) {
 				count++;
 				retval.add(tuple.word);
-	
+
 				if (count == limit) {
 					break;
 				}
 			}
 		}
-	
+
 		return retval;
 	}
 
