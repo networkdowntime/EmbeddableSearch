@@ -7,12 +7,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import net.networkdowntime.search.trie.PrefixTrie;
+import net.networkdowntime.search.trie.InvertedSuffixTrie;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class PrefixTrieTest {
+public class InvertedSuffixTrieTest {
 	static List<String> expectedTraceFoo = new ArrayList<String>();
 	static List<String> expectedTracePartialFoo = new ArrayList<String>();
 	static List<String> expectedTraceFooTwo = new ArrayList<String>();
@@ -55,99 +55,99 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testAddOneWord() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("qwerty");
 	}
 
 	@Test
 	public void testPartialTrieAddOneWord() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("qwerty");
 	}
 
 	@Test
 	public void testAddTwoWords() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("qwerty");
 		prefixTrie.add("wombat");
 	}
 
 	@Test
 	public void testPartialTrieAddTwoWords() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("qwerty");
 		prefixTrie.add("wombat");
 	}
 
 	@Test
 	public void testGetCompletionsNoMatch() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("cacao");
-		List<String> completions = prefixTrie.getCompletions("not_there", 50);
+		Set<CostString> completions = prefixTrie.getCompletions(new CostString("not_there"), 50, true);
 		assertTrue(completions != null);
 		assertEquals(0, completions.size());
 	}
 
 	@Test
 	public void testPartialTrieGetCompletionsNoMatch() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("cacao");
-		List<String> completions = prefixTrie.getCompletions("not_there", 50);
+		Set<CostString> completions = prefixTrie.getCompletions(new CostString("not_there"), 50, true);
 		assertTrue(completions != null);
 		assertEquals(0, completions.size());
 	}
 
 	@Test
 	public void testGetCompletions2() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("cacao");
-		List<String> completions = prefixTrie.getCompletions("o", 50);
-		assertEquals("cacao", completions.get(0));
+		Set<CostString> completions = prefixTrie.getCompletions(new CostString("o"), 50, true);
+		assertEquals("cacao", completions.iterator().next().str);
 	}
 
 	@Test
 	public void testPartialTrieGetCompletions2() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("cacao");
-		List<String> completions = prefixTrie.getCompletions("o", 50);
-		assertEquals("cacao", completions.get(0));
+		Set<CostString> completions = prefixTrie.getCompletions(new CostString("o"), 50, true);
+		assertEquals("cacao", completions.iterator().next().str);
 	}
 
 	@Test
 	public void testGetCompletions3() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("cacao");
 		prefixTrie.add("ban");
 		prefixTrie.add("bad");
 		prefixTrie.add("band");
 		prefixTrie.add("banana");
 		prefixTrie.add("bandy");
-		List<String> completions = prefixTrie.getCompletions("a", 50);
+		Set<CostString> completions = prefixTrie.getCompletions(new CostString("a"), 50, true);
 		assertEquals(5, completions.size());
-		assertTrue(completions.contains("ca"));
-		assertTrue(completions.contains("caca"));
-		assertTrue(completions.contains("ba"));
-		assertTrue(completions.contains("bana"));
-		assertTrue(completions.contains("banana"));
+		assertTrue(completions.contains(new CostString("ca")));
+		assertTrue(completions.contains(new CostString("caca")));
+		assertTrue(completions.contains(new CostString("ba")));
+		assertTrue(completions.contains(new CostString("bana")));
+		assertTrue(completions.contains(new CostString("banana")));
 	}
 
 	@Test
 	public void testPartialTrieGetCompletions3() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("cacao");
 		prefixTrie.add("ban");
 		prefixTrie.add("bad");
 		prefixTrie.add("band");
 		prefixTrie.add("banana");
 		prefixTrie.add("bandy");
-		List<String> completions = prefixTrie.getCompletions("a", 50);
+		Set<CostString> completions = prefixTrie.getCompletions(new CostString("a"), 50, true);
 		assertEquals(1, completions.size());
-		assertTrue(completions.contains("banana"));
+		assertTrue(completions.contains(new CostString("banana")));
 	}
 
 	@Test
 	public void testExpectedTraceFoo() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("foo");
 		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTraceFoo.size(), actualTrace.size());
@@ -159,7 +159,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieExpectedTraceFoo() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("foo");
 		List<String> actualTrace = prefixTrie.getTrace();
 		assertEquals(expectedTracePartialFoo.size(), actualTrace.size());
@@ -171,7 +171,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testExpectedTraceFooTwo() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("foo");
 		prefixTrie.add("two");
 		List<String> actualTrace = prefixTrie.getTrace();
@@ -184,7 +184,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieExpectedTraceFooTwo() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("foo");
 		prefixTrie.add("two");
 		List<String> actualTrace = prefixTrie.getTrace();
@@ -197,7 +197,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveSingleNodeOffExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("foo");
 		prefixTrie.add("bfoo");
 		prefixTrie.remove("bfoo");
@@ -211,7 +211,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveSingleNodeOffExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("foo");
 		prefixTrie.add("bfoo");
 		prefixTrie.remove("bfoo");
@@ -225,7 +225,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveMultipleNodeOffExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("foo");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("barfoo");
@@ -240,7 +240,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveMultipleNodeOffExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("foo");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("barfoo");
@@ -255,7 +255,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveSingleCharWordBeginningOfExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("fod");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("f");
@@ -271,7 +271,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveSingleCharWordBeginningOfExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("fod");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("f");
@@ -287,7 +287,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveSingleCharWordSubsetOfExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("fod");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("o");
@@ -303,7 +303,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveSingleCharWordSubsetOfExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("fod");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("o");
@@ -319,7 +319,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveSingleCharWordEndOfExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("fod");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("d");
@@ -335,7 +335,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveSingleCharWordEndOfExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("fod");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("d");
@@ -351,7 +351,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveMultiCharWordBeginningOfExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("food");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("fo");
@@ -367,7 +367,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveMultiCharWordBeginningOfExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("food");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("fo");
@@ -383,7 +383,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveMultiCharWordSubsetOfExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("food");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("oo");
@@ -399,7 +399,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveMultiCharWordSubsetOfExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("food");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("oo");
@@ -415,7 +415,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testRemoveMultiCharWordEndOfExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("food");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("od");
@@ -431,7 +431,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieRemoveMultiCharWordEndOfExistingWord() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("food");
 		List<String> expectedTrace = prefixTrie.getTrace();
 		prefixTrie.add("od");
@@ -447,7 +447,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testAddRemove6() {
-		PrefixTrie prefixTrie = new PrefixTrie();
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 		prefixTrie.add("foo");
 		prefixTrie.add("two");
 		List<String> expectedTrace = prefixTrie.getTrace();
@@ -464,7 +464,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialTrieAddRemove6() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		prefixTrie.add("foo");
 		prefixTrie.add("two");
 		List<String> expectedTrace = prefixTrie.getTrace();
@@ -481,7 +481,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testFuzzyMatchInsertions() {
-		PrefixTrie prefixTrie = new PrefixTrie(true);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(true);
 		String[] distanceOneInsertion = new String[] { "awhat", "whata", "whaat" }; // beginning, ending, middle
 
 		List<String> words = new ArrayList<String>();
@@ -497,7 +497,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialFuzzyMatchInsertions() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		String[] distanceOneInsertion = new String[] { "awhat", "whata", "whaat" }; // beginning, ending, middle
 
 		List<String> words = new ArrayList<String>();
@@ -513,7 +513,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testFuzzyMatchDeletions() {
-		PrefixTrie prefixTrie = new PrefixTrie(true);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(true);
 		String[] distanceOneDeletion = new String[] { "hat", "wha", "wat" }; // beginning, ending, middle
 
 		List<String> words = new ArrayList<String>();
@@ -529,7 +529,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialFuzzyMatchDeletions() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		String[] distanceOneDeletion = new String[] { "hat", "wha", "wat" }; // beginning, ending, middle
 
 		List<String> words = new ArrayList<String>();
@@ -545,7 +545,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testFuzzyMatchSubstitutions() {
-		PrefixTrie prefixTrie = new PrefixTrie(true);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(true);
 		String[] distanceOneSubstitution = new String[] { "that", "whac", "wbat" }; // beginning, ending, middle
 
 		List<String> words = new ArrayList<String>();
@@ -561,7 +561,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialFuzzyMatchSubstitutions() {
-		PrefixTrie prefixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(false);
 		String[] distanceOneSubstitution = new String[] { "that", "whac", "wbat" }; // beginning, ending, middle
 
 		List<String> words = new ArrayList<String>();
@@ -577,7 +577,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testFuzzyMatchTranspositions() {
-		PrefixTrie prefixTrie = new PrefixTrie(true);
+		InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie(true);
 		String[] distanceOneTransposition = new String[] { "hwat", "whta", "waht" }; // beginning, ending, middle
 
 		List<String> words = new ArrayList<String>();
@@ -593,7 +593,7 @@ public class PrefixTrieTest {
 
 	@Test
 	public void testPartialFuzzyMatchTranspositions() {
-		PrefixTrie suffixTrie = new PrefixTrie(false);
+		InvertedSuffixTrie suffixTrie = new InvertedSuffixTrie(false);
 		String[] distanceOneTransposition = new String[] { "hwat", "whta", "waht" }; // beginning, ending, middle
 
 		List<String> words = new ArrayList<String>();

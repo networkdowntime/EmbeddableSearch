@@ -13,7 +13,8 @@ import net.networkdowntime.search.text.processing.ContentSplitter;
 import net.networkdowntime.search.text.processing.HtmlTagTextScrubber;
 import net.networkdowntime.search.text.processing.KeywordScrubber;
 import net.networkdowntime.search.text.processing.TextScrubber;
-import net.networkdowntime.search.trie.PrefixTrie;
+import net.networkdowntime.search.trie.CostString;
+import net.networkdowntime.search.trie.InvertedSuffixTrie;
 import net.networkdowntime.search.trie.SuffixTrie;
 
 /**
@@ -43,7 +44,7 @@ public class Autocomplete {
 
 	private UnigramHistogram unigramHistogram = new UnigramHistogram();
 	private DigramHistogram digramHistogram = new DigramHistogram();
-	private PrefixTrie prefixTrie = new PrefixTrie();
+	private InvertedSuffixTrie prefixTrie = new InvertedSuffixTrie();
 	private SuffixTrie suffixTrie = new SuffixTrie(false);
 
 	private TextScrubber textScrubber = null;
@@ -285,9 +286,9 @@ public class Autocomplete {
 		Set<String> completions = new TLinkedHashSet<String>();
 
 		if (word != null && word.length() > 0) {
-			for (String wordPlusPrefix : prefixTrie.getCompletions(word, limit * 2)) {
-				for (String completedWord : suffixTrie.getCompletions(wordPlusPrefix, limit * 2)) {
-					completions.add(completedWord);
+			for (CostString wordPlusPrefix : prefixTrie.getCompletions(new CostString(word), limit * 2, true)) {
+				for (CostString completedWord : suffixTrie.getCompletions(wordPlusPrefix, limit * 2, true)) {
+					completions.add(completedWord.str);
 				}
 			}
 

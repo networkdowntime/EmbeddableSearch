@@ -85,7 +85,7 @@ public class SuffixTrieTest {
 	public void testGetCompletionsNoMatch() {
 		SuffixTrie suffixTrie = new SuffixTrie();
 		suffixTrie.add("cacao");
-		List<String> completions = suffixTrie.getCompletions("not_there", 50);
+		Set<CostString> completions = suffixTrie.getCompletions(new CostString("not_there"), 50, true);
 		assertTrue(completions != null);
 		assertEquals(0, completions.size());
 	}
@@ -94,7 +94,7 @@ public class SuffixTrieTest {
 	public void testPartialTrieGetCompletionsNoMatch() {
 		SuffixTrie suffixTrie = new SuffixTrie(false);
 		suffixTrie.add("cacao");
-		List<String> completions = suffixTrie.getCompletions("not_there", 50);
+		Set<CostString> completions = suffixTrie.getCompletions(new CostString("not_there"), 50, true);
 		assertTrue(completions != null);
 		assertEquals(0, completions.size());
 	}
@@ -103,16 +103,16 @@ public class SuffixTrieTest {
 	public void testGetCompletions2() {
 		SuffixTrie suffixTrie = new SuffixTrie();
 		suffixTrie.add("oacac");
-		List<String> completions = suffixTrie.getCompletions("o", 50);
-		assertEquals("oacac", completions.get(0));
+		Set<CostString> completions = suffixTrie.getCompletions(new CostString("o"), 50, true);
+		assertEquals("oacac", completions.iterator().next().str);
 	}
 
 	@Test
 	public void testPartialTrieGetCompletions2() {
 		SuffixTrie suffixTrie = new SuffixTrie(false);
 		suffixTrie.add("oacac");
-		List<String> completions = suffixTrie.getCompletions("o", 50);
-		assertEquals("oacac", completions.get(0));
+		Set<CostString> completions = suffixTrie.getCompletions(new CostString("o"), 50, true);
+		assertEquals("oacac", completions.iterator().next().str);
 	}
 
 	@Test
@@ -124,13 +124,13 @@ public class SuffixTrieTest {
 		suffixTrie.add("dnab");
 		suffixTrie.add("ananab");
 		suffixTrie.add("ydnab");
-		List<String> completions = suffixTrie.getCompletions("a", 50);
+		Set<CostString> completions = suffixTrie.getCompletions(new CostString("a"), 50, true);
 		assertEquals(5, completions.size());
-		assertTrue(completions.contains("ac"));
-		assertTrue(completions.contains("acac"));
-		assertTrue(completions.contains("ab"));
-		assertTrue(completions.contains("anab"));
-		assertTrue(completions.contains("ananab"));
+		assertTrue(completions.contains(new CostString("ac")));
+		assertTrue(completions.contains(new CostString("acac")));
+		assertTrue(completions.contains(new CostString("ab")));
+		assertTrue(completions.contains(new CostString("anab")));
+		assertTrue(completions.contains(new CostString("ananab")));
 	}
 
 	@Test
@@ -142,9 +142,9 @@ public class SuffixTrieTest {
 		suffixTrie.add("dnab");
 		suffixTrie.add("ananab");
 		suffixTrie.add("ydnab");
-		List<String> completions = suffixTrie.getCompletions("a", 50);
+		Set<CostString> completions = suffixTrie.getCompletions(new CostString("a"), 50, true);
 		assertEquals(1, completions.size());
-		assertTrue(completions.contains("ananab"));
+		assertTrue(completions.contains(new CostString("ananab")));
 	}
 
 	@Test

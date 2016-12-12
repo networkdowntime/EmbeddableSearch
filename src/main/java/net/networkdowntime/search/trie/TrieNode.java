@@ -41,4 +41,7 @@ public class TrieNode {
 		this.c = c;
 	}
 
+	public boolean isRootNode() {
+		return c == 0;
+	}
 }
