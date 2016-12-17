@@ -1,14 +1,12 @@
 package net.networkdowntime.search.trie;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import gnu.trove.map.hash.TCharObjectHashMap;
 
@@ -79,7 +77,7 @@ public abstract class Trie {
 	protected abstract String getSubstring(String word);
 
 	protected abstract String getSubstring(String word, int index);
-	
+
 	/**
 	 * Concatenates the character and the wordPart string and returns the new cost string. wordPart + c for Suffix, c + wordPart for Inverted Suffix
 	 * 
@@ -99,7 +97,7 @@ public abstract class Trie {
 	 * @return
 	 */
 	protected abstract CostString addCharToWordPart(char c, int index, CostString wordPart, int cost);
-	
+
 	/**
 	 * Inserts the character into the wordPart string at the specified index and returns the new cost string. wordPart + c for Suffix, c + wordPart for Inverted Suffix
 	 * 
@@ -109,7 +107,7 @@ public abstract class Trie {
 	 * @return
 	 */
 	protected abstract CostString deleteCharFromWordPart(int index, CostString wordPart, int cost);
-	
+
 	/**
 	 * Transposes the character at the specified index with the following character and returns the new cost string.
 	 * 
@@ -128,7 +126,7 @@ public abstract class Trie {
 	 * @param cost How much to increment the returned cost by
 	 * @return
 	 */
-//	protected abstract CostString addCharToWordPartBackwards(char c, CostString wordPart, int cost);
+	//	protected abstract CostString addCharToWordPartBackwards(char c, CostString wordPart, int cost);
 
 	/**
 	 * Gets a char[] in the correct order for node traversal to find completions. left to right for Suffix, reverse order for Inverted Suffix
@@ -261,89 +259,109 @@ public abstract class Trie {
 	 * @return A list of the completed words.
 	 */
 	public Set<CostString> getCompletions(CostString wordPart, int editDistanceMax, boolean subStringOnly) {
-		LOGGER.debug(getClass().getSimpleName() + ":");
-		Map<Integer, CostString> completions = new HashMap<Integer, CostString>();
-		Map<Integer, CostString> failures = new HashMap<Integer, CostString>();
+		LOGGER.debug(getClass().getSimpleName() + "(wordPart=" + wordPart.str + ";" + wordPart.cost + ", editDistanceMax=" + editDistanceMax + ", subStringOnly=" + subStringOnly + "):");
+		logs.add(getClass().getSimpleName() + "(wordPart=" + wordPart.str + ";" + wordPart.cost + ", editDistanceMax=" + editDistanceMax + ", subStringOnly=" + subStringOnly + "):");
+		CostStringSet<CostString> completions = new CostStringSet<CostString>();
+		CostStringSet<CostString> failures = new CostStringSet<CostString>();
 
 		getRootCompletions(completions, failures, wordPart, editDistanceMax, subStringOnly, 0);
 
-		// do sorting of completions here, need to implement comparator
-		Set<CostString> retval = new HashSet<CostString>(completions.values());
-		return retval;
-		// return getCompletions1(wordPart, editDistanceMax, count);
+		return completions;
 	}
 
-	private void getRootCompletions(Map<Integer, CostString> completions, Map<Integer, CostString> failures, CostString wordPart, int editDistanceMax, boolean subStringOnly, int tabs) {
+	private void getRootCompletions(CostStringSet<CostString> completions, CostStringSet<CostString> failures, CostString wordPart, int editDistanceMax, boolean subStringOnly, int tabs) {
 		LOGGER.debug(getTabs(tabs) + "getCompletions1(): '" + wordPart + "' - " + wordPart.cost + ", failures.size(): " + failures.size());
-		
+
 		// try the exact wordPart first to handle no misspellings in the wordPart, but allow all completions
-		CostString failure = failures.get(wordPart.hashCode());
+		CostString failure = failures.get(wordPart);
 		if (failure == null || wordPart.cost < failure.cost) {
 			getCompletionsWalkTree(completions, failures, rootNode, wordPart, 0, editDistanceMax, subStringOnly, tabs + 1);
 		} else {
 			LOGGER.debug(getTabs(tabs) + "\tFailure found for " + wordPart + " - " + wordPart.cost + ", skipping");
 		}
-		
+
 		if (!subStringOnly && wordPart.cost < editDistanceMax) {
-			
 			for (int i = 0; i < wordPart.length(); i++) {
 				// find allowable deletions at current index
 				CostString deletionMisspelling = deleteCharFromWordPart(i, wordPart, 1);
 				LOGGER.debug(getTabs(tabs) + "\tdeleted char at index: " + i + "; new wordPart: '" + deletionMisspelling + "' - " + deletionMisspelling.cost);
 				getRootCompletions(completions, failures, deletionMisspelling, editDistanceMax, subStringOnly, tabs + 1);
 			}
-			
 		}
 	}
 
-	private void getCompletionsWalkTree(Map<Integer, CostString> completions, Map<Integer, CostString> failures, TrieNode node, CostString wordPart, int startingWordPartIndex, int editDistanceMax, boolean subStringOnly,	int tabs) {
+	private boolean isValidPath(CostString wordPart, CostStringSet<CostString> completions, CostStringSet<CostString> failures, int tabs) {
+		CostString failure = failures.get(wordPart);
+		if (failure != null && failure.cost <= wordPart.cost) {
+			LOGGER.debug(getTabs(tabs) + "isValidPath(): aborting search path due to previous failure at equal or lesser cost");
+			return false;
+		}
+		CostString completion = completions.get(wordPart);
+		if (completion != null && completion.cost < wordPart.cost) {
+			LOGGER.debug(getTabs(tabs) + "isValidPath(): aborting search path due to previous completion at equal or lesser cost");
+			return false;
+		}
+		return true;
+	}
+
+	private void getCompletionsWalkTree(CostStringSet<CostString> completions, CostStringSet<CostString> failures, TrieNode node, CostString wordPart, int startingWordPartIndex, int editDistanceMax,
+			boolean subStringOnly, int tabs) {
 		TrieNode currentNode = node;
 		char[] charArray = getCharArr(wordPart.str);
-		
+
 		// walks the Trie based on the characters in the wordPart. fails if wordPart is not in Trie.
 		for (int i = startingWordPartIndex; i < charArray.length; i++) {
 
 			if (LOGGER.isDebugEnabled()) {
-			StringBuilder sb = new StringBuilder(getTabs(tabs) + "getCompletionsWalkTree(): index: " + i + "; char '" + charArray[i] + "'; " + wordPart + " - " + wordPart.cost + "; node char '" + currentNode.c + "'; children [");
-			if (currentNode.children != null) {
-				for (TrieNode n : currentNode.children.valueCollection()) {
-					sb.append(n.c + ", ");
+				StringBuilder sb = new StringBuilder(getTabs(tabs) + "getCompletionsWalkTree(): index: " + i + "; char '" + charArray[i] + "'; " + wordPart + " - " + wordPart.cost + "; node char '"
+						+ currentNode.c + "'; children [");
+				if (currentNode.children != null) {
+					for (TrieNode n : currentNode.children.valueCollection()) {
+						sb.append(n.c + ", ");
+					}
 				}
+				sb.append("]");
+				LOGGER.debug(sb.toString());
 			}
-			sb.append("]");
-			LOGGER.debug(sb.toString());
-			}
-			
+
 			if (!subStringOnly && currentNode != null && wordPart.cost < editDistanceMax) {
-				
+
 				// find allowable deletions at current index
 				CostString deletionMisspelling = deleteCharFromWordPart(i, wordPart, 1);
 				LOGGER.debug(getTabs(tabs) + "\tdeleted char at index: " + i + "; new wordPart: '" + deletionMisspelling + "' - " + deletionMisspelling.cost);
-				getCompletionsWalkTree(completions, failures, currentNode, deletionMisspelling, i, editDistanceMax, subStringOnly, tabs + 1);
+				if (isValidPath(deletionMisspelling, completions, failures, tabs + 1)) {
+					getCompletionsWalkTree(completions, failures, currentNode, deletionMisspelling, i, editDistanceMax, subStringOnly, tabs + 1);
+				}
 
 				if (i + 1 < charArray.length) {
 					// find allowable transpositions at current index
 					CostString transposeMisspelling = transposeCharsInWordPart(i, wordPart, 1);
 					LOGGER.debug(getTabs(tabs) + "\ttransposed characters at indexes: " + i + "," + (i + 1) + "; new wordPart: '" + transposeMisspelling + "'");
-					getCompletionsWalkTree(completions, failures, currentNode, transposeMisspelling, i, editDistanceMax, subStringOnly, tabs + 1);
+					if (isValidPath(transposeMisspelling, completions, failures, tabs + 1)) {
+						getCompletionsWalkTree(completions, failures, currentNode, transposeMisspelling, i, editDistanceMax, subStringOnly, tabs + 1);
+					}
 				}
 
 				// find allowable insertion at current index
 				if (currentNode.children != null) {
 					for (TrieNode n : currentNode.children.valueCollection()) {
 						if (i > 0) {
-							CostString insterionMisspelling = addCharToWordPart(n.c, i, wordPart, 1);
-							LOGGER.debug(getTabs(tabs) + "\tinserted '" + n.c + "' at index: " + (i + 1) + "; new wordPart: '" + insterionMisspelling + "'");
-							getCompletionsWalkTree(completions, failures, currentNode, insterionMisspelling, i, editDistanceMax, subStringOnly, tabs + 1);
+							CostString insertionMisspelling = addCharToWordPart(n.c, i, wordPart, 1);
+							LOGGER.debug(getTabs(tabs) + "\tinserted '" + n.c + "' at index: " + (i + 1) + "; new wordPart: '" + insertionMisspelling + "'");
+							if (isValidPath(insertionMisspelling, completions, failures, tabs + 1)) {
+								getCompletionsWalkTree(completions, failures, currentNode, insertionMisspelling, i, editDistanceMax, subStringOnly, tabs + 1);
+							}
 						}
-						
+
 						CostString replacementMisspelling = addCharToWordPart(n.c, i, deletionMisspelling, 0);
 						LOGGER.debug(getTabs(tabs) + "\treplaced '" + n.c + "' at index: " + (i + 1) + "; new wordPart: " + replacementMisspelling + " - " + replacementMisspelling.cost);
-						getCompletionsWalkTree(completions, failures, currentNode, replacementMisspelling, i, editDistanceMax, subStringOnly, tabs + 1);
+						if (isValidPath(replacementMisspelling, completions, failures, tabs + 1)) {
+							getCompletionsWalkTree(completions, failures, currentNode, replacementMisspelling, i, editDistanceMax, subStringOnly, tabs + 1);
+						}
 					}
 				}
 			}
-			
+
 			char c = charArray[i];
 			if (currentNode != null && currentNode.children != null) {
 				currentNode = currentNode.children.get(c);
@@ -352,8 +370,16 @@ public abstract class Trie {
 			}
 
 			if (currentNode == null) { // no match in the part of the string processed so far
-				LOGGER.debug(getTabs(tabs) + "\tAdded failure for " + wordPart + " - " + wordPart.cost + " in getCompletionsExactWordPartMatch()");
-				failures.put(wordPart.hashCode(), wordPart);
+				// 					failures.add(wordPart);
+				// The below can be replaced with the line above, but leaving it in for clearity in alg. analysis
+				LOGGER.debug(getTabs(tabs) + "\tFailure for " + wordPart + " - " + wordPart.cost + " in getCompletionsExactWordPartMatch()");
+
+				CostString failure = failures.get(wordPart);
+				if (failure != null && wordPart.cost < failure.cost) { // lower failure cost
+					LOGGER.debug(getTabs(tabs) + "\tAdded failure for " + wordPart + " - " + wordPart.cost + " in getCompletionsExactWordPartMatch()");
+					logs.add(getTabs(tabs) + "\tAdded failure for " + wordPart + " - " + wordPart.cost + " in getCompletionsExactWordPartMatch()");
+					failures.add(wordPart);
+				}
 				return; // then return
 			}
 		}
@@ -372,7 +398,7 @@ public abstract class Trie {
 	 * @param limit Max number of results to return
 	 * @return the current number of completions
 	 */
-	private void getCompletionsTailInsertions(Map<Integer, CostString> completions, Map<Integer, CostString> failures, TrieNode node, CostString wordPart, int editDistanceMax, boolean subStringOnly,
+	private void getCompletionsTailInsertions(CostStringSet<CostString> completions, CostStringSet<CostString> failures, TrieNode node, CostString wordPart, int editDistanceMax, boolean subStringOnly,
 			int tabs) {
 		LOGGER.debug(getTabs(tabs) + "getCompletionsTailInsertions():");
 		if (node != null) {
@@ -393,23 +419,32 @@ public abstract class Trie {
 		}
 	}
 
+	public static List<String> logs = new ArrayList<String>();
+
 	/**
 	 * Only adds the wordPart if it's not in completions or this wordPart has a lower cost than an existing completion for the same string
 	 * 
 	 * @param completions The list of completed words
 	 * @param wordPart A completed word part, i.e. pattern match up to a end node
 	 */
-	private void addCompletion(Map<Integer, CostString> completions, CostString wordPart, int tabs) {
-		CostString existing = completions.get(wordPart.hashCode());
+	private void addCompletion(CostStringSet<CostString> completions, CostString wordPart, int tabs) {
+		//		completions.add(wordPart);
+		// The below can be replaced with the line above, but leaving it in for clearity in alg. analysis
+
+		CostString existing = completions.get(wordPart);
 
 		StringBuilder sb = new StringBuilder((getTabs(tabs) + "addCompletion(): " + wordPart + " - " + wordPart.cost));
 
-		if (existing == null || existing.cost > wordPart.cost) {
-			completions.put(wordPart.hashCode(), wordPart);
-			sb.append(" added, hashcode = " + wordPart.hashCode() + " existing: " + existing);
+		if (existing == null) {
+			completions.add(wordPart);
+			sb.append(" added, hashcode = " + wordPart.hashCode() + " no previous existing");
+		} else if (wordPart.cost < existing.cost) {
+			completions.add(wordPart);
+			sb.append(" added, hashcode = " + wordPart.hashCode() + " lesser cost than existing: " + existing.cost);
 		} else {
-			sb.append(" already there with cost " + existing.cost + ", hashcode = " + wordPart.hashCode());
+			sb.append(" already there with equal or lesser cost " + existing.cost + ", hashcode = " + wordPart.hashCode());
 		}
+		logs.add(sb.toString());
 		LOGGER.debug(sb.toString());
 	}
 
