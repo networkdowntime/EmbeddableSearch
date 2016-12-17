@@ -1,6 +1,6 @@
 package net.networkdowntime.search.trie;
 
-public class CostString {
+public class CostString implements Comparable<CostString> {
 
 	public String str;
 	public int cost;
@@ -32,13 +32,25 @@ public class CostString {
 		}
 		return str.equals(obj);
 	}
-	
+
 	public int length() {
 		return str.length();
 	}
-	
+
 	public String substring(int beginIndex, int endIndex) {
 		return str.substring(beginIndex, endIndex);
+	}
+
+	@Override
+	public int compareTo(CostString o) {
+		if (this.str.equals(o.str)) {
+			if (this.cost < o.cost)
+				return -1;
+			if (this.cost > o.cost)
+				return 1;
+			return 0;
+		}
+		return 0;
 	}
 
 }
