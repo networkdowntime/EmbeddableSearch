@@ -270,7 +270,7 @@ public abstract class Trie {
 	}
 
 	private void getRootCompletions(CostStringSet<CostString> completions, CostStringSet<CostString> failures, CostString wordPart, int editDistanceMax, boolean subStringOnly, int tabs) {
-		LOGGER.debug(getTabs(tabs) + "getCompletions1(): '" + wordPart + "' - " + wordPart.cost + ", failures.size(): " + failures.size());
+		LOGGER.debug(getTabs(tabs) + "getRootCompletions(): '" + wordPart + "' - " + wordPart.cost + ", failures.size(): " + failures.size());
 
 		// try the exact wordPart first to handle no misspellings in the wordPart, but allow all completions
 		CostString failure = failures.get(wordPart);
